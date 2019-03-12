@@ -1,0 +1,606 @@
+" ============================================================
+" options
+" ============================================================
+
+" dir diff buffer filetype
+if !exists('g:ZFDirDiffUI_filetypeLeft')
+    let g:ZFDirDiffUI_filetypeLeft = 'ZFDirDiffLeft'
+endif
+if !exists('g:ZFDirDiffUI_filetypeRight')
+    let g:ZFDirDiffUI_filetypeRight = 'ZFDirDiffRight'
+endif
+
+" tabstop of the diff buffer
+if !exists('g:ZFDirDiffUI_tabstop')
+    let g:ZFDirDiffUI_tabstop = 2
+endif
+
+" function name to get the header text
+"     YourFunc(isLeft, fileLeft, fileRight)
+" return a list of string
+if !exists('g:ZFDirDiffUI_headerTextFunc')
+    let g:ZFDirDiffUI_headerTextFunc = 's:headerText'
+endif
+
+" whether use `matchadd()`, which would cause performance issue
+if !exists('g:ZFDirDiffUI_syntaxHL')
+    let g:ZFDirDiffUI_syntaxHL = 0
+endif
+
+" whether need to sync same file
+if !exists('g:ZFDirDiffUI_syncSameFile')
+    let g:ZFDirDiffUI_syncSameFile = 0
+endif
+
+" overwrite confirm
+if !exists('g:ZFDirDiffConfirmSyncDir')
+    let g:ZFDirDiffConfirmSyncDir = 1
+endif
+if !exists('g:ZFDirDiffConfirmSyncFile')
+    let g:ZFDirDiffConfirmSyncFile = 1
+endif
+if !exists('g:ZFDirDiffConfirmSyncConflict')
+    let g:ZFDirDiffConfirmSyncConflict = 1
+endif
+if !exists('g:ZFDirDiffConfirmCopyDir')
+    let g:ZFDirDiffConfirmCopyDir = 1
+endif
+if !exists('g:ZFDirDiffConfirmCopyFile')
+    let g:ZFDirDiffConfirmCopyFile = 0
+endif
+if !exists('g:ZFDirDiffConfirmRemoveDir')
+    let g:ZFDirDiffConfirmRemoveDir = 1
+endif
+if !exists('g:ZFDirDiffConfirmRemoveFile')
+    let g:ZFDirDiffConfirmRemoveFile = 1
+endif
+
+" keymaps
+if !exists('g:ZFDirDiffKeymap_update')
+    let g:ZFDirDiffKeymap_update = ['DD']
+endif
+if !exists('g:ZFDirDiffKeymap_open')
+    let g:ZFDirDiffKeymap_open = ['<cr>', 'o']
+endif
+if !exists('g:ZFDirDiffKeymap_goParent')
+    let g:ZFDirDiffKeymap_goParent = ['u']
+endif
+if !exists('g:ZFDirDiffKeymap_quit')
+    let g:ZFDirDiffKeymap_quit = ['q']
+endif
+if !exists('g:ZFDirDiffKeymap_quitDiff')
+    let g:ZFDirDiffKeymap_quitDiff = ['q']
+endif
+if !exists('g:ZFDirDiffKeymap_syncToHere')
+    let g:ZFDirDiffKeymap_syncToHere = ['do', 'DH']
+endif
+if !exists('g:ZFDirDiffKeymap_syncToThere')
+    let g:ZFDirDiffKeymap_syncToThere = ['dp', 'DL']
+endif
+if !exists('g:ZFDirDiffKeymap_deleteFile')
+    let g:ZFDirDiffKeymap_deleteFile = ['dd']
+endif
+if !exists('g:ZFDirDiffKeymap_getPath')
+    let g:ZFDirDiffKeymap_getPath = ['p']
+endif
+if !exists('g:ZFDirDiffKeymap_getFullPath')
+    let g:ZFDirDiffKeymap_getFullPath = ['P']
+endif
+
+" highlight
+" {Title,Dir,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile}
+highlight link ZFDirDiffHL_Title Title
+highlight link ZFDirDiffHL_Dir Directory
+highlight link ZFDirDiffHL_Same Folded
+highlight link ZFDirDiffHL_Diff DiffText
+highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
+highlight link ZFDirDiffHL_DirOnlyThere Normal
+highlight link ZFDirDiffHL_FileOnlyHere DiffAdd
+highlight link ZFDirDiffHL_FileOnlyThere Normal
+highlight link ZFDirDiffHL_ConflictDir ErrorMsg
+highlight link ZFDirDiffHL_ConflictFile WarningMsg
+
+" custom highlight function
+if !exists('g:ZFDirDiffHLFunc_resetHL')
+    let g:ZFDirDiffHLFunc_resetHL='s:resetHL'
+endif
+if !exists('g:ZFDirDiffHLFunc_addHL')
+    let g:ZFDirDiffHLFunc_addHL='s:addHL'
+endif
+
+" ============================================================
+command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
+
+" ============================================================
+function! ZF_DirDiff(fileLeft, fileRight)
+    let ret = ZF_DirDiffCore(a:fileLeft, a:fileRight)
+    if empty(ret)
+        redraw!
+        echo '[ZFDirDiff] no diff found'
+        return
+    endif
+    if len(ret) == 1 && ret[0].name == ''
+        call s:diffByFile(a:fileLeft, a:fileRight)
+        return
+    endif
+    call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, ret)
+endfunction
+
+function! ZF_DirDiffUpdate()
+    if !exists('b:bufdata')
+        redraw!
+        echo '[ZFDirDiff] no previous diff found'
+        return
+    endif
+
+    let fileLeft = b:fileLeft
+    let fileRight = b:fileRight
+    let isLeft = b:isLeft
+    let cursorPos = getpos('.')
+
+    call ZF_DirDiffQuit()
+    call ZF_DirDiff(fileLeft, fileRight)
+
+    if isLeft
+        execute "normal! \<c-w>h"
+    endif
+    call setpos('.', cursorPos)
+endfunction
+
+function! ZF_DirDiffOpen()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+    if item.type == 'T_DIR'
+        let fileLeft = b:fileLeft . item.path
+        let fileRight = b:fileRight . item.path
+        call ZF_DirDiffQuit()
+        call ZF_DirDiff(fileLeft, fileRight)
+        return
+    endif
+    if item.type != 'T_SAME' && item.type != 'T_DIFF'
+        redraw!
+        echo '[ZFDirDiff] can not be compared: ' . item.path
+        return
+    endif
+
+    let fileLeft = b:fileLeft . '/' . item.path
+    let fileRight = b:fileRight . '/' . item.path
+
+    tabnew
+    vsplit
+
+    execute 'edit ' . fileLeft
+    diffthis
+    call s:setupFileDiffKeymap()
+
+    execute "normal! \<c-w>l"
+    execute 'edit ' . fileRight
+    diffthis
+    call s:setupFileDiffKeymap()
+
+    execute "normal! \<c-w>="
+
+    normal! ]czz
+endfunction
+function! s:setupFileDiffKeymap()
+    for k in g:ZFDirDiffKeymap_quitDiff
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
+    endfor
+endfunction
+
+function! ZF_DirDiffGoParent()
+    let fileLeft = fnamemodify(b:fileLeft, ':h')
+    if empty(fileLeft)
+        redraw!
+        echo '[ZFDirDiff] can not get parent of [LEFT]: ' . b:fileLeft
+        return
+    endif
+
+    let fileRight = fnamemodify(b:fileRight, ':h')
+    if empty(fileRight)
+        redraw!
+        echo '[ZFDirDiff] can not get parent of [RIGHT]: ' . b:fileRight
+        return
+    endif
+
+    call ZF_DirDiffQuit()
+    call ZF_DirDiff(fileLeft, fileRight)
+endfunction
+
+function! ZF_DirDiffQuit()
+    while winnr('$') > 1
+        bd!
+    endwhile
+    bd!
+endfunction
+
+function! ZF_DirDiffQuitDiff()
+    execute "normal! \<c-w>k"
+    execute "normal! \<c-w>h"
+    call s:askWrite()
+
+    execute "normal! \<c-w>k"
+    execute "normal! \<c-w>l"
+    call s:askWrite()
+
+    while winnr('$') > 1
+        bd!
+    endwhile
+    bd!
+
+    call ZF_DirDiffUpdate()
+endfunction
+
+function! ZF_DirDiffSyncToHere()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+    call ZF_DirDiffSync(b:fileLeft, b:fileRight, item.path, item.data, b:isLeft ? 'r2l' : 'l2r', 0)
+    call ZF_DirDiffUpdate()
+endfunction
+function! ZF_DirDiffSyncToThere()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+    call ZF_DirDiffSync(b:fileLeft, b:fileRight, item.path, item.data, b:isLeft ? 'l2r' : 'r2l', 0)
+    call ZF_DirDiffUpdate()
+endfunction
+
+function! ZF_DirDiffDeleteFile()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+    call ZF_DirDiffSync(b:fileLeft, b:fileRight, item.path, item.data, b:isLeft ? 'dl' : 'dr', 0)
+    call ZF_DirDiffUpdate()
+endfunction
+
+function! ZF_DirDiffGetPath()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+
+    let path = fnamemodify(b:isLeft ? b:fileLeft : b:fileRight, ':.') . item.path
+    if has('clipboard')
+        let @*=path
+    else
+        let @"=path
+    endif
+
+    redraw
+    echo '[ZFDirDiff] copied path: ' . path
+endfunction
+function! ZF_DirDiffGetFullPath()
+    let item = s:getItem()
+    if empty(item)
+        redraw
+        return
+    endif
+
+    let path = (b:isLeft ? b:fileLeft : b:fileRight) . item.path
+    if has('clipboard')
+        let @*=path
+    else
+        let @"=path
+    endif
+
+    redraw
+    echo '[ZFDirDiff] copied full path: ' . path
+endfunction
+
+" ============================================================
+function! s:diffByFile(fileLeft, fileRight)
+    vsplit
+
+    execute "normal! \<c-w>h"
+    enew
+    execute 'edit ' . a:fileLeft
+    diffthis
+
+    execute "normal! \<c-w>l"
+    enew
+    execute 'edit ' . a:fileRight
+    diffthis
+
+    execute "normal! \<c-w>="
+endfunction
+
+function! s:getItem()
+    let iLine = getpos('.')[1] - b:iLineOffset - 1
+    if iLine >= 0 && iLine < len(b:bufdata)
+        return b:bufdata[iLine]
+    else
+        return ''
+    endif
+endfunction
+
+function! s:askWrite()
+    if !&modified
+        return
+    endif
+    let input = confirm("[ZFDirDiff] File " . expand("%:p") . " modified, save?", "&Yes\n&No", 1)
+    if (input == 1)
+        w!
+    endif
+endfunction
+
+function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
+    tabnew
+
+    vsplit
+    call s:setupDiffUI(a:fileLeft, a:fileRight, a:data, 1)
+
+    execute "normal! \<c-w>l"
+    enew
+    call s:setupDiffUI(a:fileLeft, a:fileRight, a:data, 0)
+
+    execute "normal! gg0"
+endfunction
+
+function! s:headerText(isLeft, fileLeft, fileRight)
+    let text = []
+    if a:isLeft
+        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':~') . '/')
+        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':.') . '/')
+    else
+        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':~') . '/')
+        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':.') . '/')
+    endif
+    call add(text, '------------------------------------------------------------')
+    return text
+endfunction
+function! s:setupDiffUI(fileLeft, fileRight, data, isLeft)
+    " [
+    "   {
+    "     'level' : 'indent level',
+    "     'path' : 'relative path to fileLeft or fileRight',
+    "     'name' : 'file or dir name',
+    "     'type' : 'same as ZF_DirDiffCore type',
+    "     'data' : { // original data of this node
+    "       'name' : '',
+    "       'type' : '',
+    "       'children' : [...],
+    "     },
+    "   },
+    "   ...
+    " ]
+    let b:bufdata = []
+    let b:fileLeft = ZF_DirDiffPathFormat(a:fileLeft)
+    let b:fileRight = ZF_DirDiffPathFormat(a:fileRight)
+    let b:isLeft = a:isLeft
+    let b:iLineOffset = 0
+
+    if a:isLeft
+        execute 'setlocal filetype=' . g:ZFDirDiffUI_filetypeLeft
+    else
+        execute 'setlocal filetype=' . g:ZFDirDiffUI_filetypeRight
+    endif
+
+    setlocal modifiable
+    normal! gg"_dG
+
+    " header
+    let Fn_headerText = function(g:ZFDirDiffUI_headerTextFunc)
+    let headerText = Fn_headerText(a:isLeft, b:fileLeft, b:fileRight)
+    let b:iLineOffset = len(headerText)
+    for i in range(b:iLineOffset)
+        call setline(i + 1, headerText[i])
+    endfor
+
+    " contents
+    let indentText = ''
+    for i in range(g:ZFDirDiffUI_tabstop)
+        let indentText .= ' '
+    endfor
+    call s:setupDiffItem(a:data, '', indentText, 1, b:iLineOffset + 1, a:isLeft, 0)
+    call setline(b:iLineOffset + len(b:bufdata) + 1, '')
+    normal! gg0
+    call s:setupDiffBuffer()
+endfunction
+
+function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hiddenFlag)
+    let iLine = a:iLine
+    let incLine = 0
+    for item in a:data
+        call add(b:bufdata, {
+                    \   'level' : a:indent,
+                    \   'path' : a:parent . '/' . item.name,
+                    \   'name' : item.name,
+                    \   'type' : item.type,
+                    \   'data' : item,
+                    \ })
+
+        let hiddenFlag = a:hiddenFlag
+        if !hiddenFlag
+            let hiddenFlag = 0
+                        \ || (a:isLeft && (item.type == 'T_DIR_RIGHT' || item.type == 'T_FILE_RIGHT'))
+                        \ || (!a:isLeft && (item.type == 'T_DIR_LEFT' || item.type == 'T_FILE_LEFT'))
+                        \ ? 1 : 0
+        endif
+
+        let line = ''
+        if !hiddenFlag
+            for i in range(a:indent)
+                let line .= a:indentText
+            endfor
+            let line .= item.name
+            if item.type == 'T_DIR'
+                        \ || (a:isLeft && (item.type == 'T_DIR_LEFT' || item.type == 'T_CONFLICT_DIR_LEFT'))
+                        \ || (!a:isLeft && (item.type == 'T_DIR_RIGHT' || item.type == 'T_CONFLICT_DIR_RIGHT'))
+                let line .= '/'
+            endif
+        endif
+
+        call setline(iLine, line)
+        let iLine += 1
+        let incLine += 1
+
+        let childIncLine = s:setupDiffItem(item.children, a:parent . '/' . item.name, a:indentText, a:indent + 1, iLine, a:isLeft, hiddenFlag)
+        let iLine += childIncLine
+        let incLine += childIncLine
+    endfor
+    return incLine
+endfunction
+
+function! s:setupDiffBuffer()
+    call s:setupDiffBuffer_keymap()
+    call s:setupDiffBuffer_statusline()
+    call s:setupDiffBuffer_highlight()
+
+    execute 'set tabstop=' . g:ZFDirDiffUI_tabstop
+    setlocal buftype=nowrite
+    setlocal bufhidden=hide
+    setlocal nowrap
+    setlocal nomodified
+    setlocal nomodifiable
+    set cursorbind
+endfunction
+
+function! s:setupDiffBuffer_keymap()
+    for k in g:ZFDirDiffKeymap_update
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffUpdate()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_open
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffOpen()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_goParent
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_quit
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_syncToHere
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_syncToThere
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_deleteFile
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_getPath
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_getFullPath
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGetFullPath()<cr>'
+    endfor
+endfunction
+
+function! s:setupDiffBuffer_statusline()
+    if b:isLeft
+        execute 'setlocal statusline=[LEFT]:\ ' . fnamemodify(b:fileLeft, ':.') . '/'
+    else
+        execute 'setlocal statusline=[RIGHT]:\ ' . fnamemodify(b:fileRight, ':.') . '/'
+    endif
+    setlocal statusline+=%=%k
+    setlocal statusline+=\ %3p%%
+endfunction
+
+function! s:setupDiffBuffer_highlight()
+    let Fn_resetHL=function(g:ZFDirDiffHLFunc_resetHL)
+    let Fn_addHL=function(g:ZFDirDiffHLFunc_addHL)
+
+    call Fn_resetHL()
+
+    for i in range(1, b:iLineOffset)
+        call Fn_addHL('ZFDirDiffHL_Title', i)
+    endfor
+
+    let iLine = 1
+    for item in b:bufdata
+        let line = b:iLineOffset + iLine
+        let iLine += 1
+
+        if 0
+        elseif item.type == 'T_DIR'
+            call Fn_addHL('ZFDirDiffHL_Dir', line)
+        elseif item.type == 'T_SAME'
+            call Fn_addHL('ZFDirDiffHL_Same', line)
+        elseif item.type == 'T_DIFF'
+            call Fn_addHL('ZFDirDiffHL_Diff', line)
+        elseif item.type == 'T_DIR_LEFT'
+            if b:isLeft
+                call Fn_addHL('ZFDirDiffHL_DirOnlyHere', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_DirOnlyThere', line)
+            endif
+        elseif item.type == 'T_DIR_RIGHT'
+            if !b:isLeft
+                call Fn_addHL('ZFDirDiffHL_DirOnlyHere', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_DirOnlyThere', line)
+            endif
+        elseif item.type == 'T_FILE_LEFT'
+            if b:isLeft
+                call Fn_addHL('ZFDirDiffHL_FileOnlyHere', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_FileOnlyThere', line)
+            endif
+        elseif item.type == 'T_FILE_RIGHT'
+            if !b:isLeft
+                call Fn_addHL('ZFDirDiffHL_FileOnlyHere', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_FileOnlyThere', line)
+            endif
+        elseif item.type == 'T_CONFLICT_DIR_LEFT'
+            if b:isLeft
+                call Fn_addHL('ZFDirDiffHL_ConflictDir', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_ConflictFile', line)
+            endif
+        elseif item.type == 'T_CONFLICT_DIR_RIGHT'
+            if !b:isLeft
+                call Fn_addHL('ZFDirDiffHL_ConflictDir', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_ConflictFile', line)
+            endif
+        endif
+    endfor
+endfunction
+
+function! s:resetHL()
+    call clearmatches()
+
+    silent! execute 'sign unplace * buffer=' . bufnr('.')
+
+    sign define ZFDirDiffHLSign_Title linehl=ZFDirDiffHL_Title
+    sign define ZFDirDiffHLSign_Dir linehl=ZFDirDiffHL_Dir
+    sign define ZFDirDiffHLSign_Same linehl=ZFDirDiffHL_Same
+    sign define ZFDirDiffHLSign_Diff linehl=ZFDirDiffHL_Diff
+    sign define ZFDirDiffHLSign_DirOnlyHere linehl=ZFDirDiffHL_DirOnlyHere
+    sign define ZFDirDiffHLSign_DirOnlyThere linehl=ZFDirDiffHL_DirOnlyThere
+    sign define ZFDirDiffHLSign_FileOnlyHere linehl=ZFDirDiffHL_FileOnlyHere
+    sign define ZFDirDiffHLSign_FileOnlyThere linehl=ZFDirDiffHL_FileOnlyThere
+    sign define ZFDirDiffHLSign_ConflictDir linehl=ZFDirDiffHL_ConflictDir
+    sign define ZFDirDiffHLSign_ConflictFile linehl=ZFDirDiffHL_ConflictFile
+
+    let b:ZFDirDiffHLSignIndex = 1
+endfunction
+function! s:addHL(group, line)
+    if g:ZFDirDiffUI_syntaxHL
+        if exists('*matchaddpos')
+            call matchaddpos(a:group, [a:line])
+        else
+            call matchadd(a:group, '\%' . a:line . 'l')
+        endif
+    endif
+
+    let cmd = 'sign place '
+    let cmd .= b:ZFDirDiffHLSignIndex
+    let cmd .= ' line=' . a:line
+    let cmd .= ' name=' . substitute(a:group, 'ZFDirDiffHL_', 'ZFDirDiffHLSign_', '')
+    let cmd .= ' buffer=' . bufnr('%')
+    execute cmd
+    let b:ZFDirDiffHLSignIndex += 1
+endfunction
+
