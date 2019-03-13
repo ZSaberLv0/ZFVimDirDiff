@@ -71,6 +71,12 @@ endif
 if !exists('g:ZFDirDiffKeymap_quitDiff')
     let g:ZFDirDiffKeymap_quitDiff = ['q']
 endif
+if !exists('g:ZFDirDiffKeymap_nextDiff')
+    let g:ZFDirDiffKeymap_nextDiff = [']c', 'DJ']
+endif
+if !exists('g:ZFDirDiffKeymap_prevDiff')
+    let g:ZFDirDiffKeymap_prevDiff = ['[c', 'DK']
+endif
 if !exists('g:ZFDirDiffKeymap_syncToHere')
     let g:ZFDirDiffKeymap_syncToHere = ['do', 'DH']
 endif
@@ -232,6 +238,47 @@ function! ZF_DirDiffQuitDiff()
     bd!
 
     call ZF_DirDiffUpdate()
+endfunction
+
+function! ZF_DirDiffNextDiff()
+    call s:jumpDiff('next')
+endfunction
+function! ZF_DirDiffPrevDiff()
+    call s:jumpDiff('prev')
+endfunction
+function! s:jumpDiff(nextOrPrev)
+    redraw
+    let curPos = getpos('.')
+    let iLine = curPos[1] - b:iLineOffset - 1
+    if iLine < 0
+        let iLine = 0
+        let curPos[1] = iLine + b:iLineOffset + 1
+        call setpos('.', curPos)
+    endif
+    if iLine >= len(b:bufdata)
+        let iLine = len(b:bufdata) - 1
+        let curPos[1] = iLine + b:iLineOffset + 1
+        call setpos('.', curPos)
+    endif
+
+    if a:nextOrPrev == 'next'
+        let iOffset = 1
+        let iEnd = len(b:bufdata)
+    else
+        let iOffset = -1
+        let iEnd = -1
+    endif
+
+    let iLine += iOffset
+    while iLine != iEnd
+        let data = b:bufdata[iLine]
+        if data.type != 'T_DIR' && data.type != 'T_SAME'
+            let curPos[1] = iLine + b:iLineOffset + 1
+            call setpos('.', curPos)
+            return
+        endif
+        let iLine += iOffset
+    endwhile
 endfunction
 
 function! ZF_DirDiffSyncToHere()
@@ -463,6 +510,7 @@ function! s:setupDiffBuffer()
     setlocal nowrap
     setlocal nomodified
     setlocal nomodifiable
+    set scrollbind
     set cursorbind
 endfunction
 
@@ -478,6 +526,12 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_quit
         execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_nextDiff
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffNextDiff()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_prevDiff
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
         execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
