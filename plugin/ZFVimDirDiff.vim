@@ -22,11 +22,6 @@ if !exists('g:ZFDirDiffUI_headerTextFunc')
     let g:ZFDirDiffUI_headerTextFunc = 's:headerText'
 endif
 
-" whether use `matchadd()`, which would cause performance issue
-if !exists('g:ZFDirDiffUI_syntaxHL')
-    let g:ZFDirDiffUI_syntaxHL = 0
-endif
-
 " whether need to sync same file
 if !exists('g:ZFDirDiffUI_syncSameFile')
     let g:ZFDirDiffUI_syncSameFile = 0
@@ -108,10 +103,10 @@ highlight link ZFDirDiffHL_ConflictFile WarningMsg
 
 " custom highlight function
 if !exists('g:ZFDirDiffHLFunc_resetHL')
-    let g:ZFDirDiffHLFunc_resetHL='s:resetHL'
+    let g:ZFDirDiffHLFunc_resetHL='ZF_DirDiffHL_resetHL_default'
 endif
 if !exists('g:ZFDirDiffHLFunc_addHL')
-    let g:ZFDirDiffHLFunc_addHL='s:addHL'
+    let g:ZFDirDiffHLFunc_addHL='ZF_DirDiffHL_addHL_default'
 endif
 
 " ============================================================
@@ -618,41 +613,5 @@ function! s:setupDiffBuffer_highlight()
             endif
         endif
     endfor
-endfunction
-
-function! s:resetHL()
-    call clearmatches()
-
-    silent! execute 'sign unplace * buffer=' . bufnr('.')
-
-    sign define ZFDirDiffHLSign_Title linehl=ZFDirDiffHL_Title
-    sign define ZFDirDiffHLSign_Dir linehl=ZFDirDiffHL_Dir
-    sign define ZFDirDiffHLSign_Same linehl=ZFDirDiffHL_Same
-    sign define ZFDirDiffHLSign_Diff linehl=ZFDirDiffHL_Diff
-    sign define ZFDirDiffHLSign_DirOnlyHere linehl=ZFDirDiffHL_DirOnlyHere
-    sign define ZFDirDiffHLSign_DirOnlyThere linehl=ZFDirDiffHL_DirOnlyThere
-    sign define ZFDirDiffHLSign_FileOnlyHere linehl=ZFDirDiffHL_FileOnlyHere
-    sign define ZFDirDiffHLSign_FileOnlyThere linehl=ZFDirDiffHL_FileOnlyThere
-    sign define ZFDirDiffHLSign_ConflictDir linehl=ZFDirDiffHL_ConflictDir
-    sign define ZFDirDiffHLSign_ConflictFile linehl=ZFDirDiffHL_ConflictFile
-
-    let b:ZFDirDiffHLSignIndex = 1
-endfunction
-function! s:addHL(group, line)
-    if g:ZFDirDiffUI_syntaxHL
-        if exists('*matchaddpos')
-            call matchaddpos(a:group, [a:line])
-        else
-            call matchadd(a:group, '\%' . a:line . 'l')
-        endif
-    endif
-
-    let cmd = 'sign place '
-    let cmd .= b:ZFDirDiffHLSignIndex
-    let cmd .= ' line=' . a:line
-    let cmd .= ' name=' . substitute(a:group, 'ZFDirDiffHL_', 'ZFDirDiffHLSign_', '')
-    let cmd .= ' buffer=' . bufnr('%')
-    execute cmd
-    let b:ZFDirDiffHLSignIndex += 1
 endfunction
 

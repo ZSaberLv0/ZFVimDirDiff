@@ -65,7 +65,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         endfunction
         ```
 
-    * `let g:ZFDirDiffUI_syntaxHL = 0` : whether use `matchadd()`, which would cause performance issue
     * `let g:ZFDirDiffUI_syncSameFile = 0` : whether need to sync same file
     * whether confirm before sync
         * `let g:ZFDirDiffConfirmSyncDir = 1`
