@@ -248,18 +248,6 @@ function! ZF_DirDiffPrevDiff()
 endfunction
 function! s:jumpDiff(nextOrPrev)
     redraw
-    let curPos = getpos('.')
-    let iLine = curPos[1] - b:iLineOffset - 1
-    if iLine < 0
-        let iLine = 0
-        let curPos[1] = iLine + b:iLineOffset + 1
-        call setpos('.', curPos)
-    endif
-    if iLine >= len(b:bufdata)
-        let iLine = len(b:bufdata) - 1
-        let curPos[1] = iLine + b:iLineOffset + 1
-        call setpos('.', curPos)
-    endif
 
     if a:nextOrPrev == 'next'
         let iOffset = 1
@@ -269,12 +257,22 @@ function! s:jumpDiff(nextOrPrev)
         let iEnd = -1
     endif
 
-    let iLine += iOffset
+    let curPos = getpos('.')
+    let iLine = curPos[1] - b:iLineOffset - 1
+    if iLine < 0
+        let iLine = 0
+    elseif iLine >= len(b:bufdata)
+        let iLine = len(b:bufdata) - 1
+    else
+        let iLine += iOffset
+    endif
+
     while iLine != iEnd
         let data = b:bufdata[iLine]
         if data.type != 'T_DIR' && data.type != 'T_SAME'
             let curPos[1] = iLine + b:iLineOffset + 1
             call setpos('.', curPos)
+            normal! zz
             return
         endif
         let iLine += iOffset
