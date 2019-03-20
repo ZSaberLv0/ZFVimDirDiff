@@ -92,6 +92,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         let g:ZFDirDiffFileExclude .= ',*/vendor/*'
         ```
 
+        you may also use `call ZF_DirDiffSetupDefaultFileExclude()` for short
+
     * `let g:ZFDirDiffContentExclude = ''` : file content exclude pattern, e.g. `log:,id:`
     * `let g:ZFDirDiffFileIgnoreCase = 0` : whether ignore file name case
     * `let g:ZFDirDiffCustomDiffArg = ''` : additional diff args passed to `diff`
