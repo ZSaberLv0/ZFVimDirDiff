@@ -170,23 +170,27 @@ function! ZF_DirDiffOpen()
     let fileLeft = b:fileLeft . '/' . item.path
     let fileRight = b:fileRight . '/' . item.path
 
+    let ownerDiffTab = tabpagenr()
+
     tabnew
     vsplit
 
     execute 'edit ' . fileLeft
     diffthis
-    call s:setupFileDiffKeymap()
+    call s:setupFileDiff(ownerDiffTab)
 
     execute "normal! \<c-w>l"
     execute 'edit ' . fileRight
     diffthis
-    call s:setupFileDiffKeymap()
+    call s:setupFileDiff(ownerDiffTab)
 
     execute "normal! \<c-w>="
 
     normal! ]czz
 endfunction
-function! s:setupFileDiffKeymap()
+function! s:setupFileDiff(ownerDiffTab)
+    let b:ownerDiffTab = a:ownerDiffTab
+
     for k in g:ZFDirDiffKeymap_quitDiff
         execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
     endfor
@@ -212,13 +216,19 @@ function! ZF_DirDiffGoParent()
 endfunction
 
 function! ZF_DirDiffQuit()
+    let ownerTab = b:ownerTab
+
     while winnr('$') > 1
         bd!
     endwhile
     bd!
+
+    execute 'normal! ' . ownerTab . 'gt'
 endfunction
 
 function! ZF_DirDiffQuitDiff()
+    let ownerDiffTab = b:ownerDiffTab
+
     execute "normal! \<c-w>k"
     execute "normal! \<c-w>h"
     call s:askWrite()
@@ -232,6 +242,7 @@ function! ZF_DirDiffQuitDiff()
     endwhile
     bd!
 
+    execute 'normal! ' . ownerDiffTab . 'gt'
     call ZF_DirDiffUpdate()
 endfunction
 
@@ -375,14 +386,16 @@ function! s:askWrite()
 endfunction
 
 function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
+    let ownerTab = tabpagenr()
+
     tabnew
 
     vsplit
-    call s:setupDiffUI(a:fileLeft, a:fileRight, a:data, 1)
+    call s:setupDiffUI(ownerTab, a:fileLeft, a:fileRight, a:data, 1)
 
     execute "normal! \<c-w>l"
     enew
-    call s:setupDiffUI(a:fileLeft, a:fileRight, a:data, 0)
+    call s:setupDiffUI(ownerTab, a:fileLeft, a:fileRight, a:data, 0)
 
     execute "normal! gg0"
 endfunction
@@ -399,7 +412,7 @@ function! s:headerText(isLeft, fileLeft, fileRight)
     call add(text, '------------------------------------------------------------')
     return text
 endfunction
-function! s:setupDiffUI(fileLeft, fileRight, data, isLeft)
+function! s:setupDiffUI(ownerTab, fileLeft, fileRight, data, isLeft)
     " [
     "   {
     "     'level' : 'indent level',
@@ -414,6 +427,7 @@ function! s:setupDiffUI(fileLeft, fileRight, data, isLeft)
     "   },
     "   ...
     " ]
+    let b:ownerTab = a:ownerTab
     let b:bufdata = []
     let b:fileLeft = ZF_DirDiffPathFormat(a:fileLeft)
     let b:fileRight = ZF_DirDiffPathFormat(a:fileRight)
