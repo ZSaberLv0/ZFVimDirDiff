@@ -49,7 +49,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `let g:ZFDirDiffShowSameFile = 1` : whether to show files that are same
     * `let g:ZFDirDiffFileExclude = ''` : file name exclude pattern, e.g. `*.class,*.o`
 
-        typical setting:
+        there's no default exclude, you may use `let g:ZFDirDiffFileExcludeUseDefault=1` to enable recommended exclude:
 
         ```
         let g:ZFDirDiffFileExclude = 'tags'
@@ -91,8 +91,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         let g:ZFDirDiffFileExclude .= ',*/Pods/*'
         let g:ZFDirDiffFileExclude .= ',*/vendor/*'
         ```
-
-        you may also use `call ZF_DirDiffSetupDefaultFileExclude()` for short
 
     * `let g:ZFDirDiffContentExclude = ''` : file content exclude pattern, e.g. `log:,id:`
     * `let g:ZFDirDiffFileIgnoreCase = 0` : whether ignore file name case
