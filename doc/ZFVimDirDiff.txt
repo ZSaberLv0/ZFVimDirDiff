@@ -48,6 +48,50 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 * for core logic:
     * `let g:ZFDirDiffShowSameFile = 1` : whether to show files that are same
     * `let g:ZFDirDiffFileExclude = ''` : file name exclude pattern, e.g. `*.class,*.o`
+
+        typical setting:
+
+        ```
+        let g:ZFDirDiffFileExclude = 'tags'
+        let g:ZFDirDiffFileExclude .= ',*.swp'
+        let g:ZFDirDiffFileExclude .= ',.DS_Store'
+        let g:ZFDirDiffFileExclude .= ',*.d'
+        let g:ZFDirDiffFileExclude .= ',*.depend*'
+        let g:ZFDirDiffFileExclude .= ',*.a'
+        let g:ZFDirDiffFileExclude .= ',*.o'
+        let g:ZFDirDiffFileExclude .= ',*.so'
+        let g:ZFDirDiffFileExclude .= ',*.dylib'
+        let g:ZFDirDiffFileExclude .= ',*.jar'
+        let g:ZFDirDiffFileExclude .= ',*.class'
+        let g:ZFDirDiffFileExclude .= ',*.exe'
+        let g:ZFDirDiffFileExclude .= ',*.dll'
+        let g:ZFDirDiffFileExclude .= ',*.iml'
+        let g:ZFDirDiffFileExclude .= ',local.properties'
+        let g:ZFDirDiffFileExclude .= ',*.user'
+
+        let g:ZFDirDiffFileExclude .= ',*/.svn/*'
+        let g:ZFDirDiffFileExclude .= ',*/.git/*'
+        let g:ZFDirDiffFileExclude .= ',*/.hg/*'
+        let g:ZFDirDiffFileExclude .= ',*/.cache/*'
+        let g:ZFDirDiffFileExclude .= ',*/_cache/*'
+        let g:ZFDirDiffFileExclude .= ',*/.tmp/*'
+        let g:ZFDirDiffFileExclude .= ',*/_tmp/*'
+        let g:ZFDirDiffFileExclude .= ',*/.release/*'
+        let g:ZFDirDiffFileExclude .= ',*/_release/*'
+        let g:ZFDirDiffFileExclude .= ',*/.build/*'
+        let g:ZFDirDiffFileExclude .= ',*/_build/*'
+        let g:ZFDirDiffFileExclude .= ',*/build-*/*'
+        let g:ZFDirDiffFileExclude .= ',*/bin-*/*'
+        let g:ZFDirDiffFileExclude .= ',*/_repo/*'
+        let g:ZFDirDiffFileExclude .= ',*/.wing/*'
+        let g:ZFDirDiffFileExclude .= ',*/.idea/*'
+        let g:ZFDirDiffFileExclude .= ',*/.gradle/*'
+        let g:ZFDirDiffFileExclude .= ',*/build/*'
+        let g:ZFDirDiffFileExclude .= ',*/.externalNativeBuild/*'
+        let g:ZFDirDiffFileExclude .= ',*/Pods/*'
+        let g:ZFDirDiffFileExclude .= ',*/vendor/*'
+        ```
+
     * `let g:ZFDirDiffContentExclude = ''` : file content exclude pattern, e.g. `log:,id:`
     * `let g:ZFDirDiffFileIgnoreCase = 0` : whether ignore file name case
     * `let g:ZFDirDiffCustomDiffArg = ''` : additional diff args passed to `diff`
