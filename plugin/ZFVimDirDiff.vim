@@ -216,11 +216,18 @@ function! ZF_DirDiffGoParent()
 endfunction
 
 function! ZF_DirDiffQuit()
+    let Fn_resetHL=function(g:ZFDirDiffHLFunc_resetHL)
     let ownerTab = b:ownerTab
 
     while winnr('$') > 1
+        call Fn_resetHL()
+        set nocursorbind
+        set noscrollbind
         bd!
     endwhile
+    call Fn_resetHL()
+    set nocursorbind
+    set noscrollbind
     bd!
 
     execute 'normal! ' . ownerTab . 'gt'
