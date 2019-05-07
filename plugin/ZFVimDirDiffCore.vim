@@ -247,9 +247,9 @@ function! s:parse(fileLeft, fileRight, content)
             let matchRight = (match(path, fileRight) >= 0)
             if matchLeft && matchRight
                 if len(fileLeft) >= len(fileRight)
-                    matchRight = 0
+                    let matchRight = 0
                 else
-                    matchLeft = 0
+                    let matchLeft = 0
                 endif
             endif
 
