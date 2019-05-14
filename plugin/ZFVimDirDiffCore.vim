@@ -132,7 +132,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     let fileRight = ZF_DirDiffPathFormat(a:fileRight)
 
     if fileLeft == fileRight
-        redraw! | echom '[ZFDirDiff] no diff found'
+        redraw! | echo '[ZFDirDiff] same input'
         return []
     endif
 
@@ -166,14 +166,21 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
         let cmdarg .= ' -I"' . substitute(g:ZFDirDiffContentExclude, ',', '" -I"', 'g') . '"'
     endif
     let cmd = cmd . cmdarg . ' "' . fileLeft . '" "' . fileRight . '"'
-    let cmd = cmd . ' > "' . tmpFile . '"'
+    let cmd = cmd . ' > "' . tmpFile . '" 2>&1'
 
     redraw!
     echo '[ZFDirDiff] running diff, it may take a while...'
     silent! execute cmd
     let error = v:shell_error
     if error == 0
-        redraw! | echom '[ZFDirDiff] no diff found'
+        redraw! | echo '[ZFDirDiff] no diff found'
+        return []
+    elseif error != 1
+        redraw!
+        echo '[ZFDirDiff] diff failed with exit code: ' . error
+        for msg in readfile(tmpFile)
+            echo '    ' . msg
+        endfor
         return []
     endif
 

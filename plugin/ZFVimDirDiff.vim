@@ -116,8 +116,6 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
 function! ZF_DirDiff(fileLeft, fileRight)
     let ret = ZF_DirDiffCore(a:fileLeft, a:fileRight)
     if empty(ret)
-        redraw!
-        echo '[ZFDirDiff] no diff found'
         return
     endif
     if len(ret) == 1 && ret[0].name == ''
