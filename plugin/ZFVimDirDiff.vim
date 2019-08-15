@@ -384,6 +384,7 @@ function! s:askWrite()
     if !&modified
         return
     endif
+    redraw!
     let input = confirm("[ZFDirDiff] File " . expand("%:p") . " modified, save?", "&Yes\n&No", 1)
     if (input == 1)
         w!
