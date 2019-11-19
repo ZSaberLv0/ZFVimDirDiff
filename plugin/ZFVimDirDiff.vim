@@ -472,7 +472,7 @@ function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hidde
     let iLine = a:iLine
     let incLine = 0
     let markMap = get(g:, 'ZFDirDiffMarkMap', {
-                \   'T_DIR'                : ['[D] ', '[D] '],
+                \   'T_DIR'                : ['    ', '    '],
                 \   'T_SAME'               : ['    ', '    '],
                 \   'T_DIFF'               : ['[F] ', '[F] '],
                 \   'T_DIR_LEFT'           : ['[D] ', '    '],
