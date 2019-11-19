@@ -471,6 +471,28 @@ endfunction
 function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hiddenFlag)
     let iLine = a:iLine
     let incLine = 0
+    let markMap = get(g:, 'ZFDirDiffMarkMap', {
+                \   'T_DIR'                : ['[D] ', '[D] '],
+                \   'T_SAME'               : ['    ', '    '],
+                \   'T_DIFF'               : ['[F] ', '[F] '],
+                \   'T_DIR_LEFT'           : ['[D] ', '    '],
+                \   'T_DIR_RIGHT'          : ['    ', '[D] '],
+                \   'T_FILE_LEFT'          : ['[F] ', '    '],
+                \   'T_FILE_RIGHT'         : ['    ', '[F] '],
+                \   'T_CONFLICT_DIR_LEFT'  : ['[D] ', '[F] '],
+                \   'T_CONFLICT_DIR_RIGHT' : ['[F] ', '[D] '],
+                \ })
+    " let markMap = get(g:, 'ZFDirDiffMarkMap', {
+    "            \   'T_DIR'                : ['', ''],
+    "            \   'T_SAME'               : ['', ''],
+    "            \   'T_DIFF'               : ['', ''],
+    "            \   'T_DIR_LEFT'           : ['', ''],
+    "            \   'T_DIR_RIGHT'          : ['', ''],
+    "            \   'T_FILE_LEFT'          : ['', ''],
+    "            \   'T_FILE_RIGHT'         : ['', ''],
+    "            \   'T_CONFLICT_DIR_LEFT'  : ['', ''],
+    "            \   'T_CONFLICT_DIR_RIGHT' : ['', ''],
+    "            \ })
     for item in a:data
         call add(b:bufdata, {
                     \   'level' : a:indent,
@@ -488,7 +510,7 @@ function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hidde
                         \ ? 1 : 0
         endif
 
-        let line = ''
+        let line = markMap[item.type][a:isLeft ? 0 : 1]
         if !hiddenFlag
             for i in range(a:indent)
                 let line .= a:indentText
@@ -500,6 +522,7 @@ function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hidde
                 let line .= '/'
             endif
         endif
+        let line = substitute(line, ' \+$', '', 'g')
 
         call setline(iLine, line)
         let iLine += 1
@@ -515,7 +538,9 @@ endfunction
 function! s:setupDiffBuffer()
     call s:setupDiffBuffer_keymap()
     call s:setupDiffBuffer_statusline()
-    call s:setupDiffBuffer_highlight()
+    if len(b:bufdata) <= get(g:, 'ZFDirDiffHLMaxLine', 200)
+        call s:setupDiffBuffer_highlight()
+    endif
 
     execute 'set tabstop=' . g:ZFDirDiffUI_tabstop
     setlocal buftype=nowrite
