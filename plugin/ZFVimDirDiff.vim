@@ -471,28 +471,31 @@ endfunction
 function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hiddenFlag)
     let iLine = a:iLine
     let incLine = 0
-    let markMap = get(g:, 'ZFDirDiffMarkMap', {
-                \   'T_DIR'                : ['    ', '    '],
-                \   'T_SAME'               : ['    ', '    '],
-                \   'T_DIFF'               : ['[F] ', '[F] '],
-                \   'T_DIR_LEFT'           : ['[D] ', '    '],
-                \   'T_DIR_RIGHT'          : ['    ', '[D] '],
-                \   'T_FILE_LEFT'          : ['[F] ', '    '],
-                \   'T_FILE_RIGHT'         : ['    ', '[F] '],
-                \   'T_CONFLICT_DIR_LEFT'  : ['[D] ', '[F] '],
-                \   'T_CONFLICT_DIR_RIGHT' : ['[F] ', '[D] '],
-                \ })
-    " let markMap = get(g:, 'ZFDirDiffMarkMap', {
-    "            \   'T_DIR'                : ['', ''],
-    "            \   'T_SAME'               : ['', ''],
-    "            \   'T_DIFF'               : ['', ''],
-    "            \   'T_DIR_LEFT'           : ['', ''],
-    "            \   'T_DIR_RIGHT'          : ['', ''],
-    "            \   'T_FILE_LEFT'          : ['', ''],
-    "            \   'T_FILE_RIGHT'         : ['', ''],
-    "            \   'T_CONFLICT_DIR_LEFT'  : ['', ''],
-    "            \   'T_CONFLICT_DIR_RIGHT' : ['', ''],
-    "            \ })
+    if len(b:bufdata) <= get(g:, 'ZFDirDiffHLMaxLine', 200)
+        let markMap = get(g:, 'ZFDirDiffMarkMap', {
+                   \   'T_DIR'                : ['', ''],
+                   \   'T_SAME'               : ['', ''],
+                   \   'T_DIFF'               : ['', ''],
+                   \   'T_DIR_LEFT'           : ['', ''],
+                   \   'T_DIR_RIGHT'          : ['', ''],
+                   \   'T_FILE_LEFT'          : ['', ''],
+                   \   'T_FILE_RIGHT'         : ['', ''],
+                   \   'T_CONFLICT_DIR_LEFT'  : ['', ''],
+                   \   'T_CONFLICT_DIR_RIGHT' : ['', ''],
+                   \ })
+    else
+        let markMap = get(g:, 'ZFDirDiffMarkMap', {
+                    \   'T_DIR'                : ['    ', '    '],
+                    \   'T_SAME'               : ['    ', '    '],
+                    \   'T_DIFF'               : ['[F] ', '[F] '],
+                    \   'T_DIR_LEFT'           : ['[D] ', '    '],
+                    \   'T_DIR_RIGHT'          : ['    ', '[D] '],
+                    \   'T_FILE_LEFT'          : ['[F] ', '    '],
+                    \   'T_FILE_RIGHT'         : ['    ', '[F] '],
+                    \   'T_CONFLICT_DIR_LEFT'  : ['[D] ', '[F] '],
+                    \   'T_CONFLICT_DIR_RIGHT' : ['[F] ', '[D] '],
+                    \ })
+    endif
     for item in a:data
         call add(b:bufdata, {
                     \   'level' : a:indent,
