@@ -60,6 +60,12 @@ endif
 if !exists('g:ZFDirDiffKeymap_goParent')
     let g:ZFDirDiffKeymap_goParent = ['u']
 endif
+if !exists('g:ZFDirDiffKeymap_diffThisDir')
+    let g:ZFDirDiffKeymap_diffThisDir = ['cd', 'O']
+endif
+if !exists('g:ZFDirDiffKeymap_diffParentDir')
+    let g:ZFDirDiffKeymap_diffParentDir = ['U']
+endif
 if !exists('g:ZFDirDiffKeymap_quit')
     let g:ZFDirDiffKeymap_quit = ['q']
 endif
@@ -115,14 +121,14 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
 " ============================================================
 function! ZF_DirDiff(fileLeft, fileRight)
     let ret = ZF_DirDiffCore(a:fileLeft, a:fileRight)
-    if empty(ret)
-        return
-    endif
     if len(ret) == 1 && ret[0].name == ''
         call s:diffByFile(a:fileLeft, a:fileRight)
         return
     endif
     call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, ret)
+    if empty(ret)
+        redraw! | echo '[ZFDirDiff] no diff found'
+    endif
 endfunction
 
 function! ZF_DirDiffUpdate()
@@ -196,19 +202,40 @@ endfunction
 
 function! ZF_DirDiffGoParent()
     let fileLeft = fnamemodify(b:fileLeft, ':h')
-    if empty(fileLeft)
-        redraw!
-        echo '[ZFDirDiff] can not get parent of [LEFT]: ' . b:fileLeft
-        return
-    endif
-
     let fileRight = fnamemodify(b:fileRight, ':h')
-    if empty(fileRight)
+    call ZF_DirDiffQuit()
+    call ZF_DirDiff(fileLeft, fileRight)
+endfunction
+
+function! ZF_DirDiffDiffThisDir()
+    let item = s:getItem()
+    if empty(item)
         redraw!
-        echo '[ZFDirDiff] can not get parent of [RIGHT]: ' . b:fileRight
         return
     endif
+    if b:isLeft
+        if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], item.type) >= 0
+            let itemPath = fnamemodify(b:fileLeft . item.path, ':p')
+        else
+            let itemPath = fnamemodify(b:fileLeft . item.path, ':p:h')
+        endif
+    else
+        if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], item.type) >= 0
+            let itemPath = fnamemodify(b:fileRight . item.path, ':p')
+        else
+            let itemPath = fnamemodify(b:fileRight . item.path, ':p:h')
+        endif
+    endif
 
+    let fileLeft = b:isLeft ? itemPath : b:fileLeft
+    let fileRight = !b:isLeft ? itemPath : b:fileRight
+    call ZF_DirDiffQuit()
+    call ZF_DirDiff(fileLeft, fileRight)
+endfunction
+
+function! ZF_DirDiffDiffParentDir()
+    let fileLeft = b:isLeft ? fnamemodify(b:fileLeft, ':h') : b:fileLeft
+    let fileRight = !b:isLeft ? fnamemodify(b:fileRight, ':h') : b:fileRight
     call ZF_DirDiffQuit()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
@@ -564,6 +591,12 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_goParent
         execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_diffThisDir
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDiffThisDir()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_diffParentDir
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_quit
         execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'

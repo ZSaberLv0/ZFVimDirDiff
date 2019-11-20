@@ -32,9 +32,12 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 1. within the diff window:
 
     * use `DD` to update the diff result
-    * use `o` or `<cr>` to open file diff
-    * use `do` or `DH` to sync from another side to current side
-    * use `dp` or `DL` to sync from current side to another side
+    * use `o` or `<cr>` to diff current node
+    * use `u` to go parent for both side, `U` to go parent of this side,
+        `cd` or `O` to make current dir as diff root dir
+    * use `]c` or `DJ` to move to next diff, `[c` or `DK` to prev diff
+    * use `do` or `DH` to sync from another side to current side,
+        `dp` or `DL` to sync from current side to another side
     * use `dd` to delete node under cursor
     * use `p` to copy the node's path, and `P` for the node's full path
     * use `q` to exit diff
@@ -122,6 +125,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         * `let g:ZFDirDiffKeymap_update = ['DD']`
         * `let g:ZFDirDiffKeymap_open = ['<cr>', 'o']`
         * `let g:ZFDirDiffKeymap_goParent = ['u']`
+        * `let g:ZFDirDiffKeymap_diffThisDir = ['cd', 'O']`
+        * `let g:ZFDirDiffKeymap_diffParentDir = ['U']`
         * `let g:ZFDirDiffKeymap_quit = ['q']`
         * `let g:ZFDirDiffKeymap_quitDiff = ['q']`
         * `let g:ZFDirDiffKeymap_nextDiff = [']c', 'DJ']`
