@@ -386,12 +386,10 @@ function! s:diffByFile(fileLeft, fileRight)
     vsplit
 
     execute "normal! \<c-w>h"
-    enew
     execute 'edit ' . a:fileLeft
     diffthis
 
     execute "normal! \<c-w>l"
-    enew
     execute 'edit ' . a:fileRight
     diffthis
 
