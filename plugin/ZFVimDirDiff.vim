@@ -174,30 +174,7 @@ function! ZF_DirDiffOpen()
     let fileLeft = b:fileLeft . '/' . item.path
     let fileRight = b:fileRight . '/' . item.path
 
-    let ownerDiffTab = tabpagenr()
-
-    tabnew
-    vsplit
-
-    execute 'edit ' . fileLeft
-    diffthis
-    call s:setupFileDiff(ownerDiffTab)
-
-    execute "normal! \<c-w>l"
-    execute 'edit ' . fileRight
-    diffthis
-    call s:setupFileDiff(ownerDiffTab)
-
-    execute "normal! \<c-w>="
-
-    normal! ]czz
-endfunction
-function! s:setupFileDiff(ownerDiffTab)
-    let b:ownerDiffTab = a:ownerDiffTab
-
-    for k in g:ZFDirDiffKeymap_quitDiff
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
-    endfor
+    call s:diffByFile(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffGoParent()
@@ -269,10 +246,10 @@ function! ZF_DirDiffQuitDiff()
     execute "normal! \<c-w>l"
     call s:askWrite()
 
-    while winnr('$') > 1
+    let tabnr = tabpagenr('$')
+    while exists('b:ownerDiffTab') && tabnr == tabpagenr('$')
         bd!
     endwhile
-    bd!
 
     execute 'normal! ' . ownerDiffTab . 'gt'
     call ZF_DirDiffUpdate()
@@ -383,17 +360,27 @@ endfunction
 
 " ============================================================
 function! s:diffByFile(fileLeft, fileRight)
-    vsplit
+    let ownerDiffTab = tabpagenr()
 
-    execute "normal! \<c-w>h"
-    execute 'edit ' . a:fileLeft
+    execute 'tabedit ' . a:fileLeft
     diffthis
+    call s:setupFileDiff(ownerDiffTab)
+
+    vsplit
 
     execute "normal! \<c-w>l"
     execute 'edit ' . a:fileRight
     diffthis
+    call s:setupFileDiff(ownerDiffTab)
 
     execute "normal! \<c-w>="
+endfunction
+function! s:setupFileDiff(ownerDiffTab)
+    let b:ownerDiffTab = a:ownerDiffTab
+
+    for k in g:ZFDirDiffKeymap_quitDiff
+        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
+    endfor
 endfunction
 
 function! s:getItem()
