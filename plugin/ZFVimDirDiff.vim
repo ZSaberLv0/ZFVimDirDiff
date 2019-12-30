@@ -379,7 +379,7 @@ function! s:setupFileDiff(ownerDiffTab)
     let b:ownerDiffTab = a:ownerDiffTab
 
     for k in g:ZFDirDiffKeymap_quitDiff
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
     endfor
 endfunction
 
@@ -485,16 +485,16 @@ function! s:setupDiffItem(data, parent, indentText, indent, iLine, isLeft, hidde
     let incLine = 0
     if len(b:bufdata) <= get(g:, 'ZFDirDiffHLMaxLine', 200)
         let markMap = get(g:, 'ZFDirDiffMarkMap', {
-                   \   'T_DIR'                : ['', ''],
-                   \   'T_SAME'               : ['', ''],
-                   \   'T_DIFF'               : ['', ''],
-                   \   'T_DIR_LEFT'           : ['', ''],
-                   \   'T_DIR_RIGHT'          : ['', ''],
-                   \   'T_FILE_LEFT'          : ['', ''],
-                   \   'T_FILE_RIGHT'         : ['', ''],
-                   \   'T_CONFLICT_DIR_LEFT'  : ['', ''],
-                   \   'T_CONFLICT_DIR_RIGHT' : ['', ''],
-                   \ })
+                    \   'T_DIR'                : ['', ''],
+                    \   'T_SAME'               : ['', ''],
+                    \   'T_DIFF'               : ['', ''],
+                    \   'T_DIR_LEFT'           : ['', ''],
+                    \   'T_DIR_RIGHT'          : ['', ''],
+                    \   'T_FILE_LEFT'          : ['', ''],
+                    \   'T_FILE_RIGHT'         : ['', ''],
+                    \   'T_CONFLICT_DIR_LEFT'  : ['', ''],
+                    \   'T_CONFLICT_DIR_RIGHT' : ['', ''],
+                    \ })
     else
         let markMap = get(g:, 'ZFDirDiffMarkMap', {
                     \   'T_DIR'                : ['    ', '    '],
@@ -569,43 +569,43 @@ endfunction
 
 function! s:setupDiffBuffer_keymap()
     for k in g:ZFDirDiffKeymap_update
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffUpdate()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffUpdate()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_open
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffOpen()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffOpen()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_goParent
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_diffThisDir
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDiffThisDir()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDiffThisDir()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_diffParentDir
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_quit
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_nextDiff
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffNextDiff()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffNextDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_prevDiff
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToThere
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_deleteFile
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getPath
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getFullPath
-        execute 'nmap <buffer> ' . k . ' :call ZF_DirDiffGetFullPath()<cr>'
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGetFullPath()<cr>'
     endfor
 endfunction
 
