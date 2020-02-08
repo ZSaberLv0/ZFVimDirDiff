@@ -147,6 +147,10 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
 
     " use temp file to solve encoding issue
     let tmpFile = tempname()
+    if has("win32unix") && executable('cygpath')
+        " cygwin's path may not work for some external command
+        let tmpFile = system('cygpath -m "' . tmpFile . '"')
+    endif
     let cmd = '!' . g:ZFDirDiffLangString . 'diff'
     let cmdarg = ' -r --brief'
 
