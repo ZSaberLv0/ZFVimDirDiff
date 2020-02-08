@@ -146,11 +146,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     endif
 
     " use temp file to solve encoding issue
-    let tmpFile = tempname()
-    if has("win32unix") && executable('cygpath')
-        " cygwin's path may not work for some external command
-        let tmpFile = system('cygpath -m "' . tmpFile . '"')
-    endif
+    let tmpFile = s:tempname()
     let cmd = '!' . g:ZFDirDiffLangString . 'diff'
     let cmdarg = ' -r --brief'
 
@@ -357,5 +353,14 @@ function! s:sortResult(data)
     for item in a:data
         call s:sortResult(item.children)
     endfor
+endfunction
+
+function! s:tempname()
+    " cygwin's path may not work for some external command
+    if has("win32unix") && executable('cygpath')
+        return system('cygpath -m "' . tempname() . '"')
+    else
+        return tempname()
+    endif
 endfunction
 
