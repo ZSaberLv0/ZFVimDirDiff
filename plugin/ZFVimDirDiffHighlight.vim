@@ -11,7 +11,7 @@ endfunction
 " use matchadd() and save/restore CursorLine highlight automatically
 function! ZF_DirDiffHL_resetHL_matchaddWithCursorLineHL()
     call ZF_DirDiffHL_resetHL_matchadd()
-    if !b:isLeft
+    if !b:ZFDirDiff_isLeft
         return
     endif
 
@@ -82,7 +82,7 @@ endfunction
 function! ZF_DirDiffHL_addHL_matchadd(group, line)
     if get(g:, 'ZF_DirDiffHL_addHL_matchadd_useExactHL', 1)
         let line = getline(a:line)
-        if a:line >= b:iLineOffset + 1 && a:line < len(b:bufdata) + b:iLineOffset + 1
+        if a:line >= b:ZFDirDiff_iLineOffset + 1 && a:line < len(b:ZFDirDiff_bufdata) + b:ZFDirDiff_iLineOffset + 1
             let line = substitute(line, '/', '', 'g')
             let indent = matchstr(line, '^ *')
             call matchadd(a:group, ''
