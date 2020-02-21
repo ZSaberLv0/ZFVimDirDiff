@@ -221,12 +221,18 @@ function! ZF_DirDiffQuit()
     let Fn_resetHL=function(g:ZFDirDiffHLFunc_resetHL)
     let ownerTab = b:ownerTab
 
-    while winnr('$') > 0
+    " note winnr('$') always equal to 1 for last window
+    while winnr('$') > 1
         call Fn_resetHL()
         set nocursorbind
         set noscrollbind
         bd!
     endwhile
+    " delete again to delete last window
+    call Fn_resetHL()
+    set nocursorbind
+    set noscrollbind
+    bd!
 
     execute 'normal! ' . ownerTab . 'gt'
 endfunction
