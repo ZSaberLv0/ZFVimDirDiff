@@ -613,9 +613,9 @@ endfunction
 
 function! s:setupDiffBuffer_statusline()
     if b:ZFDirDiff_isLeft
-        execute 'setlocal statusline=[LEFT]:\ ' . fnamemodify(b:ZFDirDiff_fileLeft, ':.') . '/'
+        execute 'setlocal statusline=[LEFT]:\ ' . substitute(fnamemodify(b:ZFDirDiff_fileLeft, ':.'), ' ', '\\ ', 'g') . '/'
     else
-        execute 'setlocal statusline=[RIGHT]:\ ' . fnamemodify(b:ZFDirDiff_fileRight, ':.') . '/'
+        execute 'setlocal statusline=[RIGHT]:\ ' . substitute(fnamemodify(b:ZFDirDiff_fileRight, ':.'), ' ', '\\ ', 'g') . '/'
     endif
     setlocal statusline+=%=%k
     setlocal statusline+=\ %3p%%

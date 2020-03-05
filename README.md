@@ -29,6 +29,20 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     :ZFDirDiff pathA pathB
     ```
 
+    if path contains spaces:
+
+    ```
+    :ZFDirDiff path\ A path\ B
+    :call ZF_DirDiff("path A", "path B")
+    ```
+
+1. you may also use it as command line diff tool
+
+    ```
+    vim -c 'call ZF_DirDiff("path A", "path B")'
+    sh ZFDirDiff.sh "path A" "path B"
+    ```
+
 1. within the diff window:
 
     * use `DD` to update the diff result
