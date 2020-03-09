@@ -92,16 +92,16 @@ if !exists('g:ZFDirDiffKeymap_open')
     let g:ZFDirDiffKeymap_open = ['<cr>', 'o']
 endif
 if !exists('g:ZFDirDiffKeymap_goParent')
-    let g:ZFDirDiffKeymap_goParent = ['u']
+    let g:ZFDirDiffKeymap_goParent = ['U']
 endif
 if !exists('g:ZFDirDiffKeymap_diffThisDir')
-    let g:ZFDirDiffKeymap_diffThisDir = ['cd', 'O']
+    let g:ZFDirDiffKeymap_diffThisDir = ['cd']
 endif
 if !exists('g:ZFDirDiffKeymap_diffParentDir')
-    let g:ZFDirDiffKeymap_diffParentDir = ['U']
+    let g:ZFDirDiffKeymap_diffParentDir = ['u']
 endif
 if !exists('g:ZFDirDiffKeymap_quit')
-    let g:ZFDirDiffKeymap_quit = ['q']
+    let g:ZFDirDiffKeymap_quit = ['q', 'x', 'X']
 endif
 if !exists('g:ZFDirDiffKeymap_quitDiff')
     let g:ZFDirDiffKeymap_quitDiff = ['q']
