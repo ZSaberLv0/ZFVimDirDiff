@@ -215,3 +215,50 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         highlight! link ZFDirDiffHL_ConflictFile WarningMsg
         ```
 
+
+# FAQ
+
+* Q: how to use under special shell config
+
+    A: when used under special shell config,
+    especially `sh` under Windows,
+    here's a list of configs you should concern:
+
+    * `let g:ZFDirDiffLangString = 'LANG= '`
+
+        by default, this value is set to `set LAND= && ` on Windows to suit `cmd.exe`
+
+        you may want to set this to suit your shell, e.g.
+
+        ```
+        let g:ZFDirDiffLangString = 'LANG= '
+        ```
+
+    * `ZF_DirDiffTempname()`
+
+        by default, this function use vim's builtin `tempname()`
+
+        however, it may result to `C:\xxx\tmp` on Windows,
+        which can not be read by `bash`,
+        you may want to supply your own function to suit your shell, e.g.
+
+        ```
+        function! ZF_DirDiffTempname()
+            return '/xxx/tmp'
+        endfunction
+        ```
+
+    * `ZF_DirDiffShellEnv_pathFormat(path)`
+
+        by default, this function use `fnamemodify(path, ':.')`
+        to make the path relative to `getcwd()`
+
+        if your shell can't read with it,
+        you may supply your own, e.g.
+
+        ```
+        function! ZF_DirDiffShellEnv_pathFormat(path)
+            return substitute(system('cygpath -m "' . a:path . '"'), '[\r\n]', '', 'g')
+        endfunction
+        ```
+

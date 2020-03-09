@@ -74,10 +74,25 @@ if !exists('g:ZFDirDiffLang')
 endif
 if !exists('g:ZFDirDiffLangString')
     if has('win32') && !has('win32unix')
-      let g:ZFDirDiffLangString = 'SET LANG=' . g:ZFDirDiffLang . ' && '
+        let g:ZFDirDiffLangString = 'SET LANG=' . g:ZFDirDiffLang . ' && '
     else
-      let g:ZFDirDiffLangString = 'LANG=' . g:ZFDirDiffLang . ' '
+        let g:ZFDirDiffLangString = 'LANG=' . g:ZFDirDiffLang . ' '
     endif
+endif
+if !exists('*ZF_DirDiffTempname')
+    function! ZF_DirDiffTempname()
+        " cygwin's path may not work for some external command
+        if has("win32unix") && executable('cygpath')
+            return substitute(system('cygpath -m "' . tempname() . '"'), '[\r\n]', '', 'g')
+        else
+            return tempname()
+        endif
+    endfunction
+endif
+if !exists('*ZF_DirDiffShellEnv_pathFormat')
+    function! ZF_DirDiffShellEnv_pathFormat(path)
+        return fnamemodify(a:path, ':.')
+    endfunction
 endif
 
 " sort function
@@ -128,8 +143,8 @@ endfunction
 "
 " all type: {T_DIR,T_SAME,T_DIFF,T_DIR_LEFT,T_DIR_RIGHT,T_FILE_LEFT,T_FILE_RIGHT,T_CONFLICT_DIR_LEFT,T_CONFLICT_DIR_RIGHT}
 function! ZF_DirDiffCore(fileLeft, fileRight)
-    let fileLeft = ZF_DirDiffPathFormat(a:fileLeft)
-    let fileRight = ZF_DirDiffPathFormat(a:fileRight)
+    let fileLeft = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileLeft))
+    let fileRight = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileRight))
 
     if fileLeft == fileRight
         redraw! | echo '[ZFDirDiff] same input'
@@ -146,7 +161,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     endif
 
     " use temp file to solve encoding issue
-    let tmpFile = s:tempname()
+    let tmpFile = ZF_DirDiffTempname()
     let cmd = '!' . g:ZFDirDiffLangString . 'diff'
     let cmdarg = ' -r --brief'
 
@@ -173,6 +188,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     silent! execute cmd
     let error = v:shell_error
     if error == 0
+        silent! call delete(tmpFile)
         redraw! | echo '[ZFDirDiff] no diff found'
         return []
     elseif error != 1
@@ -181,6 +197,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
         for msg in readfile(tmpFile)
             echo '    ' . msg
         endfor
+        silent! call delete(tmpFile)
         return []
     endif
 
@@ -191,6 +208,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     call s:sortResult(data)
     redraw!
     echo '[ZFDirDiff] diff complete'
+    silent! call delete(tmpFile)
     return data
 endfunction
 
@@ -353,14 +371,5 @@ function! s:sortResult(data)
     for item in a:data
         call s:sortResult(item.children)
     endfor
-endfunction
-
-function! s:tempname()
-    " cygwin's path may not work for some external command
-    if has("win32unix") && executable('cygpath')
-        return substitute(system('cygpath -m "' . tempname() . '"'), '[\r\n]', '', 'g')
-    else
-        return tempname()
-    endif
 endfunction
 
