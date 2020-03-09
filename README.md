@@ -60,6 +60,57 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         to quickly move between file tree node
 
 
+# autocmds and buffer local vars
+
+* `ZFDirDiff_BufferEnter`
+
+    called when enter dir diff buffer (each time for left and right window buffer)
+
+    buffer local vars:
+
+    * `b:ZFDirDiff_ownerTab` : `tabpagenr()` that open the diff task
+    * `b:ZFDirDiff_bufdata`
+
+        ```
+        [{
+            'level' : 'indent level of item, 1 for first one',
+            'path' : 'path relative to b:ZFDirDiff_fileLeft/b:ZFDirDiff_fileRight',
+            'name' : 'file name',
+            'type' : 'see below',
+            'data' : {
+                'name' : '',
+                'type' : '',
+                'children' : [...],
+            },
+        }]
+        ```
+
+    * `b:ZFDirDiff_fileLeft` : abs path of left dir
+    * `b:ZFDirDiff_fileRight` : abs path of right dir
+    * `b:ZFDirDiff_isLeft` : true if cur buffer is left
+    * `b:ZFDirDiff_iLineOffset` : first item's offset accorrding to header lines
+
+    types:
+
+    * `T_DIR` : left and right are both dirs
+    * `T_SAME` : left and right are same files
+    * `T_DIFF` : left and right are diff files
+    * `T_DIR_LEFT` : only left exists, and it's dir
+    * `T_DIR_RIGHT` : only right exists, and it's dir
+    * `T_FILE_LEFT` : only left exists, and it's file
+    * `T_FILE_RIGHT` : only right exists, and it's file
+    * `T_CONFLICT_DIR_LEFT` : left is dir and right is file
+    * `T_CONFLICT_DIR_RIGHT` : left is file and right is dir
+
+* `ZFDirDiff_FileEnter`
+
+    called when enter file diff buffer (each time for left and right window buffer)
+
+    buffer local vars:
+
+    * `b:ZFDirDiff_ownerDiffTab` : `tabpagenr()` of owner diff buffer that open this file diff task
+
+
 # configs
 
 * for core logic:

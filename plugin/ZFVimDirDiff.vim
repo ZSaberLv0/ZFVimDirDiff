@@ -15,12 +15,46 @@ if !exists('g:ZFDirDiffUI_tabstop')
     let g:ZFDirDiffUI_tabstop = 2
 endif
 
+" autocmd
+augroup ZF_DirDiff_augroup
+    autocmd!
+    " buffer vars:
+    "   b:ZFDirDiff_ownerTab : `tabpagenr()` that open the diff task
+    "   b:ZFDirDiff_bufdata : [{
+    "       'level' : '',
+    "       'path' : '',
+    "       'name' : '',
+    "       'type' : '',
+    "       'data' : '',
+    "   }]
+    "   b:ZFDirDiff_fileLeft
+    "   b:ZFDirDiff_fileRight
+    "   b:ZFDirDiff_isLeft
+    "   b:ZFDirDiff_iLineOffset
+    autocmd User ZFDirDiff_BufferEnter silent
+    " buffer vars:
+    "   b:ZFDirDiff_ownerDiffTab
+    autocmd User ZFDirDiff_FileEnter silent
+augroup END
+
 " function name to get the header text
 "     YourFunc(isLeft, fileLeft, fileRight)
 " return a list of string
 if !exists('g:ZFDirDiffUI_headerTextFunc')
-    let g:ZFDirDiffUI_headerTextFunc = 's:headerText'
+    let g:ZFDirDiffUI_headerTextFunc = 'ZF_DirDiff_headerText'
 endif
+function! ZF_DirDiff_headerText(isLeft, fileLeft, fileRight)
+    let text = []
+    if a:isLeft
+        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':~') . '/')
+        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':.') . '/')
+    else
+        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':~') . '/')
+        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':.') . '/')
+    endif
+    call add(text, '------------------------------------------------------------')
+    return text
+endfunction
 
 " whether need to sync same file
 if !exists('g:ZFDirDiffUI_syncSameFile')
@@ -383,6 +417,8 @@ function! s:setupFileDiff(ownerDiffTab)
     for k in g:ZFDirDiffKeymap_quitDiff
         execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
     endfor
+
+    doautocmd User ZFDirDiff_BufferEnter
 endfunction
 
 function! s:getItem()
@@ -420,18 +456,6 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
     execute "normal! gg0"
 endfunction
 
-function! s:headerText(isLeft, fileLeft, fileRight)
-    let text = []
-    if a:isLeft
-        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':~') . '/')
-        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':.') . '/')
-    else
-        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':~') . '/')
-        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':.') . '/')
-    endif
-    call add(text, '------------------------------------------------------------')
-    return text
-endfunction
 function! s:setupDiffUI(ownerTab, fileLeft, fileRight, data, isLeft)
     " [
     "   {
@@ -567,6 +591,8 @@ function! s:setupDiffBuffer()
     setlocal nomodifiable
     set scrollbind
     set cursorbind
+
+    doautocmd User ZFDirDiff_FileEnter
 endfunction
 
 function! s:setupDiffBuffer_keymap()
