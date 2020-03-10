@@ -18,8 +18,8 @@ endif
 " autocmd
 augroup ZF_DirDiff_augroup
     autocmd!
-    autocmd User ZFDirDiff_BufferEnter silent
-    autocmd User ZFDirDiff_FileEnter silent
+    autocmd User ZFDirDiff_DirDiffEnter silent
+    autocmd User ZFDirDiff_FileDiffEnter silent
 augroup END
 
 " function name to get the header text
@@ -403,7 +403,7 @@ function! s:setupFileDiff(ownerDiffTab)
         execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuitDiff()<cr>'
     endfor
 
-    doautocmd User ZFDirDiff_BufferEnter
+    doautocmd User ZFDirDiff_FileDiffEnter
 endfunction
 
 function! s:getItem()
@@ -579,7 +579,7 @@ function! s:setupDiffBuffer()
     set scrollbind
     set cursorbind
 
-    doautocmd User ZFDirDiff_FileEnter
+    doautocmd User ZFDirDiff_DirDiffEnter
 endfunction
 
 function! s:setupDiffBuffer_keymap()

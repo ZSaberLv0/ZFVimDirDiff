@@ -62,7 +62,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
 # autocmds and buffer local vars
 
-* `ZFDirDiff_BufferEnter`
+* `ZFDirDiff_DirDiffEnter`
 
     called when enter dir diff buffer (each time for left and right window buffer)
 
@@ -104,7 +104,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `T_CONFLICT_DIR_LEFT` : left is dir and right is file
     * `T_CONFLICT_DIR_RIGHT` : left is file and right is dir
 
-* `ZFDirDiff_FileEnter`
+* `ZFDirDiff_FileDiffEnter`
 
     called when enter file diff buffer (each time for left and right window buffer)
 
