@@ -68,27 +68,48 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     buffer local vars:
 
-    * `b:ZFDirDiff_ownerTab` : `tabpagenr()` that open the diff task
-    * `b:ZFDirDiff_bufdata`
+    * `t:ZFDirDiff_ownerTab` : `tabpagenr()` that open the diff task
+    * `t:ZFDirDiff_fileLeft` : abs path of left dir
+    * `t:ZFDirDiff_fileRight` : abs path of right dir
+    * `t:ZFDirDiff_fileLeftOrig` : original path passed from param
+    * `t:ZFDirDiff_fileRightOrig` : original path passed from param
+    * `b:ZFDirDiff_data` : data return from `ZF_DirDiffCore()`
+
+        ```
+        [
+            {
+                'level' : 'depth of tree node, 0 for top most ones',
+                'path' : 'path relative to fileLeft/fileRight',
+                'name' : 'file or dir name, empty if fileLeft and fileRight is file',
+                'type' : '',
+                    // T_DIR: current node is dir and children has diff
+                    // T_SAME: current node is file and has no diff
+                    // T_DIFF: current node is file and has diff
+                    // T_DIR_LEFT: only left exists and it is dir
+                    // T_DIR_RIGHT: only right exists and it is dir
+                    // T_FILE_LEFT: only left exists and it is dir
+                    // T_FILE_RIGHT: only right exists and it is dir
+                    // T_CONFLICT_DIR_LEFT: left is dir and right is file
+                    // T_CONFLICT_DIR_RIGHT: left is file and right is dir
+                'children' : [
+                    ...
+                ],
+            },
+            ...
+        ]
+        ```
+
+    * `t:ZFDirDiff_dataUI` : list of each line for building UI
 
         ```
         [{
-            'level' : 'indent level of item, 1 for first one',
-            'path' : 'path relative to b:ZFDirDiff_fileLeft/b:ZFDirDiff_fileRight',
-            'name' : 'file name',
-            'type' : 'see below',
             'data' : {
-                'name' : '',
-                'type' : '',
-                'children' : [...],
+                // original data of t:ZFDirDiff_data
+                ...
             },
         }]
         ```
 
-    * `b:ZFDirDiff_fileLeft` : abs path of left dir
-    * `b:ZFDirDiff_fileRight` : abs path of right dir
-    * `b:ZFDirDiff_fileLeftOrig` : original path passed from param
-    * `b:ZFDirDiff_fileRightOrig` : original path passed from param
     * `b:ZFDirDiff_isLeft` : true if cur buffer is left
     * `b:ZFDirDiff_iLineOffset` : first item's offset accorrding to header lines
 
@@ -110,7 +131,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     buffer local vars:
 
-    * `b:ZFDirDiff_ownerDiffTab` : `tabpagenr()` of owner diff buffer that open this file diff task
+    * `t:ZFDirDiff_ownerDiffTab` : `tabpagenr()` of owner diff buffer that open this file diff task
 
 
 # configs
@@ -196,7 +217,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         * `let g:ZFDirDiffKeymap_diffParentDir = ['u']`
         * `let g:ZFDirDiffKeymap_markToDiff = ['DM']`
         * `let g:ZFDirDiffKeymap_quit = ['q']`
-        * `let g:ZFDirDiffKeymap_quitDiff = ['q']`
+        * `let g:ZFDirDiffKeymap_quitFileDiff = ['q']`
         * `let g:ZFDirDiffKeymap_nextDiff = [']c', 'DJ']`
         * `let g:ZFDirDiffKeymap_prevDiff = ['[c', 'DK']`
         * `let g:ZFDirDiffKeymap_syncToHere = ['do', 'DH']`

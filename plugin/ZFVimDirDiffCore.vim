@@ -123,6 +123,8 @@ endfunction
 " return:
 "   [
 "       {
+"           'level' : 'depth of tree node, 0 for top most ones',
+"           'path' : 'path relative to fileLeft/fileRight',
 "           'name' : 'file or dir name, empty if fileLeft and fileRight is file',
 "           'type' : '',
 "               // T_DIR: current node is dir and children has diff
@@ -149,6 +151,8 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     " both file, always treat as diff
     if filereadable(fileLeft) && filereadable(fileRight)
         return [{
+                    \   'level' : 0,
+                    \   'path' : '',
                     \   'name' : '',
                     \   'type' : 'T_DIFF',
                     \   'children' : [],
@@ -320,10 +324,15 @@ function! s:addDiff(data, path, type)
 
     while nameIndex < len(nameList)
         let newItem = {
+                    \   'level' : nameIndex,
+                    \   'path' : '/',
                     \   'name' : nameList[nameIndex],
                     \   'type' : 'T_DIR',
                     \   'children' : [],
                     \ }
+        if nameIndex > 0
+            let newItem.path = '/' . join(nameList[0:(nameIndex-1)], '/') . '/' . nameList[nameIndex]
+        endif
         if nameIndex == len(nameList) - 1
             let newItem.type = a:type
         else
