@@ -85,8 +85,11 @@ endif
 if !exists('g:ZFDirDiffKeymap_diffParentDir')
     let g:ZFDirDiffKeymap_diffParentDir = ['u']
 endif
+if !exists('g:ZFDirDiffKeymap_markToDiff')
+    let g:ZFDirDiffKeymap_markToDiff = ['DM']
+endif
 if !exists('g:ZFDirDiffKeymap_quit')
-    let g:ZFDirDiffKeymap_quit = ['q', 'x', 'X']
+    let g:ZFDirDiffKeymap_quit = ['q']
 endif
 if !exists('g:ZFDirDiffKeymap_quitDiff')
     let g:ZFDirDiffKeymap_quitDiff = ['q']
@@ -125,6 +128,7 @@ highlight link ZFDirDiffHL_FileOnlyHere DiffAdd
 highlight link ZFDirDiffHL_FileOnlyThere Normal
 highlight link ZFDirDiffHL_ConflictDir ErrorMsg
 highlight link ZFDirDiffHL_ConflictFile WarningMsg
+highlight link ZFDirDiffHL_MarkToDiff Cursor
 
 " custom highlight function
 if !exists('g:ZFDirDiffHLFunc_resetHL')
@@ -233,6 +237,44 @@ function! ZF_DirDiffDiffParentDir()
     let fileLeft = b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileLeftOrig, ':h') : b:ZFDirDiff_fileLeftOrig
     let fileRight = !b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileRightOrig, ':h') : b:ZFDirDiff_fileRightOrig
     call ZF_DirDiffQuit()
+    call ZF_DirDiff(fileLeft, fileRight)
+endfunction
+
+function! ZF_DirDiffMarkToDiff()
+    let index = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
+    if index < 0
+                \ || index >= len(b:ZFDirDiff_bufdata)
+                \ || (b:ZFDirDiff_isLeft && index(['T_DIR_RIGHT', 'T_FILE_RIGHT'], b:ZFDirDiff_bufdata[index]['type']) >= 0)
+                \ || (!b:ZFDirDiff_isLeft && index(['T_DIR_LEFT', 'T_FILE_LEFT'], b:ZFDirDiff_bufdata[index]['type']) >= 0)
+        echo '[ZFDirDiff] no file under cursor'
+        return
+    endif
+
+    let parent = b:ZFDirDiff_isLeft ? b:ZFDirDiff_fileLeftOrig : b:ZFDirDiff_fileRightOrig
+    let data = b:ZFDirDiff_bufdata[index]
+
+    if !exists('t:ZFDirDiff_markToDiff')
+        let t:ZFDirDiff_markToDiff = {
+                    \   'isLeft' : b:ZFDirDiff_isLeft,
+                    \   'index' : index,
+                    \   'parent' : parent,
+                    \   'data' : data,
+                    \ }
+        call s:ZF_DirDiff_redraw()
+        redraw | echo '[ZFDirDiff] mark again to diff with: ' . parent . '/' . data['path']
+        return
+    endif
+
+    if t:ZFDirDiff_markToDiff['isLeft'] == b:ZFDirDiff_isLeft && t:ZFDirDiff_markToDiff['index'] == index
+        unlet t:ZFDirDiff_markToDiff
+        call s:ZF_DirDiff_redraw()
+        return
+    endif
+
+    let fileLeft = t:ZFDirDiff_markToDiff['parent'] . '/' . t:ZFDirDiff_markToDiff['data']['path']
+    let fileRight = parent . '/' . b:ZFDirDiff_bufdata[index]['path']
+    unlet t:ZFDirDiff_markToDiff
+    call s:ZF_DirDiff_redraw()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
 
@@ -431,6 +473,11 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
 
     tabnew
 
+    let t:ZFDirDiff_ownerTab = ownerTab
+    let t:ZFDirDiff_fileLeft = a:fileLeft
+    let t:ZFDirDiff_fileRight = a:fileRight
+    let t:ZFDirDiff_data = a:data
+
     vsplit
     call s:setupDiffUI(ownerTab, a:fileLeft, a:fileRight, a:data, 1)
 
@@ -438,7 +485,24 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
     enew
     call s:setupDiffUI(ownerTab, a:fileLeft, a:fileRight, a:data, 0)
 
-    execute "normal! gg0"
+    execute 'normal! gg0'
+    if b:ZFDirDiff_iLineOffset > 0
+        execute 'normal! ' . b:ZFDirDiff_iLineOffset . 'j'
+    endif
+endfunction
+
+function! s:ZF_DirDiff_redraw()
+    if !exists('t:ZFDirDiff_ownerTab')
+        return
+    endif
+    let oldState = winsaveview()
+
+    execute "normal! \<c-w>h"
+    call s:setupDiffUI(t:ZFDirDiff_ownerTab, t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, t:ZFDirDiff_data, 1)
+    execute "normal! \<c-w>l"
+    call s:setupDiffUI(t:ZFDirDiff_ownerTab, t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, t:ZFDirDiff_data, 0)
+
+    call winrestview(oldState)
 endfunction
 
 function! s:setupDiffUI(ownerTab, fileLeft, fileRight, data, isLeft)
@@ -571,6 +635,9 @@ function! s:setupDiffBuffer_keymap()
     for k in g:ZFDirDiffKeymap_diffParentDir
         execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
     endfor
+    for k in g:ZFDirDiffKeymap_markToDiff
+        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffMarkToDiff()<cr>'
+    endfor
     for k in g:ZFDirDiffKeymap_quit
         execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
     endfor
@@ -626,10 +693,16 @@ function! s:setupDiffBuffer_highlight()
         call Fn_addHL('ZFDirDiffHL_Title', i)
     endfor
 
-    let iLine = 1
-    for item in b:ZFDirDiff_bufdata
-        let line = b:ZFDirDiff_iLineOffset + iLine
-        let iLine += 1
+    for index in range(len(b:ZFDirDiff_bufdata))
+        let item = b:ZFDirDiff_bufdata[index]
+        let line = b:ZFDirDiff_iLineOffset + index + 1
+
+        if exists('t:ZFDirDiff_markToDiff')
+                    \ && b:ZFDirDiff_isLeft == t:ZFDirDiff_markToDiff['isLeft']
+                    \ && index == t:ZFDirDiff_markToDiff['index']
+            call Fn_addHL('ZFDirDiffHL_MarkToDiff', line)
+            continue
+        endif
 
         if 0
         elseif item.type == 'T_DIR'

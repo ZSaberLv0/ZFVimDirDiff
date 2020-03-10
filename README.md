@@ -191,9 +191,10 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * keymaps
         * `let g:ZFDirDiffKeymap_update = ['DD']`
         * `let g:ZFDirDiffKeymap_open = ['<cr>', 'o']`
-        * `let g:ZFDirDiffKeymap_goParent = ['u']`
-        * `let g:ZFDirDiffKeymap_diffThisDir = ['cd', 'O']`
-        * `let g:ZFDirDiffKeymap_diffParentDir = ['U']`
+        * `let g:ZFDirDiffKeymap_goParent = ['U']`
+        * `let g:ZFDirDiffKeymap_diffThisDir = ['cd']`
+        * `let g:ZFDirDiffKeymap_diffParentDir = ['u']`
+        * `let g:ZFDirDiffKeymap_markToDiff = ['DM']`
         * `let g:ZFDirDiffKeymap_quit = ['q']`
         * `let g:ZFDirDiffKeymap_quitDiff = ['q']`
         * `let g:ZFDirDiffKeymap_nextDiff = [']c', 'DJ']`
@@ -206,15 +207,16 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * highlight
 
         ```
-        highlight! link ZFDirDiffHL_Title Title
-        highlight! link ZFDirDiffHL_Dir Directory
-        highlight! link ZFDirDiffHL_Diff DiffText
-        highlight! link ZFDirDiffHL_DirOnlyHere DiffAdd
-        highlight! link ZFDirDiffHL_DirOnlyThere Normal
-        highlight! link ZFDirDiffHL_FileOnlyHere DiffAdd
-        highlight! link ZFDirDiffHL_FileOnlyThere Normal
-        highlight! link ZFDirDiffHL_ConflictDir ErrorMsg
-        highlight! link ZFDirDiffHL_ConflictFile WarningMsg
+        highlight link ZFDirDiffHL_Title Title
+        highlight link ZFDirDiffHL_Dir Directory
+        highlight link ZFDirDiffHL_Diff DiffText
+        highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
+        highlight link ZFDirDiffHL_DirOnlyThere Normal
+        highlight link ZFDirDiffHL_FileOnlyHere DiffAdd
+        highlight link ZFDirDiffHL_FileOnlyThere Normal
+        highlight link ZFDirDiffHL_ConflictDir ErrorMsg
+        highlight link ZFDirDiffHL_ConflictFile WarningMsg
+        highlight link ZFDirDiffHL_MarkToDiff Cursor
         ```
 
 
