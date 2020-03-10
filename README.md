@@ -47,15 +47,18 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     * use `DD` to update the diff result
     * use `o` or `<cr>` to diff current node
-    * use `u` to go parent for both side, `U` to go parent of this side,
-        `cd` or `O` to make current dir as diff root dir
+    * use `cd` to make current dir as diff root dir,
+        `u` to go up for current side,
+        and `U` to go up for both side
     * use `]c` or `DJ` to move to next diff, `[c` or `DK` to prev diff
     * use `do` or `DH` to sync from another side to current side,
         `dp` or `DL` to sync from current side to another side
+    * use `DM` to mark current file,
+        and `DM` again on another file to diff these two files
     * use `dd` to delete node under cursor
     * use `p` to copy the node's path, and `P` for the node's full path
     * use `q` to exit diff
-    * recommend to use [ZSaberLv0/ZFVimIndentMove](https://github.com/ZSaberLv0/ZFVimIndentMove)
+    * you may also want to use [ZSaberLv0/ZFVimIndentMove](https://github.com/ZSaberLv0/ZFVimIndentMove)
         or [easymotion/vim-easymotion](https://github.com/easymotion/vim-easymotion)
         to quickly move between file tree node
 
