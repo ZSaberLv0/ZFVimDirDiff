@@ -97,9 +97,9 @@ function! s:syncConfirm(hint, fileLeft, fileRight, path, dirFixLeft, dirFixRight
     redraw!
 
     echo '----------------------------------------'
-    echo '[LEFT]     : ' . fnamemodify(a:fileLeft, ':.')
+    echo '[LEFT]     : ' . ZF_DirDiffPathFormat(a:fileLeft, ':.')
     echo '    ' . a:path . a:dirFixLeft
-    echo '[RIGHT]    : ' . fnamemodify(a:fileRight, ':.')
+    echo '[RIGHT]    : ' . ZF_DirDiffPathFormat(a:fileRight, ':.')
     echo '    ' . a:path . a:dirFixRight
     echo '----------------------------------------'
     echo "\n"
@@ -112,9 +112,9 @@ function! s:syncConfirmRemove(hint, parent, path, isLeft)
 
     echo '----------------------------------------'
     if a:isLeft
-        echo '[LEFT]     : ' . fnamemodify(a:parent, ':.')
+        echo '[LEFT]     : ' . ZF_DirDiffPathFormat(a:parent, ':.')
     else
-        echo '[RIGHT]    : ' . fnamemodify(a:parent, ':.')
+        echo '[RIGHT]    : ' . ZF_DirDiffPathFormat(a:parent, ':.')
     endif
     echo '    ' . a:path
     echo '----------------------------------------'

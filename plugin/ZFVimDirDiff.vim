@@ -18,22 +18,7 @@ endif
 " autocmd
 augroup ZF_DirDiff_augroup
     autocmd!
-    " buffer vars:
-    "   b:ZFDirDiff_ownerTab : `tabpagenr()` that open the diff task
-    "   b:ZFDirDiff_bufdata : [{
-    "       'level' : '',
-    "       'path' : '',
-    "       'name' : '',
-    "       'type' : '',
-    "       'data' : '',
-    "   }]
-    "   b:ZFDirDiff_fileLeft
-    "   b:ZFDirDiff_fileRight
-    "   b:ZFDirDiff_isLeft
-    "   b:ZFDirDiff_iLineOffset
     autocmd User ZFDirDiff_BufferEnter silent
-    " buffer vars:
-    "   b:ZFDirDiff_ownerDiffTab
     autocmd User ZFDirDiff_FileEnter silent
 augroup END
 
@@ -43,14 +28,14 @@ augroup END
 if !exists('g:ZFDirDiffUI_headerTextFunc')
     let g:ZFDirDiffUI_headerTextFunc = 'ZF_DirDiff_headerText'
 endif
-function! ZF_DirDiff_headerText(isLeft, fileLeft, fileRight)
+function! ZF_DirDiff_headerText()
     let text = []
-    if a:isLeft
-        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':~') . '/')
-        call add(text, '[LEFT]: ' . fnamemodify(a:fileLeft, ':.') . '/')
+    if b:ZFDirDiff_isLeft
+        call add(text, '[LEFT]: ' . ZF_DirDiffPathFormat(b:ZFDirDiff_fileLeft, ':~') . '/')
+        call add(text, '[LEFT]: ' . ZF_DirDiffPathFormat(b:ZFDirDiff_fileLeft, ':.') . '/')
     else
-        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':~') . '/')
-        call add(text, '[RIGHT]: ' . fnamemodify(a:fileRight, ':.') . '/')
+        call add(text, '[RIGHT]: ' . ZF_DirDiffPathFormat(b:ZFDirDiff_fileRight, ':~') . '/')
+        call add(text, '[RIGHT]: ' . ZF_DirDiffPathFormat(b:ZFDirDiff_fileRight, ':.') . '/')
     endif
     call add(text, '------------------------------------------------------------')
     return text
@@ -172,8 +157,8 @@ function! ZF_DirDiffUpdate()
         return
     endif
 
-    let fileLeft = b:ZFDirDiff_fileLeft
-    let fileRight = b:ZFDirDiff_fileRight
+    let fileLeft = b:ZFDirDiff_fileLeftOrig
+    let fileRight = b:ZFDirDiff_fileRightOrig
     let isLeft = b:ZFDirDiff_isLeft
     let cursorPos = getpos('.')
 
@@ -193,8 +178,8 @@ function! ZF_DirDiffOpen()
         return
     endif
     if item.type == 'T_DIR'
-        let fileLeft = b:ZFDirDiff_fileLeft . item.path
-        let fileRight = b:ZFDirDiff_fileRight . item.path
+        let fileLeft = b:ZFDirDiff_fileLeftOrig . '/' . item.path
+        let fileRight = b:ZFDirDiff_fileRightOrig . '/' . item.path
         call ZF_DirDiffQuit()
         call ZF_DirDiff(fileLeft, fileRight)
         return
@@ -205,15 +190,15 @@ function! ZF_DirDiffOpen()
         return
     endif
 
-    let fileLeft = b:ZFDirDiff_fileLeft . '/' . item.path
-    let fileRight = b:ZFDirDiff_fileRight . '/' . item.path
+    let fileLeft = b:ZFDirDiff_fileLeftOrig . '/' . item.path
+    let fileRight = b:ZFDirDiff_fileRightOrig . '/' . item.path
 
     call s:diffByFile(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffGoParent()
-    let fileLeft = fnamemodify(b:ZFDirDiff_fileLeft, ':h')
-    let fileRight = fnamemodify(b:ZFDirDiff_fileRight, ':h')
+    let fileLeft = fnamemodify(b:ZFDirDiff_fileLeftOrig, ':h')
+    let fileRight = fnamemodify(b:ZFDirDiff_fileRightOrig, ':h')
     call ZF_DirDiffQuit()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
@@ -226,27 +211,27 @@ function! ZF_DirDiffDiffThisDir()
     endif
     if b:ZFDirDiff_isLeft
         if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], item.type) >= 0
-            let itemPath = fnamemodify(b:ZFDirDiff_fileLeft . item.path, ':p')
+            let itemPath = fnamemodify(b:ZFDirDiff_fileLeftOrig . '/' . item.path, ':p')
         else
-            let itemPath = fnamemodify(b:ZFDirDiff_fileLeft . item.path, ':p:h')
+            let itemPath = fnamemodify(b:ZFDirDiff_fileLeftOrig . '/' . item.path, ':p:h')
         endif
     else
         if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], item.type) >= 0
-            let itemPath = fnamemodify(b:ZFDirDiff_fileRight . item.path, ':p')
+            let itemPath = fnamemodify(b:ZFDirDiff_fileRightOrig . '/' . item.path, ':p')
         else
-            let itemPath = fnamemodify(b:ZFDirDiff_fileRight . item.path, ':p:h')
+            let itemPath = fnamemodify(b:ZFDirDiff_fileRightOrig . '/' . item.path, ':p:h')
         endif
     endif
 
-    let fileLeft = b:ZFDirDiff_isLeft ? itemPath : b:ZFDirDiff_fileLeft
-    let fileRight = !b:ZFDirDiff_isLeft ? itemPath : b:ZFDirDiff_fileRight
+    let fileLeft = b:ZFDirDiff_isLeft ? itemPath : b:ZFDirDiff_fileLeftOrig
+    let fileRight = !b:ZFDirDiff_isLeft ? itemPath : b:ZFDirDiff_fileRightOrig
     call ZF_DirDiffQuit()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffDiffParentDir()
-    let fileLeft = b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileLeft, ':h') : b:ZFDirDiff_fileLeft
-    let fileRight = !b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileRight, ':h') : b:ZFDirDiff_fileRight
+    let fileLeft = b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileLeftOrig, ':h') : b:ZFDirDiff_fileLeftOrig
+    let fileRight = !b:ZFDirDiff_isLeft ? fnamemodify(b:ZFDirDiff_fileRightOrig, ':h') : b:ZFDirDiff_fileRightOrig
     call ZF_DirDiffQuit()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
@@ -366,7 +351,7 @@ function! ZF_DirDiffGetPath()
         return
     endif
 
-    let path = fnamemodify(b:ZFDirDiff_isLeft ? b:ZFDirDiff_fileLeft : b:ZFDirDiff_fileRight, ':.') . item.path
+    let path = fnamemodify(b:ZFDirDiff_isLeft ? b:ZFDirDiff_fileLeftOrig : b:ZFDirDiff_fileRightOrig, ':.') . item.path
     if has('clipboard')
         let @*=path
     else
@@ -475,6 +460,8 @@ function! s:setupDiffUI(ownerTab, fileLeft, fileRight, data, isLeft)
     let b:ZFDirDiff_bufdata = []
     let b:ZFDirDiff_fileLeft = ZF_DirDiffPathFormat(a:fileLeft)
     let b:ZFDirDiff_fileRight = ZF_DirDiffPathFormat(a:fileRight)
+    let b:ZFDirDiff_fileLeftOrig = substitute(substitute(a:fileLeft, '\\', '/', 'g'), '/\+$', '', 'g')
+    let b:ZFDirDiff_fileRightOrig = substitute(substitute(a:fileRight, '\\', '/', 'g'), '/\+$', '', 'g')
     let b:ZFDirDiff_isLeft = a:isLeft
     let b:ZFDirDiff_iLineOffset = 0
 
@@ -489,7 +476,7 @@ function! s:setupDiffUI(ownerTab, fileLeft, fileRight, data, isLeft)
 
     " header
     let Fn_headerText = function(g:ZFDirDiffUI_headerTextFunc)
-    let headerText = Fn_headerText(a:isLeft, b:ZFDirDiff_fileLeft, b:ZFDirDiff_fileRight)
+    let headerText = Fn_headerText()
     let b:ZFDirDiff_iLineOffset = len(headerText)
     for i in range(b:ZFDirDiff_iLineOffset)
         call setline(i + 1, headerText[i])
@@ -639,10 +626,15 @@ endfunction
 
 function! s:setupDiffBuffer_statusline()
     if b:ZFDirDiff_isLeft
-        execute 'setlocal statusline=[LEFT]:\ ' . substitute(fnamemodify(b:ZFDirDiff_fileLeft, ':.'), ' ', '\\ ', 'g') . '/'
+        let hint = 'LEFT'
+        let path = b:ZFDirDiff_fileLeftOrig
     else
-        execute 'setlocal statusline=[RIGHT]:\ ' . substitute(fnamemodify(b:ZFDirDiff_fileRight, ':.'), ' ', '\\ ', 'g') . '/'
+        let hint = 'RIGHT'
+        let path = b:ZFDirDiff_fileRightOrig
     endif
+    let path = path . '/'
+    let path = substitute(path, ' ', '\\ ', 'g')
+    execute 'setlocal statusline=[' . hint . ']:\ ' . path
     setlocal statusline+=%=%k
     setlocal statusline+=\ %3p%%
 endfunction

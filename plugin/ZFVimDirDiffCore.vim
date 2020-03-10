@@ -146,10 +146,10 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     let fileLeft = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileLeft))
     let fileRight = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileRight))
 
-    if fileLeft == fileRight
-        redraw! | echo '[ZFDirDiff] same input'
-        return []
-    endif
+    " if fileLeft == fileRight
+    "     redraw! | echo '[ZFDirDiff] same input'
+    "     return []
+    " endif
 
     " both file, always treat as diff
     if filereadable(fileLeft) && filereadable(fileRight)
@@ -212,11 +212,14 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     return data
 endfunction
 
-function! ZF_DirDiffPathFormat(path)
+function! ZF_DirDiffPathFormat(path, ...)
     let path = a:path
-    let path = fnamemodify(expand(path, ':p'), ':p')
+    let path = fnamemodify(path, ':p')
+    if !empty(get(a:, 1, ''))
+        let path = fnamemodify(path, a:1)
+    endif
     let path = substitute(path, '\\$\|/$', '', '')
-    return path
+    return substitute(path, '\\', '/', 'g')
 endfunction
 
 " ============================================================

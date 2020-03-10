@@ -87,6 +87,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     * `b:ZFDirDiff_fileLeft` : abs path of left dir
     * `b:ZFDirDiff_fileRight` : abs path of right dir
+    * `b:ZFDirDiff_fileLeftOrig` : original path passed from param
+    * `b:ZFDirDiff_fileRightOrig` : original path passed from param
     * `b:ZFDirDiff_isLeft` : true if cur buffer is left
     * `b:ZFDirDiff_iLineOffset` : first item's offset accorrding to header lines
 
