@@ -82,7 +82,7 @@ endfunction
 function! ZF_DirDiffHL_addHL_matchadd(group, line)
     if get(g:, 'ZF_DirDiffHL_addHL_matchadd_useExactHL', 1)
         let line = getline(a:line)
-        if a:line >= b:ZFDirDiff_iLineOffset + 1 && a:line < len(t:ZFDirDiff_dataUI) + b:ZFDirDiff_iLineOffset + 1
+        if a:line >= b:ZFDirDiff_iLineOffset + 1 && a:line < len(t:ZFDirDiff_dataUIVisible) + b:ZFDirDiff_iLineOffset + 1
             let line = substitute(line, '/', '', 'g')
             let indent = matchstr(line, '^ *')
             call matchadd(a:group, ''

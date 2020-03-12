@@ -15,6 +15,11 @@ if !exists('g:ZFDirDiffUI_tabstop')
     let g:ZFDirDiffUI_tabstop = 2
 endif
 
+" when > 0, fold items whose level greater than this value
+if !exists('g:ZFDirDiffUI_foldlevel')
+    let g:ZFDirDiffUI_foldlevel = 0
+endif
+
 " autocmd
 augroup ZF_DirDiff_augroup
     autocmd!
@@ -120,6 +125,7 @@ endif
 " {Title,Dir,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile}
 highlight link ZFDirDiffHL_Title Title
 highlight link ZFDirDiffHL_Dir Directory
+highlight link ZFDirDiffHL_DirFolded Directory
 highlight link ZFDirDiffHL_Same Folded
 highlight link ZFDirDiffHL_Diff DiffText
 highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
@@ -177,26 +183,24 @@ function! ZF_DirDiffUpdate()
 endfunction
 
 function! ZF_DirDiffOpen()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
-    if item.type == 'T_DIR'
-        let fileLeft = t:ZFDirDiff_fileLeftOrig . '/' . item.path
-        let fileRight = t:ZFDirDiff_fileRightOrig . '/' . item.path
-        call ZF_DirDiffQuit()
-        call ZF_DirDiff(fileLeft, fileRight)
+    if dataUI.data.type == 'T_DIR'
+        let dataUI.folded = dataUI.folded ? 0 : 1
+        call s:ZF_DirDiff_redraw()
         return
     endif
-    if item.type != 'T_SAME' && item.type != 'T_DIFF'
+    if dataUI.data.type != 'T_SAME' && dataUI.data.type != 'T_DIFF'
         redraw!
-        echo '[ZFDirDiff] can not be compared: ' . item.path
+        echo '[ZFDirDiff] can not be compared: ' . dataUI.data.path
         return
     endif
 
-    let fileLeft = t:ZFDirDiff_fileLeftOrig . '/' . item.path
-    let fileRight = t:ZFDirDiff_fileRightOrig . '/' . item.path
+    let fileLeft = t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path
+    let fileRight = t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path
 
     call s:diffByFile(fileLeft, fileRight)
 endfunction
@@ -209,22 +213,22 @@ function! ZF_DirDiffGoParent()
 endfunction
 
 function! ZF_DirDiffDiffThisDir()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw!
         return
     endif
     if b:ZFDirDiff_isLeft
-        if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], item.type) >= 0
-            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . item.path, ':p')
+        if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], dataUI.data.type) >= 0
+            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path, ':p')
         else
-            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . item.path, ':p:h')
+            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path, ':p:h')
         endif
     else
-        if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], item.type) >= 0
-            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . item.path, ':p')
+        if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], dataUI.data.type) >= 0
+            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path, ':p')
         else
-            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . item.path, ':p:h')
+            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path, ':p:h')
         endif
     endif
 
@@ -244,9 +248,9 @@ endfunction
 function! ZF_DirDiffMarkToDiff()
     let index = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
     if index < 0
-                \ || index >= len(t:ZFDirDiff_dataUI)
-                \ || (b:ZFDirDiff_isLeft && index(['T_DIR_RIGHT', 'T_FILE_RIGHT'], t:ZFDirDiff_dataUI[index].data.type) >= 0)
-                \ || (!b:ZFDirDiff_isLeft && index(['T_DIR_LEFT', 'T_FILE_LEFT'], t:ZFDirDiff_dataUI[index].data.type) >= 0)
+                \ || index >= len(t:ZFDirDiff_dataUIVisible)
+                \ || (b:ZFDirDiff_isLeft && index(['T_DIR_RIGHT', 'T_FILE_RIGHT'], t:ZFDirDiff_dataUIVisible[index].data.type) >= 0)
+                \ || (!b:ZFDirDiff_isLeft && index(['T_DIR_LEFT', 'T_FILE_LEFT'], t:ZFDirDiff_dataUIVisible[index].data.type) >= 0)
         echo '[ZFDirDiff] no file under cursor'
         return
     endif
@@ -260,7 +264,7 @@ function! ZF_DirDiffMarkToDiff()
                     \ }
         call s:ZF_DirDiff_redraw()
         redraw | echo '[ZFDirDiff] mark again to diff with: '
-                    \ . parent . '/' . t:ZFDirDiff_dataUI[index].data.path
+                    \ . parent . '/' . t:ZFDirDiff_dataUIVisible[index].data.path
         return
     endif
 
@@ -271,8 +275,8 @@ function! ZF_DirDiffMarkToDiff()
     endif
 
     let fileLeft = (t:ZFDirDiff_markToDiff.isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
-                \ . '/' . t:ZFDirDiff_dataUI[t:ZFDirDiff_markToDiff.index].data.path
-    let fileRight = parent . '/' . t:ZFDirDiff_dataUI[index].data.path
+                \ . '/' . t:ZFDirDiff_dataUIVisible[t:ZFDirDiff_markToDiff.index].data.path
+    let fileRight = parent . '/' . t:ZFDirDiff_dataUIVisible[index].data.path
     unlet t:ZFDirDiff_markToDiff
     call s:ZF_DirDiff_redraw()
     call ZF_DirDiff(fileLeft, fileRight)
@@ -348,52 +352,66 @@ function! s:jumpDiff(nextOrPrev)
     while iLine != iEnd
         let data = t:ZFDirDiff_dataUI[iLine].data
         if data.type != 'T_DIR' && data.type != 'T_SAME'
+            call s:focusDataUI(iLine)
             let curPos[1] = iLine + b:ZFDirDiff_iLineOffset + 1
             call setpos('.', curPos)
             normal! zz
-            return
+            break
         endif
         let iLine += iOffset
     endwhile
 endfunction
 
+function! ZF_DirDiffFoldLevelUpdate(foldLevel)
+    if a:foldLevel <= 0
+        for dataUI in t:ZFDirDiff_dataUI
+            let dataUI.folded = 0
+        endfor
+    else
+        for dataUI in t:ZFDirDiff_dataUI
+            let dataUI.folded = (dataUI.data.level >= a:foldLevel) ? 1 : 0
+        endfor
+    endif
+    call s:setupDiffDataUIVisible()
+endfunction
+
 function! ZF_DirDiffSyncToHere()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, item.path, item.data, b:ZFDirDiff_isLeft ? 'r2l' : 'l2r', 0)
+    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'r2l' : 'l2r', 0)
     call ZF_DirDiffUpdate()
 endfunction
 function! ZF_DirDiffSyncToThere()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, item.path, item.data, b:ZFDirDiff_isLeft ? 'l2r' : 'r2l', 0)
+    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'l2r' : 'r2l', 0)
     call ZF_DirDiffUpdate()
 endfunction
 
 function! ZF_DirDiffDeleteFile()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, item.path, item.data, b:ZFDirDiff_isLeft ? 'dl' : 'dr', 0)
+    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'dl' : 'dr', 0)
     call ZF_DirDiffUpdate()
 endfunction
 
 function! ZF_DirDiffGetPath()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
 
-    let path = fnamemodify(b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig, ':.') . item.path
+    let path = fnamemodify(b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig, ':.') . dataUI.data.path
     if has('clipboard')
         let @*=path
     else
@@ -404,13 +422,13 @@ function! ZF_DirDiffGetPath()
     echo '[ZFDirDiff] copied path: ' . path
 endfunction
 function! ZF_DirDiffGetFullPath()
-    let item = s:getItem()
-    if empty(item)
+    let dataUI = s:getDataUIUnderCursor()
+    if empty(dataUI)
         redraw
         return
     endif
 
-    let path = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeft : t:ZFDirDiff_fileRight) . item.path
+    let path = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeft : t:ZFDirDiff_fileRight) . dataUI.data.path
     if has('clipboard')
         let @*=path
     else
@@ -448,10 +466,10 @@ function! s:diffByFile_setup(ownerDiffTab)
     doautocmd User ZFDirDiff_FileDiffEnter
 endfunction
 
-function! s:getItem()
+function! s:getDataUIUnderCursor()
     let iLine = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
-    if iLine >= 0 && iLine < len(t:ZFDirDiff_dataUI)
-        return t:ZFDirDiff_dataUI[iLine].data
+    if iLine >= 0 && iLine < len(t:ZFDirDiff_dataUIVisible)
+        return t:ZFDirDiff_dataUIVisible[iLine]
     else
         return ''
     endif
@@ -480,7 +498,7 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
     let t:ZFDirDiff_fileRightOrig = substitute(substitute(a:fileRight, '\\', '/', 'g'), '/\+$', '', 'g')
     let t:ZFDirDiff_data = a:data
 
-    call s:setupDiffData()
+    call s:setupDiffDataUI()
 
     vsplit
     call s:setupDiffUI(1)
@@ -501,6 +519,8 @@ function! s:ZF_DirDiff_redraw()
     endif
     let oldState = winsaveview()
 
+    call s:setupDiffDataUIVisible()
+
     execute "normal! \<c-w>h"
     call s:setupDiffUI(1)
     execute "normal! \<c-w>l"
@@ -509,26 +529,49 @@ function! s:ZF_DirDiff_redraw()
     call winrestview(oldState)
 endfunction
 
-function! s:setupDiffData()
-    " [
-    "   {
-    "     'data' : {
-    "       // original data of t:ZFDirDiff_data
-    "       ...
-    "     },
-    "   },
-    "   ...
-    " ]
+function! s:setupDiffDataUI()
     let t:ZFDirDiff_dataUI = []
-    call s:setupDiffData_recursive(t:ZFDirDiff_data)
+    call s:setupDiffDataUI_recursive(t:ZFDirDiff_data)
+    call s:setupDiffDataUIVisible()
 endfunction
-function! s:setupDiffData_recursive(data)
-    for item in a:data
+function! s:setupDiffDataUI_recursive(data)
+    let foldLevel = get(t:, 'ZFDirDiffUI_foldlevel', g:ZFDirDiffUI_foldlevel)
+    for data in a:data
         call add(t:ZFDirDiff_dataUI, {
-                    \   'data' : item,
+                    \   'index' : len(t:ZFDirDiff_dataUI),
+                    \   'indexVisible' : -1,
+                    \   'folded' : (foldLevel > 0 && data.level >= foldLevel) ? 1 : 0,
+                    \   'data' : data,
                     \ })
-        call s:setupDiffData_recursive(item.children)
+        call s:setupDiffDataUI_recursive(data.children)
     endfor
+endfunction
+function! s:setupDiffDataUIVisible()
+    let t:ZFDirDiff_dataUIVisible = []
+    let i = 0
+    let iEnd = len(t:ZFDirDiff_dataUI)
+    while i < iEnd
+        let dataUI = t:ZFDirDiff_dataUI[i]
+        let dataUI.indexVisible = len(t:ZFDirDiff_dataUIVisible)
+        call add(t:ZFDirDiff_dataUIVisible, dataUI)
+        if dataUI.folded
+            let i += 1
+            while i < iEnd && t:ZFDirDiff_dataUI[i].data.level > dataUI.data.level
+                let t:ZFDirDiff_dataUI[i].indexVisible = -1
+                let i += 1
+            endwhile
+        else
+            let i += 1
+        endif
+    endwhile
+endfunction
+function! s:focusDataUI(index)
+    let i = a:index
+    while i >= 0
+        let t:ZFDirDiff_dataUI[i].folded = 0
+        let i -= 1
+    endwhile
+    call s:setupDiffDataUIVisible()
 endfunction
 
 function! s:setupDiffUI(isLeft)
@@ -566,8 +609,8 @@ function! s:setupDiffItemList()
     endfor
 
     let iLine = b:ZFDirDiff_iLineOffset + 1
-    for item in t:ZFDirDiff_dataUI
-        let data = item.data
+    for dataUI in t:ZFDirDiff_dataUIVisible
+        let data = dataUI.data
         let line = ''
         let visible = 0
                     \ || (b:ZFDirDiff_isLeft && (data.type == 'T_DIR_RIGHT' || data.type == 'T_FILE_RIGHT'))
@@ -590,7 +633,7 @@ function! s:setupDiffItemList()
         let iLine += 1
     endfor
 
-    call setline(b:ZFDirDiff_iLineOffset + len(t:ZFDirDiff_dataUI) + 1, '')
+    call setline(b:ZFDirDiff_iLineOffset + len(t:ZFDirDiff_dataUIVisible) + 1, '')
 endfunction
 
 function! s:setupDiffBuffer()
@@ -676,7 +719,7 @@ function! s:setupDiffBuffer_highlight()
 
     call Fn_resetHL()
 
-    if len(t:ZFDirDiff_dataUI) > get(g:, 'ZFDirDiffHLMaxLine', 200)
+    if len(t:ZFDirDiff_dataUIVisible) > get(g:, 'ZFDirDiffHLMaxLine', 200)
         return
     endif
 
@@ -684,8 +727,9 @@ function! s:setupDiffBuffer_highlight()
         call Fn_addHL('ZFDirDiffHL_Title', i)
     endfor
 
-    for index in range(len(t:ZFDirDiff_dataUI))
-        let item = t:ZFDirDiff_dataUI[index].data
+    for index in range(len(t:ZFDirDiff_dataUIVisible))
+        let dataUI = t:ZFDirDiff_dataUIVisible[index]
+        let data = dataUI.data
         let line = b:ZFDirDiff_iLineOffset + index + 1
 
         if exists('t:ZFDirDiff_markToDiff')
@@ -696,43 +740,47 @@ function! s:setupDiffBuffer_highlight()
         endif
 
         if 0
-        elseif item.type == 'T_DIR'
-            call Fn_addHL('ZFDirDiffHL_Dir', line)
-        elseif item.type == 'T_SAME'
+        elseif data.type == 'T_DIR'
+            if dataUI.folded
+                call Fn_addHL('ZFDirDiffHL_DirFolded', line)
+            else
+                call Fn_addHL('ZFDirDiffHL_Dir', line)
+            endif
+        elseif data.type == 'T_SAME'
             call Fn_addHL('ZFDirDiffHL_Same', line)
-        elseif item.type == 'T_DIFF'
+        elseif data.type == 'T_DIFF'
             call Fn_addHL('ZFDirDiffHL_Diff', line)
-        elseif item.type == 'T_DIR_LEFT'
+        elseif data.type == 'T_DIR_LEFT'
             if b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_DirOnlyHere', line)
             else
                 call Fn_addHL('ZFDirDiffHL_DirOnlyThere', line)
             endif
-        elseif item.type == 'T_DIR_RIGHT'
+        elseif data.type == 'T_DIR_RIGHT'
             if !b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_DirOnlyHere', line)
             else
                 call Fn_addHL('ZFDirDiffHL_DirOnlyThere', line)
             endif
-        elseif item.type == 'T_FILE_LEFT'
+        elseif data.type == 'T_FILE_LEFT'
             if b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_FileOnlyHere', line)
             else
                 call Fn_addHL('ZFDirDiffHL_FileOnlyThere', line)
             endif
-        elseif item.type == 'T_FILE_RIGHT'
+        elseif data.type == 'T_FILE_RIGHT'
             if !b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_FileOnlyHere', line)
             else
                 call Fn_addHL('ZFDirDiffHL_FileOnlyThere', line)
             endif
-        elseif item.type == 'T_CONFLICT_DIR_LEFT'
+        elseif data.type == 'T_CONFLICT_DIR_LEFT'
             if b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_ConflictDir', line)
             else
                 call Fn_addHL('ZFDirDiffHL_ConflictFile', line)
             endif
-        elseif item.type == 'T_CONFLICT_DIR_RIGHT'
+        elseif data.type == 'T_CONFLICT_DIR_RIGHT'
             if !b:ZFDirDiff_isLeft
                 call Fn_addHL('ZFDirDiffHL_ConflictDir', line)
             else

@@ -104,8 +104,14 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     * `t:ZFDirDiff_dataUI` : list of each line for building UI
 
+        this is a plain list including folded item,
+        you may also use `t:ZFDirDiff_dataUIVisible` for visible item list
+
         ```
         [{
+            'index' : 'index in t:ZFDirDiff_dataUI',
+            'indexVisible' : 'index in t:ZFDirDiff_dataUIVisible, -1 when not visible',
+            'folded' : 'true when this item is dir and folded',
             'data' : {
                 // original data of t:ZFDirDiff_data
                 ...
