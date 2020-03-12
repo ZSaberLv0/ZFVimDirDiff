@@ -127,7 +127,7 @@ endfunction
 "           'path' : 'path relative to fileLeft/fileRight',
 "           'name' : 'file or dir name, empty if fileLeft and fileRight is file',
 "           'type' : '',
-"               // T_DIR: current node is dir and children has diff
+"               // T_DIR: current node is dir
 "               // T_SAME: current node is file and has no diff
 "               // T_DIFF: current node is file and has diff
 "               // T_DIR_LEFT: only left exists and it is dir

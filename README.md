@@ -87,7 +87,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
                 'path' : 'path relative to fileLeft/fileRight',
                 'name' : 'file or dir name, empty if fileLeft and fileRight is file',
                 'type' : '',
-                    // T_DIR: current node is dir and children has diff
+                    // T_DIR: current node is dir
                     // T_SAME: current node is file and has no diff
                     // T_DIFF: current node is file and has diff
                     // T_DIR_LEFT: only left exists and it is dir
@@ -123,18 +123,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     * `b:ZFDirDiff_isLeft` : true if cur buffer is left
     * `b:ZFDirDiff_iLineOffset` : first item's offset accorrding to header lines
-
-    types:
-
-    * `T_DIR` : left and right are both dirs
-    * `T_SAME` : left and right are same files
-    * `T_DIFF` : left and right are diff files
-    * `T_DIR_LEFT` : only left exists, and it's dir
-    * `T_DIR_RIGHT` : only right exists, and it's dir
-    * `T_FILE_LEFT` : only left exists, and it's file
-    * `T_FILE_RIGHT` : only right exists, and it's file
-    * `T_CONFLICT_DIR_LEFT` : left is dir and right is file
-    * `T_CONFLICT_DIR_RIGHT` : left is file and right is dir
 
 * `ZFDirDiff_FileDiffEnter`
 
