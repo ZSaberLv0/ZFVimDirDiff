@@ -46,7 +46,9 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 1. within the diff window:
 
     * use `DD` to update the diff result
-    * use `o` or `<cr>` to diff current node
+    * use `o` or `<cr>` to diff current file, or fold/unfold current dir
+    * use `O` to unfold all contents under current dir,
+        `x` to fold to parent, `X` to fold to root
     * use `cd` to make current dir as diff root dir,
         `u` to go up for current side,
         and `U` to go up for both side
@@ -221,6 +223,9 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * keymaps
         * `let g:ZFDirDiffKeymap_update = ['DD']`
         * `let g:ZFDirDiffKeymap_open = ['<cr>', 'o']`
+        * `let g:ZFDirDiffKeymap_foldOpenAll = ['O']`
+        * `let g:ZFDirDiffKeymap_foldClose = ['x']`
+        * `let g:ZFDirDiffKeymap_foldCloseAll = ['X']`
         * `let g:ZFDirDiffKeymap_goParent = ['U']`
         * `let g:ZFDirDiffKeymap_diffThisDir = ['cd']`
         * `let g:ZFDirDiffKeymap_diffParentDir = ['u']`

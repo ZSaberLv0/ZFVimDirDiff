@@ -186,7 +186,7 @@ function! s:sync_T_DIR(fileLeft, fileRight, path, data, syncType, syncAll)
 endfunction
 
 function! s:sync_T_SAME(fileLeft, fileRight, path, data, syncType, syncAll)
-    if !g:ZFDirDiffUI_syncSameFile
+    if !get(t:, 'ZFDirDiffUI_syncSameFile', g:ZFDirDiffUI_syncSameFile)
         return s:syncAllFix(a:syncAll)
     endif
 
