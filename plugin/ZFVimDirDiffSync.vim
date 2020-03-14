@@ -136,10 +136,10 @@ function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
 
     if filereadable(parent . a:path)
         let isDir = 0
-        let confirmOption = g:ZFDirDiffConfirmRemoveFile
+        let confirmOption = get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
     else
         let isDir = 1
-        let confirmOption = g:ZFDirDiffConfirmRemoveDir
+        let confirmOption = get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
     endif
 
     let syncAll = a:syncAll
@@ -172,7 +172,7 @@ endfunction
 " ============================================================
 function! s:sync_T_DIR(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
-    if !syncAll && g:ZFDirDiffConfirmSyncDir
+    if !syncAll && get(t:, 'ZFDirDiffConfirmSyncDir', g:ZFDirDiffConfirmSyncDir)
         let hint = 'confirm sync?  ' . (a:syncType == 'l2r' ? '[LEFT(dir)] => [RIGHT(dir)]' : '[LEFT(dir)] <= [RIGHT(dir)]')
         let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
         if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -191,7 +191,7 @@ function! s:sync_T_SAME(fileLeft, fileRight, path, data, syncType, syncAll)
     endif
 
     let syncAll = a:syncAll
-    if !syncAll && g:ZFDirDiffConfirmSyncFile
+    if !syncAll && get(t:, 'ZFDirDiffConfirmSyncFile', g:ZFDirDiffConfirmSyncFile)
         let hint = 'confirm sync?  ' . (a:syncType == 'l2r' ? '[LEFT(file)] => [RIGHT(file)]' : '[LEFT(file)] <= [RIGHT(file)]')
         let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
         if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -207,7 +207,7 @@ endfunction
 
 function! s:sync_T_DIFF(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
-    if !syncAll && g:ZFDirDiffConfirmSyncFile
+    if !syncAll && get(t:, 'ZFDirDiffConfirmSyncFile', g:ZFDirDiffConfirmSyncFile)
         let hint = 'confirm sync?  ' . (a:syncType == 'l2r' ? '[LEFT(file)] => [RIGHT(file)]' : '[LEFT(file)] <= [RIGHT(file)]')
         let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
         if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -224,14 +224,14 @@ endfunction
 function! s:sync_T_DIR_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if a:syncType == 'l2r'
-        if !syncAll && g:ZFDirDiffConfirmCopyDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmCopyDir', g:ZFDirDiffConfirmCopyDir)
             let hint = 'confirm copy?  ' . '[LEFT(dir)] => [RIGHT(___)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
         call ZF_DirDiff_cpdir(a:fileLeft . a:path, a:fileRight . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(dir)] <= [RIGHT(___)]'
             let choice = s:syncConfirmRemove(hint, a:fileLeft, a:path . '/', 1)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -244,14 +244,14 @@ endfunction
 function! s:sync_T_DIR_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if !(a:syncType == 'l2r')
-        if !syncAll && g:ZFDirDiffConfirmCopyDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmCopyDir', g:ZFDirDiffConfirmCopyDir)
             let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(dir)]')
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
         call ZF_DirDiff_cpdir(a:fileRight . a:path, a:fileLeft . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(___)] => [RIGHT(dir)]'
             let choice = s:syncConfirmRemove(hint, a:fileRight, a:path . '/', 0)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -264,14 +264,14 @@ endfunction
 function! s:sync_T_FILE_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if a:syncType == 'l2r'
-        if !syncAll && g:ZFDirDiffConfirmCopyFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmCopyFile', g:ZFDirDiffConfirmCopyFile)
             let hint = 'confirm copy?  ' . '[LEFT(file)] => [RIGHT(___)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
         call ZF_DirDiff_cpfile(a:fileLeft . a:path, a:fileRight . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm REMOVE?  ' . '[LEFT(file)] <= [RIGHT(___)]'
             let choice = s:syncConfirmRemove(hint, a:fileLeft, a:path, 1)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -284,14 +284,14 @@ endfunction
 function! s:sync_T_FILE_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if !(a:syncType == 'l2r')
-        if !syncAll && g:ZFDirDiffConfirmCopyFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmCopyFile', g:ZFDirDiffConfirmCopyFile)
             let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(file)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
         call ZF_DirDiff_cpfile(a:fileRight . a:path, a:fileLeft . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm REMOVE?  ' . '[LEFT(___)] => [RIGHT(file)]'
             let choice = s:syncConfirmRemove(hint, a:fileRight, a:path, 0)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -304,7 +304,7 @@ endfunction
 function! s:sync_T_CONFLICT_DIR_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if a:syncType == 'l2r'
-        if !syncAll && g:ZFDirDiffConfirmRemoveFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] => [RIGHT(file)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -312,7 +312,7 @@ function! s:sync_T_CONFLICT_DIR_LEFT(fileLeft, fileRight, path, data, syncType, 
         call ZF_DirDiff_rmfile(a:fileRight . a:path)
         call ZF_DirDiff_cpdir(a:fileLeft . a:path, a:fileRight . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] <= [RIGHT(file)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -326,7 +326,7 @@ endfunction
 function! s:sync_T_CONFLICT_DIR_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if !(a:syncType == 'l2r')
-        if !syncAll && g:ZFDirDiffConfirmRemoveFile
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] <= [RIGHT(dir)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
@@ -334,7 +334,7 @@ function! s:sync_T_CONFLICT_DIR_RIGHT(fileLeft, fileRight, path, data, syncType,
         call ZF_DirDiff_rmfile(a:fileLeft . a:path)
         call ZF_DirDiff_cpdir(a:fileRight . a:path, a:fileLeft . a:path)
     else
-        if !syncAll && g:ZFDirDiffConfirmRemoveDir
+        if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] => [RIGHT(dir)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif

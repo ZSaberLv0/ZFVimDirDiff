@@ -58,9 +58,6 @@ endif
 if !exists('g:ZFDirDiffConfirmSyncFile')
     let g:ZFDirDiffConfirmSyncFile = 1
 endif
-if !exists('g:ZFDirDiffConfirmSyncConflict')
-    let g:ZFDirDiffConfirmSyncConflict = 1
-endif
 if !exists('g:ZFDirDiffConfirmCopyDir')
     let g:ZFDirDiffConfirmCopyDir = 1
 endif
@@ -608,7 +605,7 @@ function! s:setupDiffDataUI()
     call s:setupDiffDataUIVisible()
 endfunction
 function! s:setupDiffDataUI_recursive(data)
-    let foldLevel = get(t:, 'ZFDirDiffUI_foldlevel', g:ZFDirDiffUI_foldlevel)
+    let foldLevel = g:ZFDirDiffUI_foldlevel
     for data in a:data
         call add(t:ZFDirDiff_dataUI, {
                     \   'index' : len(t:ZFDirDiff_dataUI),
@@ -662,7 +659,7 @@ function! s:setupDiffUI(isLeft)
     let contents = []
 
     " header
-    let Fn_headerText = function(get(t:, 'ZFDirDiffUI_headerTextFunc', g:ZFDirDiffUI_headerTextFunc))
+    let Fn_headerText = function(g:ZFDirDiffUI_headerTextFunc)
     let headerText = Fn_headerText()
     let b:ZFDirDiff_iLineOffset = len(headerText)
     call extend(contents, headerText)

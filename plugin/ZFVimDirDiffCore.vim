@@ -302,6 +302,11 @@ function! s:parse(fileLeft, fileRight, content)
 endfunction
 
 function! s:addDiff(data, path, type)
+    if exists('*ZFDirDiffCustomFilter')
+        if ZFDirDiffCustomFilter(a:path, a:type)
+            return
+        endif
+    endif
     let item = a:data
     let nameList = split(a:path, '/')
     let nameIndex = 0

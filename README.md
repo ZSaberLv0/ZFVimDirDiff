@@ -182,6 +182,26 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         let g:ZFDirDiffFileExclude .= ',*/vendor/*'
         ```
 
+    * `function! ZFDirDiffCustomFilter(path, type)`
+
+        if you want to supply custom filter logic,
+        define a function named `ZFDirDiffCustomFilter`
+        before `:ZFDirDiff`
+
+        ```
+        function! ZFDirDiffCustomFilter(path, type)
+            if match(path, 'xxx') >= 0
+                " return 1 to ignore this item
+                return 1
+            else
+                return 0
+            endif
+        endfunction
+        ```
+
+        NOTE: the filter function affects all `:ZFDirDiff` after defined,
+        you may want to `delfunction! ZFDirDiffCustomFilter` after `:ZFDirDiff` call
+
     * `let g:ZFDirDiffContentExclude = ''` : file content exclude pattern, e.g. `log:,id:`
     * `let g:ZFDirDiffFileIgnoreCase = 0` : whether ignore file name case
     * `let g:ZFDirDiffCustomDiffArg = ''` : additional diff args passed to `diff`
@@ -199,11 +219,11 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         endfunction
         ```
 
-    * `let g:ZFDirDiffUI_syncSameFile = 0` : whether need to sync same file
-    * whether confirm before sync
+    * `let g:ZFDirDiffUI_syncSameFile = 0` : whether need to sync same file,
+        can be local to tab `t:ZFDirDiffUI_syncSameFile`
+    * whether confirm before sync (can be local to tab `t:xxx`)
         * `let g:ZFDirDiffConfirmSyncDir = 1`
         * `let g:ZFDirDiffConfirmSyncFile = 1`
-        * `let g:ZFDirDiffConfirmSyncConflict = 1`
         * `let g:ZFDirDiffConfirmCopyDir = 1`
         * `let g:ZFDirDiffConfirmCopyFile = 0`
         * `let g:ZFDirDiffConfirmRemoveDir = 1`
