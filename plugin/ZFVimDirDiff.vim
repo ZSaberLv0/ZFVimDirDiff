@@ -801,6 +801,8 @@ function! s:setupDiffBuffer_statusline()
     endif
     let path = path . '/'
     let path = substitute(path, ' ', '\\ ', 'g')
+    let path = substitute(path, '|', '\\|', 'g')
+    let path = substitute(path, '"', '\\"', 'g')
     execute 'setlocal statusline=[' . hint . ']:\ ' . path
     setlocal statusline+=%=%k
     setlocal statusline+=\ %3p%%
