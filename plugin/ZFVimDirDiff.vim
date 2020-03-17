@@ -800,12 +800,8 @@ function! s:setupDiffBuffer_statusline()
         let path = t:ZFDirDiff_fileRightOrig
     endif
     let path = path . '/'
-    let path = substitute(path, ' ', '\\ ', 'g')
-    let path = substitute(path, '|', '\\|', 'g')
-    let path = substitute(path, '"', '\\"', 'g')
-    execute 'setlocal statusline=[' . hint . ']:\ ' . path
-    setlocal statusline+=%=%k
-    setlocal statusline+=\ %3p%%
+    let path = substitute(path, '%', '\\%', 'g')
+    let &l:statusline = '[' . hint . ']: ' . path . '%=%k %3p%%'
 endfunction
 
 function! s:setupDiffBuffer_highlight()
