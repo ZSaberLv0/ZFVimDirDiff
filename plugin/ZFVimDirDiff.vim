@@ -15,6 +15,13 @@ if !exists('g:ZFDirDiffUI_tabstop')
     let g:ZFDirDiffUI_tabstop = 2
 endif
 
+if !exists('g:ZFDirDiffUI_dirExpandable')
+    let g:ZFDirDiffUI_dirExpandable = '+'
+endif
+if !exists('g:ZFDirDiffUI_dirCollapsible')
+    let g:ZFDirDiffUI_dirCollapsible = '~'
+endif
+
 " when > 0, fold items whose level greater than this value
 if !exists('g:ZFDirDiffUI_foldlevel')
     let g:ZFDirDiffUI_foldlevel = 0
@@ -156,7 +163,7 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
 " ============================================================
 function! ZF_DirDiff(fileLeft, fileRight)
     let data = ZF_DirDiffCore(a:fileLeft, a:fileRight)
-    if len(data) == 1 && data[0].type == 'T_DIFF'
+    if len(data) == 1 && data[0].name == ''
         call s:diffByFile(a:fileLeft, a:fileRight)
     else
         call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, data)
@@ -586,6 +593,7 @@ function! s:ZF_DirDiff_redraw()
         redraw
         return
     endif
+    let oldWin = winnr()
     let oldState = winsaveview()
 
     call s:setupDiffDataUIVisible()
@@ -595,6 +603,7 @@ function! s:ZF_DirDiff_redraw()
     execute "normal! \<c-w>l"
     call s:setupDiffUI(0)
 
+    execute oldWin . 'wincmd w'
     call winrestview(oldState)
     redraw
 endfunction
@@ -697,9 +706,14 @@ function! s:setupDiffItemList(contents)
                         \ || (!b:ZFDirDiff_isLeft && (data.type == 'T_DIR_RIGHT' || data.type == 'T_CONFLICT_DIR_RIGHT'))
 
             if dataUI.folded
-                let mark = '+'
+                let mark = g:ZFDirDiffUI_dirExpandable
             elseif isDir
-                let mark = '-'
+                if (b:ZFDirDiff_isLeft && data.type == 'T_CONFLICT_DIR_LEFT')
+                            \ || (!b:ZFDirDiff_isLeft && data.type == 'T_CONFLICT_DIR_RIGHT')
+                    let mark = g:ZFDirDiffUI_dirExpandable
+                else
+                    let mark = g:ZFDirDiffUI_dirCollapsible
+                endif
             else
                 let mark = ''
             endif

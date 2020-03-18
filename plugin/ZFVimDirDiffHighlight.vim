@@ -84,10 +84,30 @@ function! ZF_DirDiffHL_addHL_matchadd(group, line)
         let line = getline(a:line)
         if a:line >= b:ZFDirDiff_iLineOffset + 1 && a:line < len(t:ZFDirDiff_dataUIVisible) + b:ZFDirDiff_iLineOffset + 1
             let line = substitute(line, '/', '', 'g')
-            let indent = matchstr(line, '^[ +\-]*')
+
+            " calc indent
+            let indentIndex = 0
+            while line[indentIndex] == ' '
+                let indentIndex += 1
+            endwhile
+            if line[indentIndex] == g:ZFDirDiffUI_dirExpandable
+                let dirChar = g:ZFDirDiffUI_dirExpandable
+            elseif line[indentIndex] == g:ZFDirDiffUI_dirCollapsible
+                let dirChar = g:ZFDirDiffUI_dirCollapsible
+            else
+                let dirChar = ''
+            endif
+            if dirChar != ''
+                let dirCharLen = len(dirChar)
+                if indentIndex + dirCharLen + 1 < len(line)
+                            \ && line[indentIndex + dirCharLen] == ' '
+                    let indentIndex += dirCharLen + 1
+                endif
+            endif
+
             call matchadd(a:group, ''
                         \   . '\%' . a:line . 'l'
-                        \   . '\%>' . len(indent) . 'c'
+                        \   . '\%>' . indentIndex . 'c'
                         \   . '\%<' . (len(line) + 1) . 'c'
                         \ )
         else
