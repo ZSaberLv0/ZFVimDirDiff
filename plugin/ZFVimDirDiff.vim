@@ -294,21 +294,18 @@ function! ZF_DirDiffDiffThisDir()
         return
     endif
     if b:ZFDirDiff_isLeft
-        if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], dataUI.data.type) >= 0
-            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path, ':p')
-        else
-            let itemPath = fnamemodify(t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path, ':p:h')
+        let fileRight = t:ZFDirDiff_fileRightOrig
+        let fileLeft = t:ZFDirDiff_fileLeftOrig . '/' . dataUI.data.path
+        if index(['T_DIR', 'T_DIR_LEFT', 'T_CONFLICT_DIR_LEFT'], dataUI.data.type) < 0
+            let fileLeft = fnamemodify(fileLeft, ':h')
         endif
     else
-        if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], dataUI.data.type) >= 0
-            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path, ':p')
-        else
-            let itemPath = fnamemodify(t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path, ':p:h')
+        let fileLeft = t:ZFDirDiff_fileLeftOrig
+        let fileRight = t:ZFDirDiff_fileRightOrig . '/' . dataUI.data.path
+        if index(['T_DIR', 'T_DIR_RIGHT', 'T_CONFLICT_DIR_RIGHT'], dataUI.data.type) < 0
+            let fileRight = fnamemodify(fileRight, ':h')
         endif
     endif
-
-    let fileLeft = b:ZFDirDiff_isLeft ? itemPath : t:ZFDirDiff_fileLeftOrig
-    let fileRight = !b:ZFDirDiff_isLeft ? itemPath : t:ZFDirDiff_fileRightOrig
     call ZF_DirDiffQuit()
     call ZF_DirDiff(fileLeft, fileRight)
 endfunction
@@ -486,7 +483,7 @@ function! ZF_DirDiffGetPath()
         return
     endif
 
-    let path = fnamemodify(b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig, ':.') . dataUI.data.path
+    let path = fnamemodify(b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig, ':.') . '/' . dataUI.data.path
     if has('clipboard')
         let @*=path
     else
@@ -503,7 +500,7 @@ function! ZF_DirDiffGetFullPath()
         return
     endif
 
-    let path = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeft : t:ZFDirDiff_fileRight) . dataUI.data.path
+    let path = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeft : t:ZFDirDiff_fileRight) . '/' . dataUI.data.path
     if has('clipboard')
         let @*=path
     else
@@ -813,7 +810,6 @@ function! s:setupDiffBuffer_statusline()
         let hint = 'RIGHT'
         let path = t:ZFDirDiff_fileRightOrig
     endif
-    let path = path . '/'
     let path = substitute(path, '%', '%%', 'g')
     let &l:statusline = '[' . hint . ']: ' . path . '%=%k %3p%%'
 endfunction

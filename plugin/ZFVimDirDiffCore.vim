@@ -302,13 +302,16 @@ function! s:parse(fileLeft, fileRight, content)
 endfunction
 
 function! s:addDiff(data, path, type)
+    let path = substitute(a:path, '\\', '/', 'g')
+    let path = substitute(path, '^/\+', '', 'g')
+    let path = substitute(path, '/\+$', '', 'g')
     if exists('*ZFDirDiffCustomFilter')
-        if ZFDirDiffCustomFilter(a:path, a:type)
+        if ZFDirDiffCustomFilter(path, a:type)
             return
         endif
     endif
     let item = a:data
-    let nameList = split(a:path, '/')
+    let nameList = split(path, '/')
     let nameIndex = 0
 
     while nameIndex < len(nameList)
@@ -330,13 +333,13 @@ function! s:addDiff(data, path, type)
     while nameIndex < len(nameList)
         let newItem = {
                     \   'level' : nameIndex,
-                    \   'path' : '/',
+                    \   'path' : nameList[nameIndex],
                     \   'name' : nameList[nameIndex],
                     \   'type' : 'T_DIR',
                     \   'children' : [],
                     \ }
         if nameIndex > 0
-            let newItem.path = '/' . join(nameList[0:(nameIndex-1)], '/') . '/' . nameList[nameIndex]
+            let newItem.path = join(nameList[0:(nameIndex-1)], '/') . '/' . nameList[nameIndex]
         endif
         if nameIndex == len(nameList) - 1
             let newItem.type = a:type

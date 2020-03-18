@@ -134,7 +134,7 @@ function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
         let isLeft = 0
     endif
 
-    if filereadable(parent . a:path)
+    if filereadable(parent . '/' . a:path)
         let isDir = 0
         let confirmOption = get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
     else
@@ -162,9 +162,9 @@ function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
     endif
 
     if isDir
-        call ZF_DirDiff_rmdir(parent . a:path)
+        call ZF_DirDiff_rmdir(parent . '/' . a:path)
     else
-        call ZF_DirDiff_rmfile(parent . a:path)
+        call ZF_DirDiff_rmfile(parent . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -198,9 +198,9 @@ function! s:sync_T_SAME(fileLeft, fileRight, path, data, syncType, syncAll)
     endif
 
     if a:syncType == 'l2r'
-        call ZF_DirDiff_cpfile(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_cpfile(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     else
-        call ZF_DirDiff_cpfile(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_cpfile(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -214,9 +214,9 @@ function! s:sync_T_DIFF(fileLeft, fileRight, path, data, syncType, syncAll)
     endif
 
     if a:syncType == 'l2r'
-        call ZF_DirDiff_cpfile(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_cpfile(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     else
-        call ZF_DirDiff_cpfile(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_cpfile(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -229,14 +229,14 @@ function! s:sync_T_DIR_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_cpdir(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_cpdir(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(dir)] <= [RIGHT(___)]'
             let choice = s:syncConfirmRemove(hint, a:fileLeft, a:path . '/', 1)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmdir(a:fileLeft . a:path)
+        call ZF_DirDiff_rmdir(a:fileLeft . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -249,14 +249,14 @@ function! s:sync_T_DIR_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_cpdir(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_cpdir(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(___)] => [RIGHT(dir)]'
             let choice = s:syncConfirmRemove(hint, a:fileRight, a:path . '/', 0)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmdir(a:fileRight . a:path)
+        call ZF_DirDiff_rmdir(a:fileRight . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -269,14 +269,14 @@ function! s:sync_T_FILE_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_cpfile(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_cpfile(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm REMOVE?  ' . '[LEFT(file)] <= [RIGHT(___)]'
             let choice = s:syncConfirmRemove(hint, a:fileLeft, a:path, 1)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmfile(a:fileLeft . a:path)
+        call ZF_DirDiff_rmfile(a:fileLeft . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -289,14 +289,14 @@ function! s:sync_T_FILE_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_cpfile(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_cpfile(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveFile', g:ZFDirDiffConfirmRemoveFile)
             let hint = 'confirm REMOVE?  ' . '[LEFT(___)] => [RIGHT(file)]'
             let choice = s:syncConfirmRemove(hint, a:fileRight, a:path, 0)
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmfile(a:fileRight . a:path)
+        call ZF_DirDiff_rmfile(a:fileRight . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -309,16 +309,16 @@ function! s:sync_T_CONFLICT_DIR_LEFT(fileLeft, fileRight, path, data, syncType, 
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmfile(a:fileRight . a:path)
-        call ZF_DirDiff_cpdir(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_rmfile(a:fileRight . '/' . a:path)
+        call ZF_DirDiff_cpdir(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] <= [RIGHT(file)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmdir(a:fileLeft . a:path)
-        call ZF_DirDiff_cpfile(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_rmdir(a:fileLeft . '/' . a:path)
+        call ZF_DirDiff_cpfile(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
@@ -331,16 +331,16 @@ function! s:sync_T_CONFLICT_DIR_RIGHT(fileLeft, fileRight, path, data, syncType,
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmfile(a:fileLeft . a:path)
-        call ZF_DirDiff_cpdir(a:fileRight . a:path, a:fileLeft . a:path)
+        call ZF_DirDiff_rmfile(a:fileLeft . '/' . a:path)
+        call ZF_DirDiff_cpdir(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] => [RIGHT(dir)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call ZF_DirDiff_rmdir(a:fileRight . a:path)
-        call ZF_DirDiff_cpfile(a:fileLeft . a:path, a:fileRight . a:path)
+        call ZF_DirDiff_rmdir(a:fileRight . '/' . a:path)
+        call ZF_DirDiff_cpfile(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
     endif
     return s:syncAllFix(syncAll)
 endfunction
