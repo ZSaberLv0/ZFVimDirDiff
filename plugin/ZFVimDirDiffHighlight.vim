@@ -23,7 +23,7 @@ function! ZF_DirDiffHL_resetHL_matchaddWithCursorLineHL()
 
     augroup ZF_DirDiffHL_CursorLine_augroup
         autocmd!
-        autocmd BufDelete * call s:resetCursorLineHL()
+        autocmd BufDelete <buffer> call s:resetCursorLineHL()
     augroup END
 endfunction
 function! ZF_DirDiffHL_addHL_matchaddWithCursorLineHL(group, line)
