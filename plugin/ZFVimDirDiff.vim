@@ -737,6 +737,7 @@ function! s:setupDiffBuffer()
     call s:setupDiffBuffer_highlight()
 
     execute 'setlocal tabstop=' . g:ZFDirDiffUI_tabstop
+    execute 'setlocal softtabstop=' . g:ZFDirDiffUI_tabstop
     setlocal buftype=nowrite
     setlocal bufhidden=hide
     setlocal nowrap
