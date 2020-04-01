@@ -21,6 +21,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
 
     ```
     Plug 'ZSaberLv0/ZFVimDirDiff'
+    Plug 'ZSaberLv0/ZFVimIgnore' " required only if you want to use default g:ZFDirDiffFileExclude settings
     ```
 
 1. use `:ZFDirDiff` command to start diff
@@ -139,48 +140,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `let g:ZFDirDiffShowSameFile = 1` : whether to show files that are same
     * `let g:ZFDirDiffFileExclude = ''` : file name exclude pattern, e.g. `*.class,*.o`
 
-        there's no default exclude, you may use `let g:ZFDirDiffFileExcludeUseDefault=1` to enable recommended exclude:
-
-        ```
-        let g:ZFDirDiffFileExclude = 'tags'
-        let g:ZFDirDiffFileExclude .= ',*.swp'
-        let g:ZFDirDiffFileExclude .= ',.DS_Store'
-        let g:ZFDirDiffFileExclude .= ',*.d'
-        let g:ZFDirDiffFileExclude .= ',*.depend*'
-        let g:ZFDirDiffFileExclude .= ',*.a'
-        let g:ZFDirDiffFileExclude .= ',*.o'
-        let g:ZFDirDiffFileExclude .= ',*.so'
-        let g:ZFDirDiffFileExclude .= ',*.dylib'
-        let g:ZFDirDiffFileExclude .= ',*.jar'
-        let g:ZFDirDiffFileExclude .= ',*.class'
-        let g:ZFDirDiffFileExclude .= ',*.exe'
-        let g:ZFDirDiffFileExclude .= ',*.dll'
-        let g:ZFDirDiffFileExclude .= ',*.iml'
-        let g:ZFDirDiffFileExclude .= ',local.properties'
-        let g:ZFDirDiffFileExclude .= ',*.user'
-
-        let g:ZFDirDiffFileExclude .= ',*/.svn/*'
-        let g:ZFDirDiffFileExclude .= ',*/.git/*'
-        let g:ZFDirDiffFileExclude .= ',*/.hg/*'
-        let g:ZFDirDiffFileExclude .= ',*/.cache/*'
-        let g:ZFDirDiffFileExclude .= ',*/_cache/*'
-        let g:ZFDirDiffFileExclude .= ',*/.tmp/*'
-        let g:ZFDirDiffFileExclude .= ',*/_tmp/*'
-        let g:ZFDirDiffFileExclude .= ',*/.release/*'
-        let g:ZFDirDiffFileExclude .= ',*/_release/*'
-        let g:ZFDirDiffFileExclude .= ',*/.build/*'
-        let g:ZFDirDiffFileExclude .= ',*/_build/*'
-        let g:ZFDirDiffFileExclude .= ',*/build-*/*'
-        let g:ZFDirDiffFileExclude .= ',*/bin-*/*'
-        let g:ZFDirDiffFileExclude .= ',*/_repo/*'
-        let g:ZFDirDiffFileExclude .= ',*/.wing/*'
-        let g:ZFDirDiffFileExclude .= ',*/.idea/*'
-        let g:ZFDirDiffFileExclude .= ',*/.gradle/*'
-        let g:ZFDirDiffFileExclude .= ',*/build/*'
-        let g:ZFDirDiffFileExclude .= ',*/.externalNativeBuild/*'
-        let g:ZFDirDiffFileExclude .= ',*/Pods/*'
-        let g:ZFDirDiffFileExclude .= ',*/vendor/*'
-        ```
+        it's recommended to use `Plug 'ZSaberLv0/ZFVimIgnore'` for ignore settings,
+        you may disable this by `let g:ZFDirDiffFileExcludeUseDefault=0`
 
     * `function! ZFDirDiffCustomFilter(path, type)`
 
