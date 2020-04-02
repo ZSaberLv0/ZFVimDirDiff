@@ -22,6 +22,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     ```
     Plug 'ZSaberLv0/ZFVimDirDiff'
     Plug 'ZSaberLv0/ZFVimIgnore' " required only if you want to use default g:ZFDirDiffFileExclude settings
+    Plug 'ZSaberLv0/ZFVimBackup' " required only if you want to enable auto backup
     ```
 
 1. use `:ZFDirDiff` command to start diff
@@ -180,6 +181,9 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         endfunction
         ```
 
+    * `let g:ZFDirDiffUI_autoBackup = 1` or `let t:ZFDirDiffUI_autoBackup = 1` :
+        whether backup before write or delete files,
+        require `ZSaberLv0/ZFVimBackup` installed
     * `let g:ZFDirDiffUI_syncSameFile = 0` : whether need to sync same file,
         can be local to tab `t:ZFDirDiffUI_syncSameFile`
     * whether confirm before sync (can be local to tab `t:xxx`)
