@@ -139,7 +139,9 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
         let cmdarg .= ' ' . g:ZFDirDiffCustomDiffArg . ' '
     endif
     if g:ZFDirDiffFileExclude != ''
-        let cmdarg .= ' -x"' . substitute(g:ZFDirDiffFileExclude, ',', '" -x"', 'g') . '"'
+        let excludeFile = tempname()
+        call writefile(split(g:ZFDirDiffFileExclude, ','), excludeFile)
+        let cmdarg .= ' -X "' . excludeFile . '"'
     endif
     if g:ZFDirDiffContentExclude != ''
         let cmdarg .= ' -I"' . substitute(g:ZFDirDiffContentExclude, ',', '" -I"', 'g') . '"'

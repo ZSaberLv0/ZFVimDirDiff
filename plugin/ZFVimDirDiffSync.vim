@@ -285,7 +285,7 @@ function! s:sync_T_DIR_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
     if !(a:syncType == 'l2r')
         if !syncAll && get(t:, 'ZFDirDiffConfirmCopyDir', g:ZFDirDiffConfirmCopyDir)
-            let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(dir)]')
+            let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(dir)]'
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
