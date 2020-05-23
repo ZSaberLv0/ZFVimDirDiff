@@ -37,9 +37,12 @@ function! s:resetCursorLineHL()
 endfunction
 
 function! s:saveCursorLineHL()
-    redir => highlight
-    silent hi CursorLine
-    redir END
+    try
+        redir => highlight
+        silent hi CursorLine
+    finally
+        redir END
+    endtry
     if highlight =~ 'links to '
         let s:hl_link = matchstr(highlight, 'links to \zs\S*')
     elseif highlight =~ '\<cleared\>'
