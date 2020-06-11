@@ -47,7 +47,7 @@ endif
 if !exists('*ZF_DirDiffTempname')
     function! ZF_DirDiffTempname()
         " cygwin's path may not work for some external command
-        if has("win32unix") && executable('cygpath')
+        if executable('cygpath')
             return substitute(system('cygpath -m "' . tempname() . '"'), '[\r\n]', '', 'g')
         else
             return tempname()
