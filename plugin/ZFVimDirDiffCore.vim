@@ -47,7 +47,7 @@ endif
 if !exists('*ZF_DirDiffTempname')
     function! ZF_DirDiffTempname()
         " cygwin's path may not work for some external command
-        if executable('cygpath')
+        if has('win32unix') && executable('cygpath')
             return substitute(system('cygpath -m "' . tempname() . '"'), '[\r\n]', '', 'g')
         else
             return tempname()
@@ -139,7 +139,7 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
         let cmdarg .= ' ' . g:ZFDirDiffCustomDiffArg . ' '
     endif
     if g:ZFDirDiffFileExclude != ''
-        let excludeFile = tempname()
+        let excludeFile = ZF_DirDiffTempname()
         call writefile(split(g:ZFDirDiffFileExclude, ','), excludeFile)
         let cmdarg .= ' -X "' . excludeFile . '"'
     endif
