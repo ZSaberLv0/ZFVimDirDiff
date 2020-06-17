@@ -9,6 +9,10 @@ inspired from [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
     * format the `diff` result and output as vertical split file tree view,
         which should be more human-readable
     * more friendly file sync operation, keep same habit with vim's builtin `diff`
+    * automatically backup before destructive actions
+        (by [ZFVimBackup](https://github.com/ZSaberLv0/ZFVimBackup))
+    * better file or dir exclude logic
+        (by [ZFVimIgnore](https://github.com/ZSaberLv0/ZFVimIgnore))
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimDirDiff/master/preview.png)
 
