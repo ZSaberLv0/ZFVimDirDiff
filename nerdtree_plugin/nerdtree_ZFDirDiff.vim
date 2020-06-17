@@ -26,6 +26,9 @@ function! NERDTreeMarkToDiff()
         echo '[ZFDirDiff] canceled'
         return
     endif
+    if get(g:, 'ZFDirDiff_nerdtreeMenu_addHistory', 1)
+        call histadd(':', "call ZF_DirDiff('" . left . "', '" . path . "')")
+    endif
     call ZF_DirDiff(left, path)
 endfunction
 
