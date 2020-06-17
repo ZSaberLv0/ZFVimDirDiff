@@ -45,6 +45,11 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     sh ZFDirDiff.sh "path A" "path B"
     ```
 
+1. you can also start diff from [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree):
+    inside nerdtree window, press `m` to popup menu,
+    press `z` to choose `mark to diff`,
+    and mark another node again to start diff
+
 1. within the diff window:
 
     * use `DD` to update the diff result
