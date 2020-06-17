@@ -261,11 +261,11 @@ function! s:parse(fileLeft, fileRight, content)
         elseif match(line, pSame) >= 0
             let left = substitute(line, pSame, '\1', '')
             let path = substitute(left, fileLeft, '', '')
-            call s:addDiff(data, path, 'T_SAME')
+            call s:addDiff(fileLeft, fileRight, data, path, 'T_SAME')
         elseif match(line, pDiff) >= 0
             let left = substitute(line, pDiff, '\1', '')
             let path = substitute(left, fileLeft, '', '')
-            call s:addDiff(data, path, 'T_DIFF')
+            call s:addDiff(fileLeft, fileRight, data, path, 'T_DIFF')
         elseif match(line, pOnly) >= 0
             let path = substitute(line, pOnly, '\1', '')
             let file = substitute(line, pOnly, '\2', '')
@@ -284,24 +284,24 @@ function! s:parse(fileLeft, fileRight, content)
             let path = substitute(path, parent, '', '')
             let path = path . '/' . file
             if matchLeft
-                call s:addDiff(data, path, filereadable(parent . path) ? 'T_FILE_LEFT' : 'T_DIR_LEFT')
+                call s:addDiff(fileLeft, fileRight, data, path, filereadable(parent . path) ? 'T_FILE_LEFT' : 'T_DIR_LEFT')
             else
-                call s:addDiff(data, path, filereadable(parent . path) ? 'T_FILE_RIGHT' : 'T_DIR_RIGHT')
+                call s:addDiff(fileLeft, fileRight, data, path, filereadable(parent . path) ? 'T_FILE_RIGHT' : 'T_DIR_RIGHT')
             endif
         elseif match(line, pConflictL) >= 0
             let left = substitute(line, pConflictL, '\1', '')
             let path = substitute(left, fileLeft, '', '')
-            call s:addDiff(data, path, 'T_CONFLICT_DIR_LEFT')
+            call s:addDiff(fileLeft, fileRight, data, path, 'T_CONFLICT_DIR_LEFT')
         elseif match(line, pConflictR) >= 0
             let left = substitute(line, pConflictR, '\1', '')
             let path = substitute(left, fileLeft, '', '')
-            call s:addDiff(data, path, 'T_CONFLICT_DIR_RIGHT')
+            call s:addDiff(fileLeft, fileRight, data, path, 'T_CONFLICT_DIR_RIGHT')
         endif
     endfor
     return data
 endfunction
 
-function! s:addDiff(data, path, type)
+function! s:addDiff(fileLeft, fileRight, data, path, type)
     let path = substitute(a:path, '\\', '/', 'g')
     let path = substitute(path, '^/\+', '', 'g')
     let path = substitute(path, '/\+$', '', 'g')
@@ -345,9 +345,17 @@ function! s:addDiff(data, path, type)
             let newItem.type = a:type
         else
             if a:type == 'T_DIR_LEFT' || a:type == 'T_FILE_LEFT'
-                let newItem.type = 'T_DIR_LEFT'
+                if isdirectory(a:fileRight . '/' . newItem.path)
+                    let newItem.type = 'T_DIR'
+                else
+                    let newItem.type = 'T_DIR_LEFT'
+                endif
             elseif a:type == 'T_DIR_RIGHT' || a:type == 'T_FILE_RIGHT'
-                let newItem.type = 'T_DIR_RIGHT'
+                if isdirectory(a:fileLeft . '/' . newItem.path)
+                    let newItem.type = 'T_DIR'
+                else
+                    let newItem.type = 'T_DIR_RIGHT'
+                endif
             endif
         endif
 
