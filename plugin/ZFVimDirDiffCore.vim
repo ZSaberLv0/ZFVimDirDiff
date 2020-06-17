@@ -126,19 +126,22 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
 
     redraw!
     echo '[ZFDirDiff] running diff, it may take a while...'
-    let diff = ZF_DirDiffCmd(a:fileLeft, a:fileRight)
+    let diffResult = ZF_DirDiffCmd(a:fileLeft, a:fileRight)
 
-    if type(diff) == type(0)
-        if diff == 0
-            echo '[ZFDirDiff] no diff found'
-            return []
-        elseif diff != 1
-            echo '[ZFDirDiff] diff failed with exit code: ' . diff
-            return []
-        endif
+    if diffResult['exitCode'] == 0
+        echo '[ZFDirDiff] no diff found'
+        return []
+    elseif diffResult['exitCode'] != 1
+        echo '[ZFDirDiff] diff failed with exit code: ' . diffResult['exitCode']
+        for line in diffResult['output']
+            if !empty(line)
+                echo '    ' . line
+            endif
+        endfor
+        return []
     endif
 
-    let data = s:parse(fileLeft, fileRight, diff)
+    let data = s:parse(fileLeft, fileRight, diffResult['output'])
     echo '[ZFDirDiff] sorting result, it may take a while...'
     call s:sortResult(data)
     redraw!
@@ -146,13 +149,19 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     return data
 endfunction
 
-function! ZF_DirDiffCmd(fileLeft, fileRight)
+" return: {
+"   'cmd' : 'original diff cmd',
+"   'output' : 'output of diff',
+"   'exitCode' : 'v:shell_error of diff',
+" }
+function! ZF_DirDiffCmd(fileLeft, fileRight, ...)
+    let checkOnly = get(a:, 1, 0)
     let fileLeft = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileLeft))
     let fileRight = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileRight))
 
     " use temp file to solve encoding issue
     let tmpFile = ZF_DirDiffTempname()
-    let cmd = '!' . g:ZFDirDiffLangString . 'diff'
+    let cmd = g:ZFDirDiffLangString . 'diff'
     let cmdarg = ' -r --brief'
 
     if g:ZFDirDiffShowSameFile
@@ -168,6 +177,8 @@ function! ZF_DirDiffCmd(fileLeft, fileRight)
         let excludeFile = ZF_DirDiffTempname()
         call writefile(split(g:ZFDirDiffFileExclude, ','), excludeFile)
         let cmdarg .= ' -X "' . excludeFile . '"'
+    else
+        let excludeFile = ''
     endif
     if g:ZFDirDiffContentExclude != ''
         let cmdarg .= ' -I"' . substitute(g:ZFDirDiffContentExclude, ',', '" -I"', 'g') . '"'
@@ -175,23 +186,29 @@ function! ZF_DirDiffCmd(fileLeft, fileRight)
     let cmd = cmd . cmdarg . ' "' . fileLeft . '" "' . fileRight . '"'
     let cmd = cmd . ' > "' . tmpFile . '" 2>&1'
 
-    silent! execute cmd
-    let error = v:shell_error
+    if checkOnly
+        let exitCode = 0
+    else
+        call system(cmd)
+        let exitCode = v:shell_error
+    endif
     redraw!
-
-    let content = readfile(tmpFile)
-    silent! call delete(tmpFile)
-
-    if error == 0
-        return error
-    elseif error != 1
-        for msg in content
-            echomsg '    ' . msg
-        endfor
-        return error
+    if !empty(excludeFile)
+        call delete(excludeFile)
     endif
 
-    return content
+    if checkOnly
+        let output = ''
+    else
+        let output = readfile(tmpFile)
+        silent! call delete(tmpFile)
+    endif
+
+    return {
+                \   'cmd' : cmd,
+                \   'output' : output,
+                \   'exitCode' : exitCode,
+                \ }
 endfunction
 
 function! ZF_DirDiffPathFormat(path, ...)
