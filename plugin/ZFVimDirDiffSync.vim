@@ -10,7 +10,8 @@ endfunction
 
 function! ZF_DirDiff_cpdir(from, to)
     if has('unix')
-        silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
+        silent execute '!mkdir -p "' . a:to . '"'
+        silent execute '!cp -rf "' . a:from . '/." "' . a:to . '/"'
     elseif has('win32')
         silent execute '!xcopy /e/i/q "' . substitute(a:from, '/', '\', 'g') . '" "' . substitute(a:to, '/', '\', 'g') . '"'
     endif
