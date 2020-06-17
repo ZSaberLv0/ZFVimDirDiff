@@ -124,6 +124,32 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
                     \ }]
     endif
 
+    redraw!
+    echo '[ZFDirDiff] running diff, it may take a while...'
+    let diff = ZF_DirDiffCmd(a:fileLeft, a:fileRight)
+
+    if type(diff) == type(0)
+        if diff == 0
+            echo '[ZFDirDiff] no diff found'
+            return []
+        elseif diff != 1
+            echo '[ZFDirDiff] diff failed with exit code: ' . diff
+            return []
+        endif
+    endif
+
+    let data = s:parse(fileLeft, fileRight, diff)
+    echo '[ZFDirDiff] sorting result, it may take a while...'
+    call s:sortResult(data)
+    redraw!
+    echo '[ZFDirDiff] diff complete'
+    return data
+endfunction
+
+function! ZF_DirDiffCmd(fileLeft, fileRight)
+    let fileLeft = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileLeft))
+    let fileRight = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileRight))
+
     " use temp file to solve encoding issue
     let tmpFile = ZF_DirDiffTempname()
     let cmd = '!' . g:ZFDirDiffLangString . 'diff'
@@ -149,33 +175,23 @@ function! ZF_DirDiffCore(fileLeft, fileRight)
     let cmd = cmd . cmdarg . ' "' . fileLeft . '" "' . fileRight . '"'
     let cmd = cmd . ' > "' . tmpFile . '" 2>&1'
 
-    redraw!
-    echo '[ZFDirDiff] running diff, it may take a while...'
     silent! execute cmd
     let error = v:shell_error
-    if error == 0
-        silent! call delete(tmpFile)
-        redraw! | echo '[ZFDirDiff] no diff found'
-        return []
-    elseif error != 1
-        redraw!
-        echo '[ZFDirDiff] diff failed with exit code: ' . error
-        for msg in readfile(tmpFile)
-            echo '    ' . msg
-        endfor
-        silent! call delete(tmpFile)
-        return []
-    endif
+    redraw!
 
     let content = readfile(tmpFile)
-    let data = s:parse(fileLeft, fileRight, content)
-    redraw!
-    echo '[ZFDirDiff] sorting result, it may take a while...'
-    call s:sortResult(data)
-    redraw!
-    echo '[ZFDirDiff] diff complete'
     silent! call delete(tmpFile)
-    return data
+
+    if error == 0
+        return error
+    elseif error != 1
+        for msg in content
+            echomsg '    ' . msg
+        endfor
+        return error
+    endif
+
+    return content
 endfunction
 
 function! ZF_DirDiffPathFormat(path, ...)
