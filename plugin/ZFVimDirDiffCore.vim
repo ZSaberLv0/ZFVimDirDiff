@@ -85,8 +85,16 @@ endfunction
 
 " ============================================================
 
-" return:
-"   [
+let g:ZFDirDiff_exitCode_NoDiff = 0
+let g:ZFDirDiff_exitCode_HasDiff = 1
+let g:ZFDirDiff_exitCode_BothFile = -9999
+
+" return: {
+"   'cmd' : 'original diff cmd',
+"   'output' : 'output of diff',
+"   'exitCode' : 'v:shell_error of diff',
+"   'exitHint' : 'state hint',
+"   'data' : [
 "       {
 "           'level' : 'depth of tree node, 0 for top most ones',
 "           'path' : 'path relative to fileLeft/fileRight',
@@ -107,46 +115,58 @@ endfunction
 "       },
 "       ...
 "   ]
+" }
 "
 " all type: {T_DIR,T_SAME,T_DIFF,T_DIR_LEFT,T_DIR_RIGHT,T_FILE_LEFT,T_FILE_RIGHT,T_CONFLICT_DIR_LEFT,T_CONFLICT_DIR_RIGHT}
 function! ZF_DirDiffCore(fileLeft, fileRight)
+    let ret = {
+                \   'cmd' : '',
+                \   'output' : '',
+                \   'exitCode' : '',
+                \   'exitHint' : '',
+                \   'data' : [],
+                \ }
+
     let fileLeft = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileLeft))
     let fileRight = ZF_DirDiffShellEnv_pathFormat(ZF_DirDiffPathFormat(a:fileRight))
 
-    " both file, always treat as diff
     if filereadable(fileLeft) && filereadable(fileRight)
-        return [{
-                    \   'level' : 0,
-                    \   'path' : '',
-                    \   'name' : '',
-                    \   'type' : 'T_DIFF',
-                    \   'children' : [],
-                    \ }]
+        let ret['exitCode'] = g:ZFDirDiff_exitCode_BothFile
+        let ret['exitHint'] = '[ZFDirDiff] left and right are both files'
+        return ret
     endif
 
     redraw!
     echo '[ZFDirDiff] running diff, it may take a while...'
     let diffResult = ZF_DirDiffCmd(a:fileLeft, a:fileRight)
+    call extend(ret, diffResult)
 
-    if diffResult['exitCode'] == 0
-        echo '[ZFDirDiff] no diff found'
-        return []
-    elseif diffResult['exitCode'] != 1
-        echo '[ZFDirDiff] diff failed with exit code: ' . diffResult['exitCode']
+    if diffResult['exitCode'] == g:ZFDirDiff_exitCode_NoDiff
+        " nothing to do
+        " same file should also be parsed and show in diff window
+    elseif diffResult['exitCode'] != g:ZFDirDiff_exitCode_HasDiff
+        let ret['exitHint'] = '[ZFDirDiff] diff failed with exit code: ' . diffResult['exitCode']
+        echo ret['exitHint']
         for line in diffResult['output']
             if !empty(line)
                 echo '    ' . line
             endif
         endfor
-        return []
+        return ret
     endif
 
-    let data = s:parse(fileLeft, fileRight, diffResult['output'])
+    let ret['data'] = s:parse(fileLeft, fileRight, diffResult['output'])
     echo '[ZFDirDiff] sorting result, it may take a while...'
-    call s:sortResult(data)
+    call s:sortResult(ret['data'])
+
     redraw!
-    echo '[ZFDirDiff] diff complete'
-    return data
+    if diffResult['exitCode'] == g:ZFDirDiff_exitCode_NoDiff
+        let ret['exitHint'] = '[ZFDirDiff] no diff found'
+    else
+        let ret['exitHint'] = '[ZFDirDiff] diff complete'
+    endif
+    echo ret['exitHint']
+    return ret
 endfunction
 
 " return: {

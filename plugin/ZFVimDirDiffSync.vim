@@ -8,15 +8,6 @@ function! ZF_DirDiff_mkdir(path)
     endif
 endfunction
 
-function! ZF_DirDiff_cpdir(from, to)
-    if has('unix')
-        silent execute '!mkdir -p "' . a:to . '"'
-        silent execute '!cp -rf "' . a:from . '/." "' . a:to . '/"'
-    elseif has('win32')
-        silent execute '!xcopy /e/i/q "' . substitute(a:from, '/', '\', 'g') . '" "' . substitute(a:to, '/', '\', 'g') . '"'
-    endif
-endfunction
-
 function! ZF_DirDiff_cpfile(from, to)
     if has('unix')
         silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
@@ -73,10 +64,10 @@ function! s:syncAllFix(syncAll)
 endfunction
 function! s:syncChoice()
     echo "\n"
-    echo '  (A)ll'
-    echo '  (Y)es'
-    echo '  (N)o'
-    echo '  (Q)uit'
+    echo '  (a)ll'
+    echo '  (y)es'
+    echo '  (n)o'
+    echo '  (q)uit'
     echo "\n"
     echo 'choose: '
 
@@ -204,6 +195,15 @@ function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
     return s:syncAllFix(syncAll)
 endfunction
 
+function! s:syncCopyDir(fileLeft, fileRight, path, data, syncType, syncAll)
+    let syncAll = a:syncAll
+    for child in a:data.children
+        let choice = ZF_DirDiffSync(a:fileLeft, a:fileRight, a:path . '/' . child.name, child, a:syncType, syncAll)
+        if choice == 'q' | return 'q' | elseif choice == 'a' | let syncAll = 1 | endif
+    endfor
+    return s:syncAllFix(syncAll)
+endfunction
+
 " ============================================================
 function! s:sync_T_DIR(fileLeft, fileRight, path, data, syncType, syncAll)
     let syncAll = a:syncAll
@@ -268,8 +268,8 @@ function! s:sync_T_DIR_LEFT(fileLeft, fileRight, path, data, syncType, syncAll)
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call s:syncBackupDir(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
-        call ZF_DirDiff_cpdir(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
+        call ZF_DirDiff_mkdir(a:fileRight . '/' . a:path)
+        call s:syncCopyDir(a:fileLeft, a:fileRight, a:path, a:data, a:syncType, syncAll)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(dir)] <= [RIGHT(___)]'
@@ -290,8 +290,8 @@ function! s:sync_T_DIR_RIGHT(fileLeft, fileRight, path, data, syncType, syncAll)
             let choice = s:syncConfirm(hint, a:fileLeft, a:fileRight, a:path, '/', '/')
             if choice == 'a' | let syncAll = 1 | elseif choice == 'n' || choice == 'q' | return choice | endif
         endif
-        call s:syncBackupDir(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
-        call ZF_DirDiff_cpdir(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
+        call ZF_DirDiff_mkdir(a:fileLeft . '/' . a:path)
+        call s:syncCopyDir(a:fileLeft, a:fileRight, a:path, a:data, a:syncType, syncAll)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm REMOVE?  ' . '[LEFT(___)] => [RIGHT(dir)]'
@@ -358,7 +358,8 @@ function! s:sync_T_CONFLICT_DIR_LEFT(fileLeft, fileRight, path, data, syncType, 
         endif
         call s:syncBackupFile(a:fileRight . '/' . a:path)
         call ZF_DirDiff_rmfile(a:fileRight . '/' . a:path)
-        call ZF_DirDiff_cpdir(a:fileLeft . '/' . a:path, a:fileRight . '/' . a:path)
+        call ZF_DirDiff_mkdir(a:fileRight . '/' . a:path)
+        call s:syncCopyDir(a:fileLeft, a:fileRight, a:path, a:data, a:syncType, 1)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] <= [RIGHT(file)]'
@@ -382,7 +383,8 @@ function! s:sync_T_CONFLICT_DIR_RIGHT(fileLeft, fileRight, path, data, syncType,
         endif
         call s:syncBackupFile(a:fileLeft . '/' . a:path)
         call ZF_DirDiff_rmfile(a:fileLeft . '/' . a:path)
-        call ZF_DirDiff_cpdir(a:fileRight . '/' . a:path, a:fileLeft . '/' . a:path)
+        call ZF_DirDiff_mkdir(a:fileLeft . '/' . a:path)
+        call s:syncCopyDir(a:fileLeft, a:fileRight, a:path, a:data, a:syncType, 1)
     else
         if !syncAll && get(t:, 'ZFDirDiffConfirmRemoveDir', g:ZFDirDiffConfirmRemoveDir)
             let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] => [RIGHT(dir)]'

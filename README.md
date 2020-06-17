@@ -85,7 +85,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `t:ZFDirDiff_fileRight` : abs path of right dir
     * `t:ZFDirDiff_fileLeftOrig` : original path passed from param
     * `t:ZFDirDiff_fileRightOrig` : original path passed from param
-    * `b:ZFDirDiff_data` : data return from `ZF_DirDiffCore()`
+    * `t:ZFDirDiff_hasDiff` : whether has diff
+    * `t:ZFDirDiff_data` : data return from `ZF_DirDiffCore()`
 
         ```
         [

@@ -162,16 +162,15 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
 
 " ============================================================
 function! ZF_DirDiff(fileLeft, fileRight)
-    let data = ZF_DirDiffCore(a:fileLeft, a:fileRight)
-    if len(data) == 1 && data[0].name == ''
+    let diffResult = ZF_DirDiffCore(a:fileLeft, a:fileRight)
+    if diffResult['exitCode'] == g:ZFDirDiff_exitCode_BothFile
         call s:diffByFile(a:fileLeft, a:fileRight)
     else
-        call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, data)
-        if empty(data)
-            redraw! | echo '[ZFDirDiff] no diff found'
-        endif
+        call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, diffResult)
     endif
-    return data
+    redraw!
+    echo diffResult['exitHint']
+    return diffResult
 endfunction
 
 function! ZF_DirDiffUpdate()
@@ -558,7 +557,7 @@ function! s:askWrite()
     endif
 endfunction
 
-function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
+function! s:ZF_DirDiff_UI(fileLeft, fileRight, diffResult)
     let ownerTab = tabpagenr()
 
     tabnew
@@ -568,7 +567,8 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, data)
     let t:ZFDirDiff_fileRight = ZF_DirDiffPathFormat(a:fileRight)
     let t:ZFDirDiff_fileLeftOrig = substitute(substitute(a:fileLeft, '\\', '/', 'g'), '/\+$', '', 'g')
     let t:ZFDirDiff_fileRightOrig = substitute(substitute(a:fileRight, '\\', '/', 'g'), '/\+$', '', 'g')
-    let t:ZFDirDiff_data = a:data
+    let t:ZFDirDiff_hasDiff = (a:diffResult['exitCode'] == g:ZFDirDiff_exitCode_HasDiff)
+    let t:ZFDirDiff_data = a:diffResult['data']
 
     call s:setupDiffDataUI()
 
