@@ -10,5 +10,9 @@ if test "0" = "1" \
     exit 1
 fi
 
-vim -c "call ZF_DirDiff(\"$PATH_A\", \"$PATH_B\")"
+if test "x-$ZFDIRDIFF_VIM" = ""; then
+    ZFDIRDIFF_VIM=vim
+fi
+
+"$ZFDIRDIFF_VIM" -c "call ZF_DirDiff(\"$PATH_A\", \"$PATH_B\")"
 
