@@ -198,6 +198,7 @@ function! ZF_DirDiffUpdate()
         return
     endif
 
+    let t:ZFDirDiff_data = diffResult['data']
     call s:setupDiffDataUI()
     for dataUI in t:ZFDirDiff_dataUI
         if get(folded, dataUI.data.path, 0)
