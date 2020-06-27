@@ -10,7 +10,7 @@ if test "0" = "1" \
     exit 1
 fi
 
-if test "x-$ZFDIRDIFF_VIM" = ""; then
+if test "x-$ZFDIRDIFF_VIM" = "x-"; then
     ZFDIRDIFF_VIM=vim
 fi
 
