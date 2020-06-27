@@ -151,9 +151,15 @@ endfunction
 " ============================================================
 function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
     if a:syncType == 'dl'
+        if a:data.type == 'T_DIR_RIGHT' || a:data.type == 'T_FILE_RIGHT'
+            return s:syncAllFix(a:syncAll)
+        endif
         let parent = a:fileLeft
         let isLeft = 1
     else
+        if a:data.type == 'T_DIR_LEFT' || a:data.type == 'T_FILE_LEFT'
+            return s:syncAllFix(a:syncAll)
+        endif
         let parent = a:fileRight
         let isLeft = 0
     endif
@@ -187,7 +193,17 @@ function! s:syncDelete(fileLeft, fileRight, path, data, syncType, syncAll)
 
     if isDir
         call s:syncBackupDir('', parent . '/' . a:path)
-        call ZF_DirDiff_rmdir(parent . '/' . a:path)
+        if empty(globpath(parent . '/' . a:path, '*')) || empty(a:data.children)
+            call ZF_DirDiff_rmdir(parent . '/' . a:path)
+        else
+            for child in a:data.children
+                let choice = ZF_DirDiffSync(a:fileLeft, a:fileRight, a:path . '/' . child.name, child, a:syncType, syncAll)
+                if choice == 'q' | return 'q' | elseif choice == 'a' | let syncAll = 1 | endif
+            endfor
+            if empty(globpath(parent . '/' . a:path, '*'))
+                call ZF_DirDiff_rmdir(parent . '/' . a:path)
+            endif
+        endif
     else
         call s:syncBackupFile(parent . '/' . a:path)
         call ZF_DirDiff_rmfile(parent . '/' . a:path)
