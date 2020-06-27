@@ -27,6 +27,10 @@ if !exists('g:ZFDirDiffUI_foldlevel')
     let g:ZFDirDiffUI_foldlevel = 0
 endif
 
+if !exists('g:ZFDirDiffUI_foldDirOnly')
+    let g:ZFDirDiffUI_foldDirOnly = 1
+endif
+
 " autocmd
 augroup ZF_DirDiff_augroup
     autocmd!
@@ -168,14 +172,12 @@ function! ZF_DirDiff(fileLeft, fileRight)
     else
         call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, diffResult)
     endif
-    redraw!
     echo diffResult['exitHint']
     return diffResult
 endfunction
 
 function! ZF_DirDiffUpdate()
     if !exists('t:ZFDirDiff_dataUI')
-        redraw!
         echo '[ZFDirDiff] no previous diff found'
         return
     endif
@@ -220,7 +222,6 @@ endfunction
 function! ZF_DirDiffOpen()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
     if index(['T_DIR', 'T_DIR_LEFT', 'T_DIR_RIGHT'], dataUI.data.type) >= 0
@@ -229,7 +230,6 @@ function! ZF_DirDiffOpen()
         return
     endif
     if index(['T_CONFLICT_DIR_LEFT', 'T_CONFLICT_DIR_RIGHT'], dataUI.data.type) >= 0
-        redraw!
         echo '[ZFDirDiff] can not be compared: ' . dataUI.data.path
         return
     endif
@@ -243,13 +243,12 @@ endfunction
 function! ZF_DirDiffFoldOpenAll()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI) || index(['T_DIR', 'T_DIR_LEFT', 'T_DIR_RIGHT'], dataUI.data.type) < 0
-        redraw
         return
     endif
 
     let dataUI.folded = 0
     let level = dataUI.data.level
-    let i = dataUI.index + 1
+    let i = dataUI.indexVisible + 1
     let iEnd = len(t:ZFDirDiff_dataUI)
     while i < iEnd
         let dataUI = t:ZFDirDiff_dataUI[i]
@@ -266,14 +265,13 @@ endfunction
 function! ZF_DirDiffFoldClose()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
 
     let level = dataUI.data.level
-    let i = dataUI.index - 1
+    let i = dataUI.indexVisible - 1
     while i >= 0
-        let dataUI = t:ZFDirDiff_dataUI[i]
+        let dataUI = t:ZFDirDiff_dataUIVisible[i]
         if dataUI.data.level < level
             let dataUI.folded = 1
             break
@@ -312,7 +310,6 @@ endfunction
 function! ZF_DirDiffDiffThisDir()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw!
         return
     endif
     if b:ZFDirDiff_isLeft
@@ -340,11 +337,11 @@ function! ZF_DirDiffDiffParentDir()
 endfunction
 
 function! ZF_DirDiffMarkToDiff()
-    let index = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
-    if index < 0
-                \ || index >= len(t:ZFDirDiff_dataUIVisible)
-                \ || (b:ZFDirDiff_isLeft && index(['T_DIR_RIGHT', 'T_FILE_RIGHT'], t:ZFDirDiff_dataUIVisible[index].data.type) >= 0)
-                \ || (!b:ZFDirDiff_isLeft && index(['T_DIR_LEFT', 'T_FILE_LEFT'], t:ZFDirDiff_dataUIVisible[index].data.type) >= 0)
+    let indexVisible = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
+    if indexVisible < 0
+                \ || indexVisible >= len(t:ZFDirDiff_dataUIVisible)
+                \ || (b:ZFDirDiff_isLeft && index(['T_DIR_RIGHT', 'T_FILE_RIGHT'], t:ZFDirDiff_dataUIVisible[indexVisible].data.type) >= 0)
+                \ || (!b:ZFDirDiff_isLeft && index(['T_DIR_LEFT', 'T_FILE_LEFT'], t:ZFDirDiff_dataUIVisible[indexVisible].data.type) >= 0)
         echo '[ZFDirDiff] no file under cursor'
         return
     endif
@@ -354,23 +351,23 @@ function! ZF_DirDiffMarkToDiff()
     if !exists('t:ZFDirDiff_markToDiff')
         let t:ZFDirDiff_markToDiff = {
                     \   'isLeft' : b:ZFDirDiff_isLeft,
-                    \   'index' : index,
+                    \   'indexVisible' : indexVisible,
                     \ }
         call s:ZF_DirDiff_redraw()
-        redraw | echo '[ZFDirDiff] mark again to diff with: '
-                    \ . parent . '/' . t:ZFDirDiff_dataUIVisible[index].data.path
+        echo '[ZFDirDiff] mark again to diff with: '
+                    \ . parent . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
         return
     endif
 
-    if t:ZFDirDiff_markToDiff.isLeft == b:ZFDirDiff_isLeft && t:ZFDirDiff_markToDiff.index == index
+    if t:ZFDirDiff_markToDiff.isLeft == b:ZFDirDiff_isLeft && t:ZFDirDiff_markToDiff.indexVisible == indexVisible
         unlet t:ZFDirDiff_markToDiff
         call s:ZF_DirDiff_redraw()
         return
     endif
 
     let fileLeft = (t:ZFDirDiff_markToDiff.isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
-                \ . '/' . t:ZFDirDiff_dataUIVisible[t:ZFDirDiff_markToDiff.index].data.path
-    let fileRight = parent . '/' . t:ZFDirDiff_dataUIVisible[index].data.path
+                \ . '/' . t:ZFDirDiff_dataUIVisible[t:ZFDirDiff_markToDiff.indexVisible].data.path
+    let fileRight = parent . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
     unlet t:ZFDirDiff_markToDiff
     call s:ZF_DirDiff_redraw()
     call ZF_DirDiff(fileLeft, fileRight)
@@ -423,8 +420,6 @@ function! ZF_DirDiffPrevDiff()
     call s:jumpDiff('prev')
 endfunction
 function! s:jumpDiff(nextOrPrev)
-    redraw
-
     if a:nextOrPrev == 'next'
         let iOffset = 1
         let iEnd = len(t:ZFDirDiff_dataUI)
@@ -472,7 +467,6 @@ endfunction
 function! ZF_DirDiffSyncToHere()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
     call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'r2l' : 'l2r', 0)
@@ -481,7 +475,6 @@ endfunction
 function! ZF_DirDiffSyncToThere()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
     call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'l2r' : 'r2l', 0)
@@ -491,7 +484,6 @@ endfunction
 function! ZF_DirDiffDeleteFile()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
     call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'dl' : 'dr', 0)
@@ -501,7 +493,6 @@ endfunction
 function! ZF_DirDiffGetPath()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
 
@@ -512,13 +503,11 @@ function! ZF_DirDiffGetPath()
         let @"=path
     endif
 
-    redraw
     echo '[ZFDirDiff] copied path: ' . path
 endfunction
 function! ZF_DirDiffGetFullPath()
     let dataUI = s:getDataUIUnderCursor()
     if empty(dataUI)
-        redraw
         return
     endif
 
@@ -529,7 +518,6 @@ function! ZF_DirDiffGetFullPath()
         let @"=path
     endif
 
-    redraw
     echo '[ZFDirDiff] copied full path: ' . path
 endfunction
 
@@ -554,7 +542,7 @@ function! s:diffByFile_setup(ownerDiffTab)
     let t:ZFDirDiff_ownerDiffTab = a:ownerDiffTab
 
     for k in g:ZFDirDiffKeymap_quitFileDiff
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuitFileDiff()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffQuitFileDiff()<cr>'
     endfor
 
     doautocmd User ZFDirDiff_FileDiffEnter
@@ -573,7 +561,6 @@ function! s:askWrite()
     if !&modified
         return
     endif
-    redraw!
     let input = confirm("[ZFDirDiff] File " . expand("%:p") . " modified, save?", "&Yes\n&No", 1)
     if (input == 1)
         w!
@@ -611,7 +598,6 @@ endfunction
 
 function! s:ZF_DirDiff_redraw()
     if !exists('t:ZFDirDiff_ownerTab')
-        redraw
         return
     endif
     let oldWin = winnr()
@@ -626,7 +612,6 @@ function! s:ZF_DirDiff_redraw()
 
     execute oldWin . 'wincmd w'
     call winrestview(oldState)
-    redraw
 endfunction
 
 function! s:setupDiffDataUI()
@@ -636,12 +621,16 @@ endfunction
 function! s:setupDiffDataUI_recursive(data)
     let foldLevel = g:ZFDirDiffUI_foldlevel
     for data in a:data
-        call add(t:ZFDirDiff_dataUI, {
+        let dataUI = {
                     \   'index' : len(t:ZFDirDiff_dataUI),
                     \   'indexVisible' : -1,
                     \   'folded' : (foldLevel > 0 && data.level >= foldLevel) ? 1 : 0,
                     \   'data' : data,
-                    \ })
+                    \ }
+        if g:ZFDirDiffUI_foldDirOnly && !dataUI.folded && (data.type == 'T_DIR_LEFT' || data.type == 'T_DIR_RIGHT')
+            let dataUI.folded = 1
+        endif
+        call add(t:ZFDirDiff_dataUI, dataUI)
         call s:setupDiffDataUI_recursive(data.children)
     endfor
 endfunction
@@ -774,55 +763,55 @@ endfunction
 
 function! s:setupDiffBuffer_keymap()
     for k in g:ZFDirDiffKeymap_update
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffUpdate()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffUpdate()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_open
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffOpen()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffOpen()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_foldOpenAll
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffFoldOpenAll()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffFoldOpenAll()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_foldClose
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffFoldClose()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffFoldClose()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_foldCloseAll
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffFoldCloseAll()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffFoldCloseAll()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_goParent
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffGoParent()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_diffThisDir
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDiffThisDir()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDiffThisDir()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_diffParentDir
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDiffParentDir()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_markToDiff
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffMarkToDiff()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffMarkToDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_quit
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffQuit()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffQuit()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_nextDiff
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffNextDiff()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffNextDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_prevDiff
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToThere
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_deleteFile
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getPath
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getFullPath
-        execute 'nnoremap <buffer> ' . k . ' :call ZF_DirDiffGetFullPath()<cr>'
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffGetFullPath()<cr>'
     endfor
 endfunction
 
@@ -852,14 +841,14 @@ function! s:setupDiffBuffer_highlight()
         call Fn_addHL('ZFDirDiffHL_Title', i)
     endfor
 
-    for index in range(len(t:ZFDirDiff_dataUIVisible))
-        let dataUI = t:ZFDirDiff_dataUIVisible[index]
+    for indexVisible in range(len(t:ZFDirDiff_dataUIVisible))
+        let dataUI = t:ZFDirDiff_dataUIVisible[indexVisible]
         let data = dataUI.data
-        let line = b:ZFDirDiff_iLineOffset + index + 1
+        let line = b:ZFDirDiff_iLineOffset + indexVisible + 1
 
         if exists('t:ZFDirDiff_markToDiff')
                     \ && b:ZFDirDiff_isLeft == t:ZFDirDiff_markToDiff.isLeft
-                    \ && index == t:ZFDirDiff_markToDiff.index
+                    \ && indexVisible == t:ZFDirDiff_markToDiff.indexVisible
             call Fn_addHL('ZFDirDiffHL_MarkToDiff', line)
             continue
         endif

@@ -303,10 +303,20 @@ function! s:parse(fileLeft, fileRight, content)
             let parent = matchLeft ? fileLeft : fileRight
             let path = substitute(path, parent, '', '')
             let path = path . '/' . file
-            if matchLeft
-                call s:addDiff(fileLeft, fileRight, data, path, filereadable(parent . path) ? 'T_FILE_LEFT' : 'T_DIR_LEFT')
+            if filereadable(parent . path)
+                call s:addDiff(fileLeft, fileRight, data, path, matchLeft ? 'T_FILE_LEFT' : 'T_FILE_RIGHT')
             else
-                call s:addDiff(fileLeft, fileRight, data, path, filereadable(parent . path) ? 'T_FILE_RIGHT' : 'T_DIR_RIGHT')
+                let files = split(globpath((matchLeft ? fileLeft : fileRight) . path, '*'), "\n")
+                if empty(files)
+                    call s:addDiff(fileLeft, fileRight, data, path, matchLeft ? 'T_DIR_LEFT' : 'T_DIR_RIGHT')
+                else
+                    let matchHeader = matchLeft ? fileLeft : fileRight
+                    let type = matchLeft ? 'T_FILE_LEFT' : 'T_FILE_RIGHT'
+                    for file in files
+                        call s:addDiff(fileLeft, fileRight, data,
+                                    \ substitute(substitute(file, '\', '/', 'g'), matchHeader, '', ''), type)
+                    endfor
+                endif
             endif
         elseif match(line, pConflictL) >= 0
             let left = substitute(line, pConflictL, '\1', '')
