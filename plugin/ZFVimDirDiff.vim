@@ -498,6 +498,7 @@ function! ZF_DirDiffGetPath()
     endif
 
     let path = fnamemodify(b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig, ':.') . '/' . dataUI.data.path
+    let path = substitute(path, '\', '/', 'g')
     if has('clipboard')
         let @*=path
     else
