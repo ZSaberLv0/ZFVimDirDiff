@@ -184,14 +184,36 @@ function! ZF_DirDiffUpdate()
     let fileRight = t:ZFDirDiff_fileRightOrig
     let isLeft = b:ZFDirDiff_isLeft
     let cursorPos = getpos('.')
+    let folded = {}
+    for dataUI in t:ZFDirDiff_dataUI
+        if dataUI.folded
+            let folded[dataUI.data.path] = 1
+        endif
+    endfor
 
-    call ZF_DirDiffQuit()
-    call ZF_DirDiff(fileLeft, fileRight)
+    let diffResult = ZF_DirDiffCore(fileLeft, fileRight)
+    if diffResult['exitCode'] == g:ZFDirDiff_exitCode_BothFile
+        call ZF_DirDiffQuit()
+        call s:diffByFile(a:fileLeft, a:fileRight)
+        return
+    endif
+
+    call s:setupDiffDataUI()
+    for dataUI in t:ZFDirDiff_dataUI
+        if get(folded, dataUI.data.path, 0)
+            let dataUI.folded = 1
+        endif
+    endfor
+    call s:ZF_DirDiff_redraw()
 
     if isLeft
         execute "normal! \<c-w>h"
     endif
     call setpos('.', cursorPos)
+endfunction
+
+function! ZF_DirDiffDataUIUnderCursor()
+    return s:getDataUIUnderCursor()
 endfunction
 
 function! ZF_DirDiffOpen()
@@ -571,6 +593,7 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, diffResult)
     let t:ZFDirDiff_data = a:diffResult['data']
 
     call s:setupDiffDataUI()
+    call s:setupDiffDataUIVisible()
 
     vsplit
     call s:setupDiffUI(1)
@@ -608,7 +631,6 @@ endfunction
 function! s:setupDiffDataUI()
     let t:ZFDirDiff_dataUI = []
     call s:setupDiffDataUI_recursive(t:ZFDirDiff_data)
-    call s:setupDiffDataUIVisible()
 endfunction
 function! s:setupDiffDataUI_recursive(data)
     let foldLevel = g:ZFDirDiffUI_foldlevel
