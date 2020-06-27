@@ -351,7 +351,7 @@ function! ZF_DirDiffMarkToDiff()
     if !exists('t:ZFDirDiff_markToDiff')
         let t:ZFDirDiff_markToDiff = {
                     \   'isLeft' : b:ZFDirDiff_isLeft,
-                    \   'indexVisible' : indexVisible,
+                    \   'index' : t:ZFDirDiff_dataUIVisible[indexVisible].index,
                     \ }
         call s:ZF_DirDiff_redraw()
         echo '[ZFDirDiff] mark again to diff with: '
@@ -359,14 +359,15 @@ function! ZF_DirDiffMarkToDiff()
         return
     endif
 
-    if t:ZFDirDiff_markToDiff.isLeft == b:ZFDirDiff_isLeft && t:ZFDirDiff_markToDiff.indexVisible == indexVisible
+    if t:ZFDirDiff_markToDiff.isLeft == b:ZFDirDiff_isLeft
+                \ && t:ZFDirDiff_markToDiff.index == t:ZFDirDiff_dataUIVisible[indexVisible].index
         unlet t:ZFDirDiff_markToDiff
         call s:ZF_DirDiff_redraw()
         return
     endif
 
     let fileLeft = (t:ZFDirDiff_markToDiff.isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
-                \ . '/' . t:ZFDirDiff_dataUIVisible[t:ZFDirDiff_markToDiff.indexVisible].data.path
+                \ . '/' . t:ZFDirDiff_dataUI[t:ZFDirDiff_markToDiff.index].data.path
     let fileRight = parent . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
     unlet t:ZFDirDiff_markToDiff
     call s:ZF_DirDiff_redraw()
@@ -612,6 +613,7 @@ function! s:ZF_DirDiff_redraw()
 
     execute oldWin . 'wincmd w'
     call winrestview(oldState)
+    redraw
 endfunction
 
 function! s:setupDiffDataUI()
@@ -759,6 +761,7 @@ function! s:setupDiffBuffer()
     set cursorbind
 
     doautocmd User ZFDirDiff_DirDiffEnter
+    redraw
 endfunction
 
 function! s:setupDiffBuffer_keymap()
@@ -848,7 +851,7 @@ function! s:setupDiffBuffer_highlight()
 
         if exists('t:ZFDirDiff_markToDiff')
                     \ && b:ZFDirDiff_isLeft == t:ZFDirDiff_markToDiff.isLeft
-                    \ && indexVisible == t:ZFDirDiff_markToDiff.indexVisible
+                    \ && t:ZFDirDiff_dataUIVisible[indexVisible].index == t:ZFDirDiff_markToDiff.index
             call Fn_addHL('ZFDirDiffHL_MarkToDiff', line)
             continue
         endif
