@@ -15,7 +15,8 @@ function! NERDTreeMarkToDiff()
     if empty(s:markToDiff)
         let s:markToDiff = path
         redraw!
-        echo '[ZFDirDiff] ready to diff: [LEFT]: ' . path
+        echo '[ZFDirDiff] ready to diff: [LEFT]: ./'
+                    \ . substitute(fnamemodify(path, ':.'), '\', '/', 'g')
         return
     endif
 

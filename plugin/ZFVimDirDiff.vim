@@ -346,8 +346,6 @@ function! ZF_DirDiffMarkToDiff()
         return
     endif
 
-    let parent = b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig
-
     if !exists('t:ZFDirDiff_markToDiff')
         let t:ZFDirDiff_markToDiff = {
                     \   'isLeft' : b:ZFDirDiff_isLeft,
@@ -355,7 +353,8 @@ function! ZF_DirDiffMarkToDiff()
                     \ }
         call s:ZF_DirDiff_redraw()
         echo '[ZFDirDiff] mark again to diff with: '
-                    \ . parent . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
+                    \ . (b:ZFDirDiff_isLeft ? '[LEFT]' : '[RIGHT]')
+                    \ . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
         return
     endif
 
@@ -368,7 +367,8 @@ function! ZF_DirDiffMarkToDiff()
 
     let fileLeft = (t:ZFDirDiff_markToDiff.isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
                 \ . '/' . t:ZFDirDiff_dataUI[t:ZFDirDiff_markToDiff.index].data.path
-    let fileRight = parent . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
+    let fileRight = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
+                \ . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
     unlet t:ZFDirDiff_markToDiff
     call s:ZF_DirDiff_redraw()
     call ZF_DirDiff(fileLeft, fileRight)
