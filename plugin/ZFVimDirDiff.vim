@@ -423,7 +423,7 @@ endfunction
 function! s:jumpDiff(nextOrPrev)
     if a:nextOrPrev == 'next'
         let iOffset = 1
-        let iEnd = len(t:ZFDirDiff_dataUI)
+        let iEnd = len(t:ZFDirDiff_dataUIVisible)
     else
         let iOffset = -1
         let iEnd = -1
@@ -433,16 +433,15 @@ function! s:jumpDiff(nextOrPrev)
     let iLine = curPos[1] - b:ZFDirDiff_iLineOffset - 1
     if iLine < 0
         let iLine = 0
-    elseif iLine >= len(t:ZFDirDiff_dataUI)
-        let iLine = len(t:ZFDirDiff_dataUI) - 1
+    elseif iLine >= len(t:ZFDirDiff_dataUIVisible)
+        let iLine = len(t:ZFDirDiff_dataUIVisible) - 1
     else
         let iLine += iOffset
     endif
 
     while iLine != iEnd
-        let data = t:ZFDirDiff_dataUI[iLine].data
-        if data.type != 'T_DIR' && data.type != 'T_SAME'
-            call s:focusDataUI(iLine)
+        let dataUI = t:ZFDirDiff_dataUIVisible[iLine]
+        if dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
             let curPos[1] = iLine + b:ZFDirDiff_iLineOffset + 1
             call setpos('.', curPos)
             normal! zz
@@ -655,14 +654,6 @@ function! s:setupDiffDataUIVisible()
             let i += 1
         endif
     endwhile
-endfunction
-function! s:focusDataUI(index)
-    let i = a:index
-    while i >= 0
-        let t:ZFDirDiff_dataUI[i].folded = 0
-        let i -= 1
-    endwhile
-    call s:setupDiffDataUIVisible()
 endfunction
 
 function! s:setupDiffUI(isLeft)
