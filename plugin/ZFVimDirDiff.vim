@@ -39,8 +39,10 @@ augroup ZF_DirDiff_augroup
 augroup END
 
 " function name to get the header text
-"     YourFunc(isLeft, fileLeft, fileRight)
+"     YourFunc()
 " return a list of string
+"   Use b:ZFDirDiff_isLeft, b:ZFDirDiff_fileLeft, b:ZFDirDiff_fileRight to
+"   build your header
 if !exists('g:ZFDirDiffUI_headerTextFunc')
     let g:ZFDirDiffUI_headerTextFunc = 'ZF_DirDiff_headerText'
 endif
