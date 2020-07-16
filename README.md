@@ -182,12 +182,16 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `let g:ZFDirDiffUI_filetypeLeft = 'ZFDirDiffLeft'` : `filetype` for left diff buffer
     * `let g:ZFDirDiffUI_filetypeRight = 'ZFDirDiffRight'` : `filetype` for right diff buffer
     * `let g:ZFDirDiffUI_tabstop = 2` : `tabstop` for diff buffer
-    * `let g:ZFDirDiffUI_headerTextFunc = 's:headerText'` : function name to get the header text
+    * `let g:ZFDirDiffUI_headerTextFunc = 'YourFunc'` : function name to get the header text
 
         ```
-        " return a list of strings
-        function! YourFunc(isLeft, fileLeft, fileRight)
-            return []
+        " return a list of strings - one per line
+        function! YourFunc()
+            if b:ZFDirDiff_isLeft
+                return [b:ZFDirDiff_fileLeft, '']
+            else
+                return [b:ZFDirDiff_fileRight, '']
+            endif
         endfunction
         ```
 
