@@ -1,17 +1,17 @@
 # ZFVimDirDiff
 
-vim script to diff two directories like BeyondCompare by using `diff`
+vim plugin to diff two directories like BeyondCompare by using `diff`
 
-inspired from [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
+inspired by [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
 
-* why another reproduce?
+* why another directory diffing plugin?
 
-    * format the `diff` result and output as vertical split file tree view,
+    * format the `diff` result as vertical split file tree view,
         which should be more human-readable
-    * more friendly file sync operation, keep same habit with vim's builtin `diff`
+    * more friendly file sync operation using the same mappings as builtin `vimdiff`
     * automatically backup before destructive actions
         (by [ZFVimBackup](https://github.com/ZSaberLv0/ZFVimBackup))
-    * better file or dir exclude logic
+    * better file or directory exclude logic
         (by [ZFVimIgnore](https://github.com/ZSaberLv0/ZFVimIgnore))
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimDirDiff/master/preview.png)
