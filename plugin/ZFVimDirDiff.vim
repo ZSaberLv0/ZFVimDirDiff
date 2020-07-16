@@ -178,31 +178,39 @@ function! ZF_DirDiff(fileLeft, fileRight)
     return diffResult
 endfunction
 
-function! ZF_DirDiffUpdate()
+" optional params:
+" * fileLeft, fileRight : when specified, use as new diff setting
+" * folded : a dict whose key is relative path to diff,
+"            indicates these items should be folded
+function! ZF_DirDiffUpdate(...)
     if !exists('t:ZFDirDiff_dataUI')
         echo '[ZFDirDiff] no previous diff found'
         return
     endif
 
-    let fileLeft = t:ZFDirDiff_fileLeftOrig
-    let fileRight = t:ZFDirDiff_fileRightOrig
+    let fileLeft = get(a:, 1, t:ZFDirDiff_fileLeftOrig)
+    let fileRight = get(a:, 2, t:ZFDirDiff_fileRightOrig)
+    let folded = get(a:, 3, {})
     let isLeft = b:ZFDirDiff_isLeft
     let cursorPos = getpos('.')
-    let folded = {}
-    for dataUI in t:ZFDirDiff_dataUI
-        if dataUI.folded
-            let folded[dataUI.data.path] = 1
-        endif
-    endfor
+    if fileLeft == t:ZFDirDiff_fileLeftOrig && fileRight == t:ZFDirDiff_fileRightOrig
+                \ && empty(folded)
+        let folded = ZF_DirDiffGetFolded()
+    endif
 
     let diffResult = ZF_DirDiffCore(fileLeft, fileRight)
+    let t:ZFDirDiff_fileLeft = ZF_DirDiffPathFormat(fileLeft)
+    let t:ZFDirDiff_fileRight = ZF_DirDiffPathFormat(fileRight)
+    let t:ZFDirDiff_fileLeftOrig = substitute(substitute(fileLeft, '\\', '/', 'g'), '/\+$', '', 'g')
+    let t:ZFDirDiff_fileRightOrig = substitute(substitute(fileRight, '\\', '/', 'g'), '/\+$', '', 'g')
+    let t:ZFDirDiff_hasDiff = (diffResult['exitCode'] == g:ZFDirDiff_exitCode_HasDiff)
+    let t:ZFDirDiff_data = diffResult['data']
     if diffResult['exitCode'] == g:ZFDirDiff_exitCode_BothFile
         call ZF_DirDiffQuit()
-        call s:diffByFile(a:fileLeft, a:fileRight)
+        call s:diffByFile(fileLeft, fileRight)
         return
     endif
 
-    let t:ZFDirDiff_data = diffResult['data']
     call s:setupDiffDataUI()
     for dataUI in t:ZFDirDiff_dataUI
         if get(folded, dataUI.data.path, 0)
@@ -215,6 +223,19 @@ function! ZF_DirDiffUpdate()
         execute "normal! \<c-w>h"
     endif
     call setpos('.', cursorPos)
+endfunction
+
+function! ZF_DirDiffGetFolded()
+    if !exists('t:ZFDirDiff_dataUI')
+        return {}
+    endif
+    let folded = {}
+    for dataUI in t:ZFDirDiff_dataUI
+        if dataUI.folded
+            let folded[dataUI.data.path] = 1
+        endif
+    endfor
+    return folded
 endfunction
 
 function! ZF_DirDiffDataUIUnderCursor()
@@ -305,8 +326,12 @@ endfunction
 function! ZF_DirDiffGoParent()
     let fileLeft = fnamemodify(t:ZFDirDiff_fileLeftOrig, ':h')
     let fileRight = fnamemodify(t:ZFDirDiff_fileRightOrig, ':h')
-    call ZF_DirDiffQuit()
-    call ZF_DirDiff(fileLeft, fileRight)
+    let name = fnamemodify(fileLeft, ':t')
+    let folded = {}
+    for item in keys(ZF_DirDiffGetFolded())
+        let folded[name . '/' . item] = 1
+    endfor
+    call ZF_DirDiffUpdate(fileLeft, fileRight, folded)
 endfunction
 
 function! ZF_DirDiffDiffThisDir()
@@ -327,15 +352,13 @@ function! ZF_DirDiffDiffThisDir()
             let fileRight = fnamemodify(fileRight, ':h')
         endif
     endif
-    call ZF_DirDiffQuit()
-    call ZF_DirDiff(fileLeft, fileRight)
+    call ZF_DirDiffUpdate(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffDiffParentDir()
     let fileLeft = b:ZFDirDiff_isLeft ? fnamemodify(t:ZFDirDiff_fileLeftOrig, ':h') : t:ZFDirDiff_fileLeftOrig
     let fileRight = !b:ZFDirDiff_isLeft ? fnamemodify(t:ZFDirDiff_fileRightOrig, ':h') : t:ZFDirDiff_fileRightOrig
-    call ZF_DirDiffQuit()
-    call ZF_DirDiff(fileLeft, fileRight)
+    call ZF_DirDiffUpdate(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffMarkToDiff()
@@ -372,8 +395,7 @@ function! ZF_DirDiffMarkToDiff()
     let fileRight = (b:ZFDirDiff_isLeft ? t:ZFDirDiff_fileLeftOrig : t:ZFDirDiff_fileRightOrig)
                 \ . '/' . t:ZFDirDiff_dataUIVisible[indexVisible].data.path
     unlet t:ZFDirDiff_markToDiff
-    call s:ZF_DirDiff_redraw()
-    call ZF_DirDiff(fileLeft, fileRight)
+    call ZF_DirDiffUpdate(fileLeft, fileRight)
 endfunction
 
 function! ZF_DirDiffQuit()
