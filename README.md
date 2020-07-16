@@ -42,29 +42,34 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     :call ZF_DirDiff("path A", "path B")
     ```
 
-1. use `:ZFDirMark` to mark two directories to start diff
+1. use `:ZFDirDiffMark` to mark two directories to start diff
 
-    Open a file and `:ZFDirMark` and the containing directory will be stored as
+    Open a file and `:ZFDirDiffMark` and the containing directory will be stored as
     a diff candidate. Then repeat with another file and you'll be asked to
     diff the two.
 
     ```
     :edit pathA/file.vim
-    :ZFDirMark
+    :ZFDirDiffMark
     :edit pathB/file.vim
-    :ZFDirMark
+    :ZFDirDiffMark
     ```
 
     Or integrate with your file manager. For vim-dirvish, add
     ~/.vim/ftplugin/dirvish.vim:
 
-        nnoremap <buffer> X :<C-u>ZFDirMark <C-r><C-l><CR>
+        nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r><C-l><CR>
 
     Or for netrw, add ~/.vim/ftplugin/netrw.vim:
 
-        nnoremap <buffer> X :<C-u>ZFDirMark <C-r>=b:netrw_curdir<CR>/<C-r><C-l><CR>
+        nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r>=b:netrw_curdir<CR>/<C-r><C-l><CR>
 
     Then X on two directories.
+
+1. you can also start diff from [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree):
+    inside nerdtree window, press `m` to popup menu,
+    press `z` to choose `mark to diff`,
+    and mark another node again to start diff
 
 1. you may also use it as command line diff tool
 
@@ -72,11 +77,6 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     vim -c 'call ZF_DirDiff("path A", "path B")'
     sh ZFDirDiff.sh "path A" "path B"
     ```
-
-1. you can also start diff from [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree):
-    inside nerdtree window, press `m` to popup menu,
-    press `z` to choose `mark to diff`,
-    and mark another node again to start diff
 
 1. within the diff window:
 
