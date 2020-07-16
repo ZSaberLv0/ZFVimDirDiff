@@ -1,17 +1,17 @@
 # ZFVimDirDiff
 
-vim script to diff two directories like BeyondCompare by using `diff`
+vim plugin to diff two directories like BeyondCompare by using `diff`
 
-inspired from [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
+inspired by [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
 
-* why another reproduce?
+* why another directory diffing plugin?
 
-    * format the `diff` result and output as vertical split file tree view,
+    * format the `diff` result as vertical split file tree view,
         which should be more human-readable
-    * more friendly file sync operation, keep same habit with vim's builtin `diff`
+    * more friendly file sync operation using the same mappings as builtin `vimdiff`
     * automatically backup before destructive actions
         (by [ZFVimBackup](https://github.com/ZSaberLv0/ZFVimBackup))
-    * better file or dir exclude logic
+    * better file or directory exclude logic
         (by [ZFVimIgnore](https://github.com/ZSaberLv0/ZFVimIgnore))
 
 ![](https://raw.githubusercontent.com/ZSaberLv0/ZFVimDirDiff/master/preview.png)
@@ -182,12 +182,16 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
     * `let g:ZFDirDiffUI_filetypeLeft = 'ZFDirDiffLeft'` : `filetype` for left diff buffer
     * `let g:ZFDirDiffUI_filetypeRight = 'ZFDirDiffRight'` : `filetype` for right diff buffer
     * `let g:ZFDirDiffUI_tabstop = 2` : `tabstop` for diff buffer
-    * `let g:ZFDirDiffUI_headerTextFunc = 's:headerText'` : function name to get the header text
+    * `let g:ZFDirDiffUI_headerTextFunc = 'YourFunc'` : function name to get the header text
 
         ```
-        " return a list of strings
-        function! YourFunc(isLeft, fileLeft, fileRight)
-            return []
+        " return a list of strings - one per line
+        function! YourFunc()
+            if b:ZFDirDiff_isLeft
+                return [b:ZFDirDiff_fileLeft, '']
+            else
+                return [b:ZFDirDiff_fileRight, '']
+            endif
         endfunction
         ```
 
