@@ -220,6 +220,21 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         endfunction
         ```
 
+    * `let g:ZFDirDiffUI_confirmHintHeaderFunc = 'YourFunc'` : function name to get the header text for confirmation prompts
+        * type:
+            * 'l2r' : sync left to right
+            * 'r2l' : sync right to left
+            * 'dl' : delete left
+            * 'dr' : delete right
+            * 'diff' : diff two path
+
+        ```
+        " return a list of strings - one per line
+        function! YourFunc(fileLeft, fileRight, type)
+            return ['LEFT: '.. a:fileLeft, 'RIGHT: '.. a:fileRight]
+        endfunction
+        ```
+
     * `let g:ZFDirDiffUI_autoBackup = 1` or `let t:ZFDirDiffUI_autoBackup = 1` :
         whether backup before write or delete files,
         require `ZSaberLv0/ZFVimBackup` installed
