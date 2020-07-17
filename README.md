@@ -256,6 +256,8 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         ```
         highlight link ZFDirDiffHL_Title Title
         highlight link ZFDirDiffHL_Dir Directory
+        highlight link ZFDirDiffHL_DirContainDiff Directory
+        highlight link ZFDirDiffHL_Same Folded
         highlight link ZFDirDiffHL_Diff DiffText
         highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
         highlight link ZFDirDiffHL_DirOnlyThere Normal

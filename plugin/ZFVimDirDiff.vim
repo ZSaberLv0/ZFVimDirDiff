@@ -200,10 +200,10 @@ if !exists('g:ZFDirDiffKeymap_getFullPath')
 endif
 
 " highlight
-" {Title,Dir,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile}
+" {Title,Dir,DirContainDiff,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile,MarkToDiff}
 highlight link ZFDirDiffHL_Title Title
 highlight link ZFDirDiffHL_Dir Directory
-highlight link ZFDirDiffHL_DirFolded Directory
+highlight link ZFDirDiffHL_DirContainDiff Directory
 highlight link ZFDirDiffHL_Same Folded
 highlight link ZFDirDiffHL_Diff DiffText
 highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
@@ -928,8 +928,8 @@ function! s:setupDiffBuffer_highlight()
 
         if 0
         elseif data.type == 'T_DIR'
-            if dataUI.folded
-                call Fn_addHL('ZFDirDiffHL_DirFolded', line)
+            if dataUI.data.diff
+                call Fn_addHL('ZFDirDiffHL_DirContainDiff', line)
             else
                 call Fn_addHL('ZFDirDiffHL_Dir', line)
             endif

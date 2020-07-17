@@ -137,6 +137,7 @@ function! ZF_DirDiffHL_resetHL_sign()
 
     sign define ZFDirDiffHLSign_Title linehl=ZFDirDiffHL_Title
     sign define ZFDirDiffHLSign_Dir linehl=ZFDirDiffHL_Dir
+    sign define ZFDirDiffHLSign_DirContainDiff linehl=ZFDirDiffHL_DirContainDiff
     sign define ZFDirDiffHLSign_Same linehl=ZFDirDiffHL_Same
     sign define ZFDirDiffHLSign_Diff linehl=ZFDirDiffHL_Diff
     sign define ZFDirDiffHLSign_DirOnlyHere linehl=ZFDirDiffHL_DirOnlyHere
@@ -145,6 +146,7 @@ function! ZF_DirDiffHL_resetHL_sign()
     sign define ZFDirDiffHLSign_FileOnlyThere linehl=ZFDirDiffHL_FileOnlyThere
     sign define ZFDirDiffHLSign_ConflictDir linehl=ZFDirDiffHL_ConflictDir
     sign define ZFDirDiffHLSign_ConflictFile linehl=ZFDirDiffHL_ConflictFile
+    sign define ZFDirDiffHLSign_MarkToDiff linehl=ZFDirDiffHL_MarkToDiff
 
     let b:ZFDirDiffHLSignIndex = 1
 endfunction
