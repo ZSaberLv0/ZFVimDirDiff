@@ -247,6 +247,14 @@ function! ZF_DirDiffPathFormat(path, ...)
     return substitute(path, '\\', '/', 'g')
 endfunction
 
+function! ZF_DirDiffPathHint(path, ...)
+    if isdirectory(a:path)
+        return ZF_DirDiffPathFormat(a:path, get(a:, 1, '')) . '/'
+    else
+        return ZF_DirDiffPathFormat(a:path, get(a:, 1, ''))
+    endif
+endfunction
+
 " ============================================================
 " $ diff -rq left right
 " Files left/p0/p1/a.txt and right/p0/p1/a.txt differ

@@ -49,13 +49,49 @@ endif
 function! ZF_DirDiff_headerText()
     let text = []
     if b:ZFDirDiff_isLeft
-        call add(text, '[LEFT]: ' . ZF_DirDiffPathFormat(t:ZFDirDiff_fileLeft, ':~') . '/')
-        call add(text, '[LEFT]: ' . ZF_DirDiffPathFormat(t:ZFDirDiff_fileLeft, ':.') . '/')
+        call add(text, '[LEFT]: ' . ZF_DirDiffPathHint(t:ZFDirDiff_fileLeft, ':~'))
+        call add(text, '[LEFT]: ' . ZF_DirDiffPathHint(t:ZFDirDiff_fileLeft, ':.'))
     else
-        call add(text, '[RIGHT]: ' . ZF_DirDiffPathFormat(t:ZFDirDiff_fileRight, ':~') . '/')
-        call add(text, '[RIGHT]: ' . ZF_DirDiffPathFormat(t:ZFDirDiff_fileRight, ':.') . '/')
+        call add(text, '[RIGHT]: ' . ZF_DirDiffPathHint(t:ZFDirDiff_fileRight, ':~'))
+        call add(text, '[RIGHT]: ' . ZF_DirDiffPathHint(t:ZFDirDiff_fileRight, ':.'))
     endif
     call add(text, '------------------------------------------------------------')
+    return text
+endfunction
+
+" function name to get the confirm hint
+"     YourFunc(fileLeft, fileRight, type)
+" return a list of string
+" type:
+"   * 'l2r' : sync left to right
+"   * 'r2l' : sync right to left
+"   * 'dl' : delete left
+"   * 'dr' : delete right
+"   * 'diff' : diff two path
+if !exists('g:ZFDirDiffUI_confirmHintHeaderFunc')
+    let g:ZFDirDiffUI_confirmHintHeaderFunc = 'ZF_DirDiff_confirmHintHeader'
+endif
+function! ZF_DirDiff_confirmHintHeader(fileLeft, fileRight, type)
+    let text = []
+    call add(text, '----------------------------------------')
+    if !empty(a:fileLeft)
+        let path = ZF_DirDiffPathHint(a:fileLeft, ':~')
+        let relpath = ZF_DirDiffPathHint(a:fileLeft, ':.')
+        call add(text, '[LEFT] : ' . path)
+        if path != relpath
+            call add(text, '    ' . relpath)
+        endif
+    endif
+    if !empty(a:fileRight)
+        let path = ZF_DirDiffPathHint(a:fileRight, ':~')
+        let relpath = ZF_DirDiffPathHint(a:fileRight, ':.')
+        call add(text, '[RIGHT]: ' . path)
+        if path != relpath
+            call add(text, '    ' . relpath)
+        endif
+    endif
+    call add(text, '----------------------------------------')
+    call add(text, "\n")
     return text
 endfunction
 

@@ -43,14 +43,9 @@ endfunction
 function! s:PromptForDiff(fileLeft, fileRight) abort
     redraw!
 
-    echo '----------------------------------------'
-    echo '[LEFT]     : ' . ZF_DirDiffPathFormat(a:fileLeft, ':.') . '/'
-    echo '    ' . ZF_DirDiffPathFormat(a:fileLeft, ':p') . '/'
-    echo '[RIGHT]    : ' . ZF_DirDiffPathFormat(a:fileRight, ':.') . '/'
-    echo '    ' . ZF_DirDiffPathFormat(a:fileRight, ':p') . '/'
-    echo '----------------------------------------'
-    echo "\n"
-
+    let Fn_headerText = function(g:ZFDirDiffUI_confirmHintHeaderFunc)
+    let headerText = Fn_headerText(a:fileLeft, a:fileRight, 'diff')
+    echo join(headerText, "\n")
     echo '[ZFDirDiff] diff these dirs?'
     echo '  (y)es'
     echo '  (n)o'
@@ -72,7 +67,7 @@ endfunction
 
 function! s:MarkAndPrint(path, msg)
     let s:dir_marked_for_diff = a:path
-    let shortname = s:dir_marked_for_diff
+    let shortname = ZF_DirDiffPathHint(s:dir_marked_for_diff)
     if len(a:msg) + len(shortname) > &columns
         " Try to avoid "Press ENTER to continue"
         let shortname = pathshorten(shortname)
