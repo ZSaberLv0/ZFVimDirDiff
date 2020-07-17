@@ -109,6 +109,7 @@ let g:ZFDirDiff_exitCode_BothFile = -9999
 "               // T_FILE_RIGHT: only right exists and it is dir
 "               // T_CONFLICT_DIR_LEFT: left is dir and right is file
 "               // T_CONFLICT_DIR_RIGHT: left is file and right is dir
+"           'diff' : '0/1, whether this node or children node contains diff',
 "           'children' : [
 "               ...
 "           ],
@@ -380,6 +381,7 @@ function! s:addDiff(fileLeft, fileRight, data, path, type)
                     \   'path' : nameList[nameIndex],
                     \   'name' : nameList[nameIndex],
                     \   'type' : 'T_DIR',
+                    \   'diff' : a:type != 'T_SAME' ? 1 : 0,
                     \   'children' : [],
                     \ }
         if nameIndex > 0

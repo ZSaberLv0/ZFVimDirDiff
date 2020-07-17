@@ -132,6 +132,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
                     // T_FILE_RIGHT: only right exists and it is dir
                     // T_CONFLICT_DIR_LEFT: left is dir and right is file
                     // T_CONFLICT_DIR_RIGHT: left is file and right is dir
+                'diff' : '0/1, whether this node or children node contains diff',
                 'children' : [
                     ...
                 ],

@@ -27,10 +27,6 @@ if !exists('g:ZFDirDiffUI_foldlevel')
     let g:ZFDirDiffUI_foldlevel = 0
 endif
 
-if !exists('g:ZFDirDiffUI_foldDirOnly')
-    let g:ZFDirDiffUI_foldDirOnly = 1
-endif
-
 " autocmd
 augroup ZF_DirDiff_augroup
     autocmd!
@@ -93,6 +89,33 @@ function! ZF_DirDiff_confirmHintHeader(fileLeft, fileRight, type)
     call add(text, '----------------------------------------')
     call add(text, "\n")
     return text
+endfunction
+
+" function name to setup fold after each update
+"     YourFunc(foldedMap)
+" each `t:ZFDirDiff_dataUI[line].folded` is reset to 0 before entering this function,
+" you may update it accorrding to your case
+" params:
+" * foldedMap : Dict<path, dummy>,
+"   store previous folded path (relative to fileLeft/fileRight)
+if !exists('g:ZFDirDiffUI_foldSetupFunc')
+    let g:ZFDirDiffUI_foldSetupFunc = 'ZF_DirDiff_foldSetup'
+endif
+function! ZF_DirDiff_foldSetup(foldedMap)
+    if !empty(a:foldedMap)
+        for dataUI in t:ZFDirDiff_dataUI
+            if exists('a:foldedMap[dataUI.data.path]')
+                let dataUI.folded = 1
+            endif
+        endfor
+    else
+        for dataUI in t:ZFDirDiff_dataUI
+            if g:ZFDirDiffUI_foldlevel > 0 && dataUI.data.level >= g:ZFDirDiffUI_foldlevel
+                        \ || !dataUI.data.diff
+                let dataUI.folded = 1
+            endif
+        endfor
+    endif
 endfunction
 
 " whether need to sync same file
@@ -216,8 +239,8 @@ endfunction
 
 " optional params:
 " * fileLeft, fileRight : when specified, use as new diff setting
-" * folded : a dict whose key is relative path to diff,
-"            indicates these items should be folded
+" * foldedMap : a dict whose key is relative path to diff,
+"   indicates these items should be folded
 function! ZF_DirDiffUpdate(...)
     if !exists('t:ZFDirDiff_dataUI')
         echo '[ZFDirDiff] no previous diff found'
@@ -226,12 +249,12 @@ function! ZF_DirDiffUpdate(...)
 
     let fileLeft = get(a:, 1, t:ZFDirDiff_fileLeftOrig)
     let fileRight = get(a:, 2, t:ZFDirDiff_fileRightOrig)
-    let folded = get(a:, 3, {})
+    let foldedMap = get(a:, 3, {})
     let isLeft = b:ZFDirDiff_isLeft
     let cursorPos = getpos('.')
     if fileLeft == t:ZFDirDiff_fileLeftOrig && fileRight == t:ZFDirDiff_fileRightOrig
-                \ && empty(folded)
-        let folded = ZF_DirDiffGetFolded()
+                \ && empty(foldedMap)
+        let foldedMap = ZF_DirDiffGetFolded()
     endif
 
     let diffResult = ZF_DirDiffCore(fileLeft, fileRight)
@@ -248,11 +271,8 @@ function! ZF_DirDiffUpdate(...)
     endif
 
     call s:setupDiffDataUI()
-    for dataUI in t:ZFDirDiff_dataUI
-        if get(folded, dataUI.data.path, 0)
-            let dataUI.folded = 1
-        endif
-    endfor
+    let Fn_foldSetup = function(g:ZFDirDiffUI_foldSetupFunc)
+    call Fn_foldSetup(foldedMap)
     call s:ZF_DirDiff_redraw()
 
     if isLeft
@@ -363,11 +383,11 @@ function! ZF_DirDiffGoParent()
     let fileLeft = fnamemodify(t:ZFDirDiff_fileLeftOrig, ':h')
     let fileRight = fnamemodify(t:ZFDirDiff_fileRightOrig, ':h')
     let name = fnamemodify(fileLeft, ':t')
-    let folded = {}
+    let foldedMap = {}
     for item in keys(ZF_DirDiffGetFolded())
-        let folded[name . '/' . item] = 1
+        let foldedMap[name . '/' . item] = 1
     endfor
-    call ZF_DirDiffUpdate(fileLeft, fileRight, folded)
+    call ZF_DirDiffUpdate(fileLeft, fileRight, foldedMap)
 endfunction
 
 function! ZF_DirDiffDiffThisDir()
@@ -511,14 +531,15 @@ function! s:jumpDiff(nextOrPrev)
     endwhile
 endfunction
 
-function! ZF_DirDiffFoldLevelUpdate(foldLevel)
-    if a:foldLevel <= 0
+function! ZF_DirDiffFoldLevelUpdate(...)
+    let foldLevel = get(a:, 1, g:ZFDirDiffUI_foldlevel)
+    if foldLevel <= 0
         for dataUI in t:ZFDirDiff_dataUI
             let dataUI.folded = 0
         endfor
     else
         for dataUI in t:ZFDirDiff_dataUI
-            let dataUI.folded = (dataUI.data.level >= a:foldLevel) ? 1 : 0
+            let dataUI.folded = (dataUI.data.level >= foldLevel) ? 1 : 0
         endfor
     endif
     call s:setupDiffDataUIVisible()
@@ -642,19 +663,22 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, diffResult)
     let t:ZFDirDiff_data = a:diffResult['data']
 
     call s:setupDiffDataUI()
+    let Fn_foldSetup = function(g:ZFDirDiffUI_foldSetupFunc)
+    call Fn_foldSetup({})
     call s:setupDiffDataUIVisible()
 
     vsplit
+    enew
     call s:setupDiffUI(1)
 
     execute "normal! \<c-w>l"
-    enew
     call s:setupDiffUI(0)
 
     execute 'normal! gg0'
     if b:ZFDirDiff_iLineOffset > 0
         execute 'normal! ' . b:ZFDirDiff_iLineOffset . 'j'
     endif
+    redraw
 endfunction
 
 function! s:ZF_DirDiff_redraw()
@@ -681,17 +705,13 @@ function! s:setupDiffDataUI()
     call s:setupDiffDataUI_recursive(t:ZFDirDiff_data)
 endfunction
 function! s:setupDiffDataUI_recursive(data)
-    let foldLevel = g:ZFDirDiffUI_foldlevel
     for data in a:data
         let dataUI = {
                     \   'index' : len(t:ZFDirDiff_dataUI),
                     \   'indexVisible' : -1,
-                    \   'folded' : (foldLevel > 0 && data.level >= foldLevel) ? 1 : 0,
+                    \   'folded' : 0,
                     \   'data' : data,
                     \ }
-        if g:ZFDirDiffUI_foldDirOnly && !dataUI.folded && (data.type == 'T_DIR_LEFT' || data.type == 'T_DIR_RIGHT')
-            let dataUI.folded = 1
-        endif
         call add(t:ZFDirDiff_dataUI, dataUI)
         call s:setupDiffDataUI_recursive(data.children)
     endfor
@@ -768,10 +788,9 @@ function! s:setupDiffItemList(contents)
                         \ || (b:ZFDirDiff_isLeft && (data.type == 'T_DIR_LEFT' || data.type == 'T_CONFLICT_DIR_LEFT'))
                         \ || (!b:ZFDirDiff_isLeft && (data.type == 'T_DIR_RIGHT' || data.type == 'T_CONFLICT_DIR_RIGHT'))
 
-            if dataUI.folded
-                let mark = g:ZFDirDiffUI_dirExpandable
-            elseif isDir
-                if (b:ZFDirDiff_isLeft && data.type == 'T_CONFLICT_DIR_LEFT')
+            if isDir
+                if dataUI.folded
+                            \ || (b:ZFDirDiff_isLeft && data.type == 'T_CONFLICT_DIR_LEFT')
                             \ || (!b:ZFDirDiff_isLeft && data.type == 'T_CONFLICT_DIR_RIGHT')
                     let mark = g:ZFDirDiffUI_dirExpandable
                 else
@@ -813,7 +832,6 @@ function! s:setupDiffBuffer()
     set cursorbind
 
     doautocmd User ZFDirDiff_DirDiffEnter
-    redraw
 endfunction
 
 function! s:setupDiffBuffer_keymap()
