@@ -906,7 +906,7 @@ function! s:setupDiffBuffer_highlight()
 
     call Fn_resetHL()
 
-    if len(t:ZFDirDiff_dataUIVisible) > get(g:, 'ZFDirDiffHLMaxLine', 200)
+    if len(t:ZFDirDiff_dataUIVisible) > get(g:, 'ZFDirDiffHLMaxLine', 3000)
         return
     endif
 
