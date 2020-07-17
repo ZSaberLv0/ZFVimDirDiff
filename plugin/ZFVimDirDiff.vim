@@ -203,7 +203,7 @@ endif
 " {Title,Dir,DirContainDiff,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile,MarkToDiff}
 highlight link ZFDirDiffHL_Title Title
 highlight link ZFDirDiffHL_Dir Directory
-highlight link ZFDirDiffHL_DirContainDiff Directory
+highlight link ZFDirDiffHL_DirContainDiff DiffAdd
 highlight link ZFDirDiffHL_Same Folded
 highlight link ZFDirDiffHL_Diff DiffText
 highlight link ZFDirDiffHL_DirOnlyHere DiffAdd

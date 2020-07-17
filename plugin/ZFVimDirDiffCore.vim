@@ -355,6 +355,7 @@ function! s:addDiff(fileLeft, fileRight, data, path, type)
             return
         endif
     endif
+    let diff = (a:type != 'T_SAME') ? 1 : 0
     let item = a:data
     let nameList = split(path, '/')
     let nameIndex = 0
@@ -362,6 +363,9 @@ function! s:addDiff(fileLeft, fileRight, data, path, type)
     while nameIndex < len(nameList)
         let nameExists = 0
         for itItem in item
+            if diff
+                let itItem.diff = diff
+            endif
             if itItem.name == nameList[nameIndex]
                 call s:fixDirOnlyType(itItem, a:type)
                 let nameExists = 1
@@ -381,7 +385,7 @@ function! s:addDiff(fileLeft, fileRight, data, path, type)
                     \   'path' : nameList[nameIndex],
                     \   'name' : nameList[nameIndex],
                     \   'type' : 'T_DIR',
-                    \   'diff' : a:type != 'T_SAME' ? 1 : 0,
+                    \   'diff' : diff,
                     \   'children' : [],
                     \ }
         if nameIndex > 0
