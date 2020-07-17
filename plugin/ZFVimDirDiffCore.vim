@@ -363,10 +363,10 @@ function! s:addDiff(fileLeft, fileRight, data, path, type)
     while nameIndex < len(nameList)
         let nameExists = 0
         for itItem in item
-            if diff
-                let itItem.diff = diff
-            endif
             if itItem.name == nameList[nameIndex]
+                if diff
+                    let itItem.diff = diff
+                endif
                 call s:fixDirOnlyType(itItem, a:type)
                 let nameExists = 1
                 let item = itItem.children
