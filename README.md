@@ -213,9 +213,9 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         " return a list of strings - one per line
         function! YourFunc()
             if b:ZFDirDiff_isLeft
-                return [b:ZFDirDiff_fileLeft, '']
+                return [t:ZFDirDiff_fileLeft, '']
             else
-                return [b:ZFDirDiff_fileRight, '']
+                return [t:ZFDirDiff_fileRight, '']
             endif
         endfunction
         ```
