@@ -231,7 +231,7 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         ```
         " return a list of strings - one per line
         function! YourFunc(fileLeft, fileRight, type)
-            return ['LEFT: '.. a:fileLeft, 'RIGHT: '.. a:fileRight]
+            return ['LEFT: ' . a:fileLeft, 'RIGHT: ' . a:fileRight]
         endfunction
         ```
 

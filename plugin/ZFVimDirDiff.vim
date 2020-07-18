@@ -841,7 +841,7 @@ function! s:setupDiffBuffer()
     setlocal nomodifiable
     set scrollbind
     set cursorbind
-    augroup ZF_DirDiff_diffBuffer_augroup_{bufnr()}
+    augroup ZF_DirDiff_diffBuffer_augroup_{bufnr('')}
         autocmd!
         autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
                     \| augroup ZF_DirDiff_diffBuffer_augroup_{expand('<abuf>')}

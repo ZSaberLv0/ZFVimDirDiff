@@ -18,7 +18,7 @@ function! ZF_DirDiffHL_addHL_matchaddWithCursorLineHL(group, line)
 endfunction
 
 function! s:setCursorLineHL()
-    augroup ZF_DirDiffHL_CursorLine_augroup_{bufnr()}
+    augroup ZF_DirDiffHL_CursorLine_augroup_{bufnr('')}
         autocmd!
         autocmd BufDelete <buffer> call s:restoreCursorLineHL()
                     \| augroup ZF_DirDiffHL_CursorLine_augroup_{expand('<abuf>')}
@@ -102,7 +102,7 @@ endfunction
 function! ZF_DirDiffHL_resetHL_matchadd()
     call clearmatches()
     let b:ZF_DirDiffHL_matchadd_HLSaved = []
-    augroup ZF_DirDiffHL_matchadd_augroup_{bufnr()}
+    augroup ZF_DirDiffHL_matchadd_augroup_{bufnr('')}
         autocmd!
         autocmd BufDelete <buffer> call clearmatches()
                     \| augroup ZF_DirDiffHL_matchadd_augroup_{expand('<abuf>')}
@@ -167,7 +167,7 @@ endfunction
 " use sign-commands
 " * current line would have no highlight
 function! ZF_DirDiffHL_resetHL_sign()
-    silent! execute 'sign unplace * buffer=' . bufnr('.')
+    silent! execute 'sign unplace * buffer=' . bufnr('')
 
     sign define ZFDirDiffHLSign_Title linehl=ZFDirDiffHL_Title
     sign define ZFDirDiffHLSign_Dir linehl=ZFDirDiffHL_Dir

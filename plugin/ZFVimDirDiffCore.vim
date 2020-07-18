@@ -240,7 +240,7 @@ function! ZF_DirDiffPathFormat(path, ...)
         if get(a:, 1, '') == ':.' && path != mod_path
             " If relative path under cwd, then prefix with . to show it's
             " relative.
-            let mod_path = './'.. mod_path
+            let mod_path = './' . mod_path
         endif
         let path = mod_path
     endif
