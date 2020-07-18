@@ -213,10 +213,25 @@ if you like my work, [check here](https://github.com/ZSaberLv0?utf8=%E2%9C%93&ta
         " return a list of strings - one per line
         function! YourFunc()
             if b:ZFDirDiff_isLeft
-                return [b:ZFDirDiff_fileLeft, '']
+                return [t:ZFDirDiff_fileLeft, '']
             else
-                return [b:ZFDirDiff_fileRight, '']
+                return [t:ZFDirDiff_fileRight, '']
             endif
+        endfunction
+        ```
+
+    * `let g:ZFDirDiffUI_confirmHintHeaderFunc = 'YourFunc'` : function name to get the header text for confirmation prompts
+        * type:
+            * 'l2r' : sync left to right
+            * 'r2l' : sync right to left
+            * 'dl' : delete left
+            * 'dr' : delete right
+            * 'diff' : diff two path
+
+        ```
+        " return a list of strings - one per line
+        function! YourFunc(fileLeft, fileRight, type)
+            return ['LEFT: '.. a:fileLeft, 'RIGHT: '.. a:fileRight]
         endfunction
         ```
 
