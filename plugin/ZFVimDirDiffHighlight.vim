@@ -18,10 +18,10 @@ function! ZF_DirDiffHL_addHL_matchaddWithCursorLineHL(group, line)
 endfunction
 
 function! s:setCursorLineHL()
-    augroup ZF_DirDiffHL_CursorLine_augroup_{winnr()}
+    augroup ZF_DirDiffHL_CursorLine_augroup_{bufnr()}
         autocmd!
         autocmd BufDelete <buffer> call s:restoreCursorLineHL()
-                    \| augroup ZF_DirDiffHL_CursorLine_augroup_{winnr()}
+                    \| augroup ZF_DirDiffHL_CursorLine_augroup_{expand('<abuf>')}
                     \|     autocmd!
                     \| augroup END
         autocmd BufHidden <buffer> call s:restoreCursorLineHL()
@@ -105,7 +105,7 @@ function! ZF_DirDiffHL_resetHL_matchadd()
     augroup ZF_DirDiffHL_matchadd_augroup_{bufnr()}
         autocmd!
         autocmd BufDelete <buffer> call clearmatches()
-                    \| augroup ZF_DirDiffHL_matchadd_augroup_{bufnr()}
+                    \| augroup ZF_DirDiffHL_matchadd_augroup_{expand('<abuf>')}
                     \|     autocmd!
                     \| augroup END
         autocmd BufHidden <buffer> call clearmatches()
