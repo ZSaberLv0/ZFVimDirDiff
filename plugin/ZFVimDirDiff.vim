@@ -679,10 +679,10 @@ function! s:ZF_DirDiff_UI(fileLeft, fileRight, diffResult)
     call s:setupDiffDataUIVisible()
 
     vsplit
-    enew
     call s:setupDiffUI(1)
 
     execute "normal! \<c-w>l"
+    enew
     call s:setupDiffUI(0)
 
     execute 'normal! gg0'
@@ -841,17 +841,21 @@ function! s:setupDiffBuffer()
     setlocal nomodifiable
     set scrollbind
     set cursorbind
-    augroup ZF_DirDiff_diffBuffer_augroup_{bufnr('')}
+    execute 'augroup ZF_DirDiff_diffBuffer_augroup_' . bufnr('')
         autocmd!
         autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
-                    \| augroup ZF_DirDiff_diffBuffer_augroup_{expand('<abuf>')}
-                    \|     autocmd!
-                    \| augroup END
+                    \| call s:ZF_DirDiff_diffBuffer_augroup_cleanup()
         autocmd BufHidden <buffer> set noscrollbind | set nocursorbind
         autocmd BufEnter <buffer> set scrollbind | set cursorbind
     augroup END
 
     doautocmd User ZFDirDiff_DirDiffEnter
+endfunction
+
+function! s:ZF_DirDiff_diffBuffer_augroup_cleanup()
+    execute 'augroup ZF_DirDiff_diffBuffer_augroup_' . expand('<abuf>')
+        autocmd!
+    augroup END
 endfunction
 
 function! s:setupDiffBuffer_keymap()
