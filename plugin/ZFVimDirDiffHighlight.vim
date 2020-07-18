@@ -11,32 +11,40 @@ endfunction
 " use matchadd() and save/restore CursorLine highlight automatically
 function! ZF_DirDiffHL_resetHL_matchaddWithCursorLineHL()
     call ZF_DirDiffHL_resetHL_matchadd()
-    if !b:ZFDirDiff_isLeft
-        return
-    endif
-
-    call s:restoreCursorLineHL()
-    call s:saveCursorLineHL()
-
-    highlight CursorLine gui=underline guibg=NONE guifg=NONE
-    highlight CursorLine cterm=underline ctermbg=NONE ctermfg=NONE
-
-    augroup ZF_DirDiffHL_CursorLine_augroup
-        autocmd!
-        autocmd BufDelete <buffer> call s:resetCursorLineHL()
-    augroup END
+    call s:setCursorLineHL()
 endfunction
 function! ZF_DirDiffHL_addHL_matchaddWithCursorLineHL(group, line)
     call ZF_DirDiffHL_addHL_matchadd(a:group, a:line)
 endfunction
-function! s:resetCursorLineHL()
-    augroup ZF_DirDiffHL_CursorLine_augroup
+
+function! s:setCursorLineHL()
+    augroup ZF_DirDiffHL_CursorLine_augroup_{winnr()}
         autocmd!
+        autocmd BufDelete <buffer> call s:restoreCursorLineHL()
+                    \| augroup ZF_DirDiffHL_CursorLine_augroup_{winnr()}
+                    \|     autocmd!
+                    \| augroup END
+        autocmd BufHidden <buffer> call s:restoreCursorLineHL()
+        autocmd BufEnter <buffer> call s:setCursorLineHL()
     augroup END
-    call s:restoreCursorLineHL()
+
+    if exists('s:cursorlineSaved')
+        return
+    endif
+    call s:saveCursorLineHL()
+
+    if get(g:, 'ZF_DirDiffHL_matchadd_cursorline', 1)
+        set cursorline
+    endif
+    if get(g:, 'ZF_DirDiffHL_matchadd_cursorlineHL', 1)
+        highlight CursorLine gui=underline guibg=NONE guifg=NONE
+        highlight CursorLine cterm=underline ctermbg=NONE ctermfg=NONE
+    endif
 endfunction
 
 function! s:saveCursorLineHL()
+    let s:cursorlineSaved = &cursorline
+
     if exists('*execute')
         let highlight = execute('hi CursorLine')
     else
@@ -50,7 +58,11 @@ function! s:saveCursorLineHL()
     if highlight =~ 'links to '
         let s:hl_link = matchstr(highlight, 'links to \zs\S*')
     elseif highlight =~ '\<cleared\>'
-        let s:hl_link = 'NONE'
+        let s:hl_link = ''
+        for substr in ['term', 'cterm', 'ctermfg', 'ctermbg',
+                    \ 'gui', 'guifg', 'guibg', 'guisp']
+            let s:hl_{substr} = substr . '=NONE'
+        endfor
     else
         let s:hl_link = ''
         for substr in ['term', 'cterm', 'ctermfg', 'ctermbg',
@@ -59,15 +71,18 @@ function! s:saveCursorLineHL()
                 let s:hl_{substr} = matchstr(highlight,
                             \ substr . '=\S*')
             else
-                let s:hl_{substr} = ''
+                let s:hl_{substr} = substr . '=NONE'
             endif
         endfor
     endif
 endfunction
 function! s:restoreCursorLineHL()
-    if !exists('s:hl_link')
+    if !exists('s:cursorlineSaved')
         return
     endif
+
+    let &cursorline = s:cursorlineSaved
+
     hi clear CursorLine
     if s:hl_link == ''
         exe 'hi CursorLine' s:hl_term s:hl_cterm s:hl_ctermfg
@@ -76,6 +91,8 @@ function! s:restoreCursorLineHL()
     elseif s:hl_link != 'NONE'
         exe 'hi link CursorLine' s:hl_link
     endif
+
+    unlet s:cursorlineSaved
     unlet s:hl_link
 endfunction
 
@@ -84,10 +101,27 @@ endfunction
 " * highlight can not be applied to entire line
 function! ZF_DirDiffHL_resetHL_matchadd()
     call clearmatches()
+    let b:ZF_DirDiffHL_matchadd_HLSaved = []
+    augroup ZF_DirDiffHL_matchadd_augroup_{bufnr()}
+        autocmd!
+        autocmd BufDelete <buffer> call clearmatches()
+                    \| augroup ZF_DirDiffHL_matchadd_augroup_{bufnr()}
+                    \|     autocmd!
+                    \| augroup END
+        autocmd BufHidden <buffer> call clearmatches()
+        autocmd BufEnter <buffer>
+                    \  for hl in b:ZF_DirDiffHL_matchadd_HLSaved
+                    \|     call s:ZF_DirDiffHL_addHL_matchadd(hl[0], hl[1])
+                    \| endfor
+    augroup END
 endfunction
 
 function! ZF_DirDiffHL_addHL_matchadd(group, line)
-    if get(g:, 'ZF_DirDiffHL_addHL_matchadd_useExactHL', 1)
+    call add(b:ZF_DirDiffHL_matchadd_HLSaved, [a:group, a:line])
+    call s:ZF_DirDiffHL_addHL_matchadd(a:group, a:line)
+endfunction
+function! s:ZF_DirDiffHL_addHL_matchadd(group, line)
+    if get(g:, 'ZF_DirDiffHL_matchadd_useExactHL', 1)
         let line = getline(a:line)
         if a:line >= b:ZFDirDiff_iLineOffset + 1 && a:line < len(t:ZFDirDiff_dataUIVisible) + b:ZFDirDiff_iLineOffset + 1
             let line = substitute(line, '/', '', 'g')

@@ -215,6 +215,21 @@ highlight link ZFDirDiffHL_ConflictFile WarningMsg
 highlight link ZFDirDiffHL_MarkToDiff Cursor
 
 " custom highlight function
+"   your_resetHL() : used to reset all highlight
+"   your_addHL(group, line) : used to add highlight for each line in diff buffer
+"     group: ZFDirDiffHL_Title series
+"     line: line num in buffer, including title, start from 1
+"
+" builtin impl:
+" * `ZF_DirDiffHL_resetHL_default` / `ZF_DirDiffHL_addHL_default`:
+"   use plugin default
+" * `ZF_DirDiffHL_resetHL_matchadd` / `ZF_DirDiffHL_addHL_matchadd`:
+"   use `matchadd()`
+" * `ZF_DirDiffHL_resetHL_matchaddWithCursorLineHL` / `ZF_DirDiffHL_addHL_matchaddWithCursorLineHL`:
+"   same as `ZF_DirDiffHL_resetHL_matchadd`,
+"   but modify `cursorline` settings automatically
+" * `ZF_DirDiffHL_resetHL_sign` / `ZF_DirDiffHL_addHL_sign`:
+"   use `:sign place`
 if !exists('g:ZFDirDiffHLFunc_resetHL')
     let g:ZFDirDiffHLFunc_resetHL='ZF_DirDiffHL_resetHL_default'
 endif
@@ -461,14 +476,10 @@ function! ZF_DirDiffQuit()
     " note winnr('$') always equal to 1 for last window
     while winnr('$') > 1
         call Fn_resetHL()
-        set nocursorbind
-        set noscrollbind
         bd!
     endwhile
     " delete again to delete last window
     call Fn_resetHL()
-    set nocursorbind
-    set noscrollbind
     bd!
 
     execute 'normal! ' . ownerTab . 'gt'
@@ -830,6 +841,12 @@ function! s:setupDiffBuffer()
     setlocal nomodifiable
     set scrollbind
     set cursorbind
+    augroup ZF_DirDiff_diffBuffer_augroup_{winnr()}
+        autocmd!
+        autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
+        autocmd BufHidden <buffer> set noscrollbind | set nocursorbind
+        autocmd BufEnter <buffer> set scrollbind | set cursorbind
+    augroup END
 
     doautocmd User ZFDirDiff_DirDiffEnter
 endfunction
