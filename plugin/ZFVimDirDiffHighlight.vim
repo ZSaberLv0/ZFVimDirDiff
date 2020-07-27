@@ -1,10 +1,10 @@
 
 " ============================================================
 function! ZF_DirDiffHL_resetHL_default()
-    call ZF_DirDiffHL_resetHL_matchaddWithCursorLineHL()
+    call ZF_DirDiffHL_resetHL_matchadd()
 endfunction
 function! ZF_DirDiffHL_addHL_default(group, line)
-    call ZF_DirDiffHL_addHL_matchaddWithCursorLineHL(a:group, a:line)
+    call ZF_DirDiffHL_addHL_matchadd(a:group, a:line)
 endfunction
 
 " ============================================================
