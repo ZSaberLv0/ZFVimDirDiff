@@ -842,20 +842,20 @@ function! s:setupDiffBuffer()
     set scrollbind
     set cursorbind
     execute 'augroup ZF_DirDiff_diffBuffer_augroup_' . bufnr('')
-        autocmd!
-        autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
-                    \| call s:ZF_DirDiff_diffBuffer_augroup_cleanup()
-        autocmd BufHidden <buffer> set noscrollbind | set nocursorbind
-        autocmd BufEnter <buffer> set scrollbind | set cursorbind
-    augroup END
+    autocmd!
+    autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
+                \| call s:ZF_DirDiff_diffBuffer_augroup_cleanup()
+    autocmd BufHidden <buffer> set noscrollbind | set nocursorbind
+    autocmd BufEnter <buffer> set scrollbind | set cursorbind
+    execute 'augroup END'
 
     doautocmd User ZFDirDiff_DirDiffEnter
 endfunction
 
 function! s:ZF_DirDiff_diffBuffer_augroup_cleanup()
     execute 'augroup ZF_DirDiff_diffBuffer_augroup_' . expand('<abuf>')
-        autocmd!
-    augroup END
+    autocmd!
+    execute 'augroup END'
 endfunction
 
 function! s:setupDiffBuffer_keymap()

@@ -19,12 +19,12 @@ endfunction
 
 function! s:setCursorLineHL()
     execute 'augroup ZF_DirDiffHL_CursorLine_augroup_' . bufnr('')
-        autocmd!
-        autocmd BufDelete <buffer> call s:restoreCursorLineHL()
-                    \| call s:ZF_DirDiffHL_CursorLine_augroup_cleanup()
-        autocmd BufHidden <buffer> call s:restoreCursorLineHL()
-        autocmd BufEnter <buffer> call s:setCursorLineHL()
-    augroup END
+    autocmd!
+    autocmd BufDelete <buffer> call s:restoreCursorLineHL()
+                \| call s:ZF_DirDiffHL_CursorLine_augroup_cleanup()
+    autocmd BufHidden <buffer> call s:restoreCursorLineHL()
+    autocmd BufEnter <buffer> call s:setCursorLineHL()
+    execute 'augroup END'
 
     if exists('s:cursorlineSaved')
         return
@@ -41,8 +41,8 @@ function! s:setCursorLineHL()
 endfunction
 function! s:ZF_DirDiffHL_CursorLine_augroup_cleanup()
     execute 'augroup ZF_DirDiffHL_CursorLine_augroup_' . expand('<abuf>')
-        autocmd!
-    augroup END
+    autocmd!
+    execute 'augroup END'
 endfunction
 
 function! s:saveCursorLineHL()
@@ -106,20 +106,20 @@ function! ZF_DirDiffHL_resetHL_matchadd()
     call clearmatches()
     let b:ZF_DirDiffHL_matchadd_HLSaved = []
     execute 'augroup ZF_DirDiffHL_matchadd_augroup_' . bufnr('')
-        autocmd!
-        autocmd BufDelete <buffer> call clearmatches()
-                    \| call s:ZF_DirDiffHL_matchadd_augroup_cleanup()
-        autocmd BufHidden <buffer> call clearmatches()
-        autocmd BufEnter <buffer>
-                    \  for hl in b:ZF_DirDiffHL_matchadd_HLSaved
-                    \|     call s:ZF_DirDiffHL_addHL_matchadd(hl[0], hl[1])
-                    \| endfor
-    augroup END
+    autocmd!
+    autocmd BufDelete <buffer> call clearmatches()
+                \| call s:ZF_DirDiffHL_matchadd_augroup_cleanup()
+    autocmd BufHidden <buffer> call clearmatches()
+    autocmd BufEnter <buffer>
+                \  for hl in b:ZF_DirDiffHL_matchadd_HLSaved
+                \|     call s:ZF_DirDiffHL_addHL_matchadd(hl[0], hl[1])
+                \| endfor
+    execute 'augroup END'
 endfunction
 function! s:ZF_DirDiffHL_matchadd_augroup_cleanup()
     execute 'augroup ZF_DirDiffHL_matchadd_augroup_' . expand('<abuf>')
-        autocmd!
-    augroup END
+    autocmd!
+    execute 'augroup END'
 endfunction
 
 function! ZF_DirDiffHL_addHL_matchadd(group, line)
