@@ -321,15 +321,18 @@ function! s:parse(fileLeft, fileRight, content)
             if filereadable(parent . path)
                 call s:addDiff(fileLeft, fileRight, data, path, matchLeft ? 'T_FILE_LEFT' : 'T_FILE_RIGHT')
             else
-                let files = split(globpath((matchLeft ? fileLeft : fileRight) . path, '*'), "\n")
+                let files = extend(split(globpath(parent . path, '**'), "\n"), split(globpath(parent . path, '**/.[^.]*'), "\n"))
                 if empty(files)
                     call s:addDiff(fileLeft, fileRight, data, path, matchLeft ? 'T_DIR_LEFT' : 'T_DIR_RIGHT')
                 else
-                    let matchHeader = matchLeft ? fileLeft : fileRight
-                    let type = matchLeft ? 'T_FILE_LEFT' : 'T_FILE_RIGHT'
                     for file in files
+                        if filereadable(file)
+                            let type = matchLeft ? 'T_FILE_LEFT' : 'T_FILE_RIGHT'
+                        else
+                            let type = matchLeft ? 'T_DIR_LEFT' : 'T_DIR_RIGHT'
+                        endif
                         call s:addDiff(fileLeft, fileRight, data,
-                                    \ substitute(substitute(file, '\', '/', 'g'), matchHeader, '', ''), type)
+                                    \ substitute(substitute(file, '\', '/', 'g'), parent, '', ''), type)
                     endfor
                 endif
             endif
