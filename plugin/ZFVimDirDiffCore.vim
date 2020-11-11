@@ -14,7 +14,11 @@ endif
 if get(g:, 'ZFDirDiffFileExcludeUseDefault', 1)
     augroup ZFDirDiffFileExclude_augroup
         autocmd!
-        autocmd User ZFIgnoreOnUpdate let g:ZFDirDiffFileExclude = join(ZFIgnoreToWildignore(ZFIgnoreGet({'bin' : 0, 'media' : 0})), ',')
+        autocmd User ZFIgnoreOnUpdate let g:ZFDirDiffFileExclude = join(ZFIgnoreToWildignore(ZFIgnoreGet(get(g:, 'ZFIgnoreOption_ZFDirDiff', {
+                    \   'bin' : 0,
+                    \   'media' : 0,
+                    \   'ZFDirDiff' : 1,
+                    \ }))), ',')
     augroup END
 endif
 
