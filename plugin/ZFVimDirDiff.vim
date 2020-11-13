@@ -201,18 +201,18 @@ endif
 
 " highlight
 " {Title,Dir,DirContainDiff,Same,Diff,DirOnlyHere,DirOnlyThere,FileOnlyHere,FileOnlyThere,ConflictDir,ConflictFile,MarkToDiff}
-highlight link ZFDirDiffHL_Title Title
-highlight link ZFDirDiffHL_Dir Directory
-highlight link ZFDirDiffHL_DirContainDiff DiffAdd
-highlight link ZFDirDiffHL_Same Folded
-highlight link ZFDirDiffHL_Diff DiffText
-highlight link ZFDirDiffHL_DirOnlyHere DiffAdd
-highlight link ZFDirDiffHL_DirOnlyThere Normal
-highlight link ZFDirDiffHL_FileOnlyHere DiffAdd
-highlight link ZFDirDiffHL_FileOnlyThere Normal
-highlight link ZFDirDiffHL_ConflictDir ErrorMsg
-highlight link ZFDirDiffHL_ConflictFile WarningMsg
-highlight link ZFDirDiffHL_MarkToDiff Cursor
+highlight default link ZFDirDiffHL_Title Title
+highlight default link ZFDirDiffHL_Dir Directory
+highlight default link ZFDirDiffHL_DirContainDiff DiffAdd
+highlight default link ZFDirDiffHL_Same Folded
+highlight default link ZFDirDiffHL_Diff DiffText
+highlight default link ZFDirDiffHL_DirOnlyHere DiffAdd
+highlight default link ZFDirDiffHL_DirOnlyThere Normal
+highlight default link ZFDirDiffHL_FileOnlyHere DiffAdd
+highlight default link ZFDirDiffHL_FileOnlyThere Normal
+highlight default link ZFDirDiffHL_ConflictDir ErrorMsg
+highlight default link ZFDirDiffHL_ConflictFile WarningMsg
+highlight default link ZFDirDiffHL_MarkToDiff Cursor
 
 " custom highlight function
 "   your_resetHL() : used to reset all highlight
