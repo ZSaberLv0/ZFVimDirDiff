@@ -50,12 +50,7 @@ if !exists('g:ZFDirDiffLangString')
 endif
 if !exists('*ZF_DirDiffTempname')
     function! ZF_DirDiffTempname()
-        " cygwin's path may not work for some external command
-        if has('win32unix') && executable('cygpath')
-            return substitute(system('cygpath -m "' . tempname() . '"'), '[\r\n]', '', 'g')
-        else
-            return tempname()
-        endif
+        return CygpathFix_absPath(tempname())
     endfunction
 endif
 if !exists('*ZF_DirDiffShellEnv_pathFormat')
@@ -258,6 +253,28 @@ function! ZF_DirDiffPathHint(path, ...)
     else
         return ZF_DirDiffPathFormat(a:path, get(a:, 1, ''))
     endif
+endfunction
+
+function! CygpathFix_absPath(path)
+    if !exists('g:CygpathFix_isCygwin')
+        let g:CygpathFix_isCygwin = has('win32unix') && executable('cygpath')
+    endif
+    let path = fnamemodify(a:path, ':p')
+    if g:CygpathFix_isCygwin
+        if 0 " cygpath is really slow
+            let path = substitute(system('cygpath -m "' . path . '"'), '[\r\n]', '', 'g')
+        else
+            if match(path, '^/cygdrive/') >= 0
+                let path = toupper(strpart(path, len('/cygdrive/'), 1)) . ':' . strpart(path, len('/cygdrive/') + 1)
+            else
+                if !exists('g:CygpathFix_cygwinPrefix')
+                    let g:CygpathFix_cygwinPrefix = substitute(system('cygpath -m /'), '[\r\n]', '', 'g')
+                endif
+                let path = g:CygpathFix_cygwinPrefix . path
+            endif
+        endif
+    endif
+    return substitute(path, '\\', '/', 'g')
 endfunction
 
 " ============================================================
