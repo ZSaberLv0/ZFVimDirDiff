@@ -108,18 +108,18 @@ function! s:syncBackupDir(src, dst)
         return
     endif
     if empty(a:src)
-        let dst = substitute(fnamemodify(a:dst, ':p'), '\\', '/', 'g')
+        let dst = substitute(CygpathFix_absPath(a:dst), '\\', '/', 'g')
         let dstFiles = split(globpath(dst, '**/*.*'), "\n")
         for f in dstFiles
             call ZFBackupSave(f)
         endfor
     else
-        let src = substitute(fnamemodify(a:src, ':p'), '\\', '/', 'g')
-        let dst = substitute(fnamemodify(a:dst, ':p'), '\\', '/', 'g')
+        let src = substitute(CygpathFix_absPath(a:src), '\\', '/', 'g')
+        let dst = substitute(CygpathFix_absPath(a:dst), '\\', '/', 'g')
         let dstLen = len(dst)
         let dstFiles = split(globpath(dst, '**/*.*'), "\n")
         for f in dstFiles
-            let f = substitute(fnamemodify(f, ':p'), '\\', '/', 'g')
+            let f = substitute(CygpathFix_absPath(f), '\\', '/', 'g')
             if filereadable(src . strpart(f, dstLen))
                 call ZFBackupSave(f)
             endif

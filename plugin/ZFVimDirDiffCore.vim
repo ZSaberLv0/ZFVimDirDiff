@@ -233,7 +233,7 @@ endfunction
 
 function! ZF_DirDiffPathFormat(path, ...)
     let path = a:path
-    let path = fnamemodify(path, ':p')
+    let path = CygpathFix_absPath(path)
     if !empty(get(a:, 1, ''))
         let mod_path = fnamemodify(path, a:1)
         if get(a:, 1, '') == ':.' && path != mod_path
