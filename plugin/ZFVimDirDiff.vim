@@ -183,6 +183,12 @@ endif
 if !exists('g:ZFDirDiffKeymap_prevDiff')
     let g:ZFDirDiffKeymap_prevDiff = ['[c', 'DK']
 endif
+if !exists('g:ZFDirDiffKeymap_nextDiffFile')
+    let g:ZFDirDiffKeymap_nextDiffFile = []
+endif
+if !exists('g:ZFDirDiffKeymap_prevDiffFile')
+    let g:ZFDirDiffKeymap_prevDiffFile = []
+endif
 if !exists('g:ZFDirDiffKeymap_syncToHere')
     let g:ZFDirDiffKeymap_syncToHere = ['do', 'DH']
 endif
@@ -506,12 +512,18 @@ function! ZF_DirDiffQuitFileDiff()
 endfunction
 
 function! ZF_DirDiffNextDiff()
-    call s:jumpDiff('next')
+    call s:jumpDiff('next', 'dir_and_file')
 endfunction
 function! ZF_DirDiffPrevDiff()
-    call s:jumpDiff('prev')
+    call s:jumpDiff('prev', 'dir_and_file')
 endfunction
-function! s:jumpDiff(nextOrPrev)
+function! ZF_DirDiffNextDiffFile()
+    call s:jumpDiff('next', 'file')
+endfunction
+function! ZF_DirDiffPrevDiffFile()
+    call s:jumpDiff('prev', 'file')
+endfunction
+function! s:jumpDiff(nextOrPrev, condition)
     if a:nextOrPrev == 'next'
         let iOffset = 1
         let iEnd = len(t:ZFDirDiff_dataUIVisible)
@@ -531,8 +543,7 @@ function! s:jumpDiff(nextOrPrev)
     endif
 
     while iLine != iEnd
-        let dataUI = t:ZFDirDiff_dataUIVisible[iLine]
-        if dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
+        if s:isDiff(iLine, a:condition)
             let curPos[1] = iLine + b:ZFDirDiff_iLineOffset + 1
             call setpos('.', curPos)
             normal! zz
@@ -540,6 +551,16 @@ function! s:jumpDiff(nextOrPrev)
         endif
         let iLine += iOffset
     endwhile
+endfunction
+
+function! s:isDiff(iLine, condition)
+    let dataUI = t:ZFDirDiff_dataUIVisible[a:iLine]
+    if a:condition == 'dir_and_file'
+        return dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
+    elseif a:condition == 'file'
+        return dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
+              \ && dataUI.data.type != 'T_DIR_LEFT' && dataUI.data.type != 'T_DIR_RIGHT'
+    endif
 endfunction
 
 function! ZF_DirDiffFoldLevelUpdate(...)
@@ -894,6 +915,12 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_prevDiff
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffPrevDiff()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_nextDiffFile
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffNextDiffFile()<cr>'
+    endfor
+    for k in g:ZFDirDiffKeymap_prevDiffFile
+        execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffPrevDiffFile()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
