@@ -578,19 +578,23 @@ function! ZF_DirDiffFoldLevelUpdate(...)
 endfunction
 
 function! ZF_DirDiffSyncToHere()
-    let dataUI = s:getDataUIUnderCursor()
-    if empty(dataUI)
+    let all_data = s:getDataUIForLineRange(a:firstline, a:lastline)
+    if empty(all_data)
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'r2l' : 'l2r', 0)
+    for dataUI in all_data
+        call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'r2l' : 'l2r', 0)
+    endfor
     call ZF_DirDiffUpdate()
 endfunction
 function! ZF_DirDiffSyncToThere()
-    let dataUI = s:getDataUIUnderCursor()
-    if empty(dataUI)
+    let all_data = s:getDataUIForLineRange(a:firstline, a:lastline)
+    if empty(all_data)
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'l2r' : 'r2l', 0)
+    for dataUI in all_data
+        call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'l2r' : 'r2l', 0)
+    endfor
     call ZF_DirDiffUpdate()
 endfunction
 
@@ -954,9 +958,11 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
+        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToThere
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
+        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_deleteFile
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
