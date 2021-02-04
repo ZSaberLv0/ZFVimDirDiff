@@ -9,6 +9,7 @@ function! ZF_DirDiff_mkdir(path)
 endfunction
 
 function! ZF_DirDiff_cpfile(from, to)
+    call ZF_DirDiff_mkdir(fnamemodify(a:to, ":h"))
     if has('unix')
         silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
     elseif has('win32')
