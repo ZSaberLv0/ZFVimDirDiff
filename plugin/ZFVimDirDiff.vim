@@ -248,11 +248,13 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZF_DirDiff(<f-args>)
 
 " ============================================================
 function! ZF_DirDiff(fileLeft, fileRight)
-    let diffResult = ZF_DirDiffCore(a:fileLeft, a:fileRight)
+    let fileLeft = fnamemodify(a:fileLeft, ':p')
+    let fileRight = fnamemodify(a:fileRight, ':p')
+    let diffResult = ZF_DirDiffCore(fileLeft, fileRight)
     if diffResult['exitCode'] == g:ZFDirDiff_exitCode_BothFile
-        call s:diffByFile(a:fileLeft, a:fileRight)
+        call s:diffByFile(fileLeft, fileRight)
     else
-        call s:ZF_DirDiff_UI(a:fileLeft, a:fileRight, diffResult)
+        call s:ZF_DirDiff_UI(fileLeft, fileRight, diffResult)
     endif
     echo diffResult['exitHint']
     return diffResult
