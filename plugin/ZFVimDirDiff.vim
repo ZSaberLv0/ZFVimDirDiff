@@ -594,12 +594,18 @@ function! ZF_DirDiffSyncToThere()
     call ZF_DirDiffUpdate()
 endfunction
 
-function! ZF_DirDiffDeleteFile()
-    let dataUI = s:getDataUIUnderCursor()
-    if empty(dataUI)
+function! ZF_DirDiffDeleteFile() range
+    let all_data = s:getDataUIForLineRange(a:firstline, a:lastline)
+    if empty(all_data)
         return
     endif
-    call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'dl' : 'dr', 0)
+    for dataUI in all_data
+        " Check existence in case we already deleted the parent.
+        let fullpath = s:getFullPath(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, b:ZFDirDiff_isLeft, dataUI.data.path)
+        if filereadable(fullpath) || isdirectory(fullpath)
+            call ZF_DirDiffSync(t:ZFDirDiff_fileLeft, t:ZFDirDiff_fileRight, dataUI.data.path, dataUI.data, b:ZFDirDiff_isLeft ? 'dl' : 'dr', 0)
+        endif
+    endfor
     call ZF_DirDiffUpdate()
 endfunction
 
@@ -663,13 +669,37 @@ function! s:diffByFile_setup(ownerDiffTab)
 endfunction
 
 function! s:getDataUIUnderCursor()
-    let iLine = getpos('.')[1] - b:ZFDirDiff_iLineOffset - 1
+    return s:getDataUIForLineNum(getpos('.')[1])
+endfunction
+
+function! s:getDataUIForLineNum(linenum)
+    let iLine = a:linenum - b:ZFDirDiff_iLineOffset - 1
     if iLine >= 0 && iLine < len(t:ZFDirDiff_dataUIVisible)
         return t:ZFDirDiff_dataUIVisible[iLine]
     else
         return ''
     endif
 endfunction
+
+function! s:getDataUIForLineRange(first,last)
+    let all_data = []
+    for i in range(a:first, a:last)
+        let line_data = s:getDataUIForLineNum(i)
+        if !empty(line_data)
+            call add(all_data, line_data)
+        endif
+    endfor
+    return all_data
+endfunction
+
+function! s:getFullPath(fileLeft, fileRight, isLeft, path)
+    if a:isLeft
+        let parent = a:fileLeft
+    else
+        let parent = a:fileRight
+    endif
+    return parent . '/' . a:path
+endf
 
 function! s:askWrite()
     if !&modified
@@ -930,6 +960,7 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_deleteFile
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
+        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getPath
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
