@@ -88,12 +88,14 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     * use `cd` to make current dir as diff root dir,
         `u` to go up for current side,
         and `U` to go up for both side
+    * use `DM` to mark current file,
+        and `DM` again on another file to diff these two files
     * use `]c` or `DJ` to move to next diff, `[c` or `DK` to prev diff
     * use `do` or `DH` to sync from another side to current side,
         `dp` or `DL` to sync from current side to another side
-    * use `DM` to mark current file,
-        and `DM` again on another file to diff these two files
     * use `dd` to delete node under cursor
+    * use `DN` to mark mutiple files,
+        when done, use `do/DH/dp/DL/dd` to sync or delete marked files
     * use `p` to copy the node's path, and `P` for the node's full path
     * use `q` to exit diff
     * you may also want to use [ZSaberLv0/ZFVimIndentMove](https://github.com/ZSaberLv0/ZFVimIndentMove)
@@ -258,6 +260,7 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
         * `let g:ZFDirDiffKeymap_diffThisDir = ['cd']`
         * `let g:ZFDirDiffKeymap_diffParentDir = ['u']`
         * `let g:ZFDirDiffKeymap_markToDiff = ['DM']`
+        * `let g:ZFDirDiffKeymap_markToSync = ['DN']`
         * `let g:ZFDirDiffKeymap_quit = ['q']`
         * `let g:ZFDirDiffKeymap_quitFileDiff = ['q']`
         * `let g:ZFDirDiffKeymap_nextDiff = [']c', 'DJ']`
