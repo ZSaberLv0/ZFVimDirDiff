@@ -577,7 +577,7 @@ function! ZF_DirDiffFoldLevelUpdate(...)
     call s:setupDiffDataUIVisible()
 endfunction
 
-function! ZF_DirDiffSyncToHere()
+function! ZF_DirDiffSyncToHere() range
     let all_data = s:getDataUIForLineRange(a:firstline, a:lastline)
     if empty(all_data)
         return
@@ -587,7 +587,7 @@ function! ZF_DirDiffSyncToHere()
     endfor
     call ZF_DirDiffUpdate()
 endfunction
-function! ZF_DirDiffSyncToThere()
+function! ZF_DirDiffSyncToThere() range
     let all_data = s:getDataUIForLineRange(a:firstline, a:lastline)
     if empty(all_data)
         return
@@ -958,15 +958,15 @@ function! s:setupDiffBuffer_keymap()
     endfor
     for k in g:ZFDirDiffKeymap_syncToHere
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
-        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
+        execute 'xnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToHere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_syncToThere
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
-        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
+        execute 'xnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffSyncToThere()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_deleteFile
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
-        execute 'vnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
+        execute 'xnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffDeleteFile()<cr>'
     endfor
     for k in g:ZFDirDiffKeymap_getPath
         execute 'nnoremap <buffer><silent> ' . k . ' :call ZF_DirDiffGetPath()<cr>'
