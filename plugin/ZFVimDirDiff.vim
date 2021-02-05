@@ -268,13 +268,22 @@ function! ZF_DirDiffUpdate(...)
         return
     endif
 
-    let fileLeft = get(a:, 1, t:ZFDirDiff_fileLeftOrig)
-    let fileRight = get(a:, 2, t:ZFDirDiff_fileRightOrig)
+    if empty(get(a:, 1, '')) && empty(get(a:, 2, ''))
+                \ && (ZF_DirDiffPathFormat(t:ZFDirDiff_fileLeftOrig) != t:ZFDirDiff_fileLeft
+                \ || ZF_DirDiffPathFormat(t:ZFDirDiff_fileRightOrig) != t:ZFDirDiff_fileRight)
+        let fileLeft = fnamemodify(t:ZFDirDiff_fileLeft, ':.')
+        let fileRight = fnamemodify(t:ZFDirDiff_fileRight, ':.')
+    else
+        let fileLeft = get(a:, 1, t:ZFDirDiff_fileLeftOrig)
+        let fileRight = get(a:, 2, t:ZFDirDiff_fileRightOrig)
+    endif
+
     let foldedMap = get(a:, 3, {})
     let isLeft = b:ZFDirDiff_isLeft
     let cursorPos = getpos('.')
-    if fileLeft == t:ZFDirDiff_fileLeftOrig && fileRight == t:ZFDirDiff_fileRightOrig
-                \ && empty(foldedMap)
+    if empty(foldedMap)
+                \ && ZF_DirDiffPathFormat(fileLeft) == t:ZFDirDiff_fileLeft
+                \ && ZF_DirDiffPathFormat(fileRight) == t:ZFDirDiff_fileRight
         let foldedMap = ZF_DirDiffGetFolded()
     endif
 
@@ -559,7 +568,7 @@ function! s:isDiff(iLine, condition)
         return dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
     elseif a:condition == 'file'
         return dataUI.data.type != 'T_DIR' && dataUI.data.type != 'T_SAME'
-              \ && dataUI.data.type != 'T_DIR_LEFT' && dataUI.data.type != 'T_DIR_RIGHT'
+                    \ && dataUI.data.type != 'T_DIR_LEFT' && dataUI.data.type != 'T_DIR_RIGHT'
     endif
 endfunction
 
