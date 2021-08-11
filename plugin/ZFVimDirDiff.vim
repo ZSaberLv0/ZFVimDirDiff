@@ -597,14 +597,17 @@ function! ZF_DirDiffQuit()
     let Fn_resetHL=function(g:ZFDirDiffHLFunc_resetHL)
     let ownerTab = t:ZFDirDiff_ownerTab
 
-    " note winnr('$') always equal to 1 for last window
     while winnr('$') > 1
+        let winCount = winnr('$')
         call Fn_resetHL()
-        bd!
+        silent! bd!
+        if winnr('$') == winCount
+            break
+        endif
     endwhile
     " delete again to delete last window
     call Fn_resetHL()
-    bd!
+    silent! bd!
 
     execute 'normal! ' . ownerTab . 'gt'
 endfunction

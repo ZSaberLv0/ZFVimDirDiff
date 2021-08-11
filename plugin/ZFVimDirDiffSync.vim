@@ -197,12 +197,10 @@ function! s:syncCopyDir(fileLeft, fileRight, path, data, syncType, syncAll)
     for child in a:data.children
         if 0
         elseif a:syncType == 'l2r'
-                    \ && a:data.type == 'T_DIR_RIGHT'
-                    \ && a:data.type == 'T_FILE_RIGHT'
+                    \ && (child.type == 'T_DIR_RIGHT' || child.type == 'T_FILE_RIGHT')
             continue
         elseif a:syncType == 'r2l'
-                    \ && a:data.type == 'T_DIR_LEFT'
-                    \ && a:data.type == 'T_FILE_LEFT'
+                    \ && (child.type == 'T_DIR_LEFT' || child.type == 'T_FILE_LEFT')
             continue
         endif
         let choice = ZF_DirDiffSync(a:fileLeft, a:fileRight, a:path . '/' . child.name, child, a:syncType, syncAll)
@@ -221,6 +219,14 @@ function! s:sync_T_DIR(fileLeft, fileRight, path, data, syncType, syncAll)
     endif
 
     for child in a:data.children
+        if 0
+        elseif a:syncType == 'l2r'
+                    \ && (child.type == 'T_DIR_RIGHT' || child.type == 'T_FILE_RIGHT')
+            continue
+        elseif a:syncType == 'r2l'
+                    \ && (child.type == 'T_DIR_LEFT' || child.type == 'T_FILE_LEFT')
+            continue
+        endif
         let choice = ZF_DirDiffSync(a:fileLeft, a:fileRight, a:path . '/' . child.name, child, a:syncType, syncAll)
         if choice == 'q' | return 'q' | elseif choice == 'a' | let syncAll = 1 | endif
     endfor
