@@ -33,11 +33,24 @@ function! ZF_DirDiffMark(...) abort
             " Launched diff, so forget about mark.
             unlet s:dir_marked_for_diff
         else
-            call s:MarkAndPrint(path, '[ZFDirDiff] mark changed to: %s')
+            let s:dir_marked_for_diff = path
+            call s:Print(path, '[ZFDirDiff] mark changed to: %s')
         endif
     else
-        call s:MarkAndPrint(path, '[ZFDirDiff] mark again to diff with: %s')
+        let s:dir_marked_for_diff = path
+        call s:Print(path, '[ZFDirDiff] mark again to diff with: %s')
     endif
+endfunction
+
+function! ZF_DirDiffUnmark()
+    if exists('s:dir_marked_for_diff')
+        call s:Print(s:dir_marked_for_diff, '[ZFDirDiff] diff unmarked: %s')
+        unlet s:dir_marked_for_diff
+    endif
+endfunction
+
+function! ZF_DirDiffMarked()
+    return get(s:, 'dir_marked_for_diff', '')
 endfunction
 
 function! s:PromptForDiff(fileLeft, fileRight) abort
@@ -45,12 +58,16 @@ function! s:PromptForDiff(fileLeft, fileRight) abort
 
     let Fn_headerText = function(g:ZFDirDiffUI_confirmHintHeaderFunc)
     let headerText = Fn_headerText(a:fileLeft, a:fileRight, 'diff')
-    echo join(headerText, "\n")
-    echo '[ZFDirDiff] diff these dirs?'
-    echo '  (y)es'
-    echo '  (n)o'
-    echo "\n"
-    echo 'choose: '
+    let hint = []
+    call extend(hint, headerText)
+    call extend(hint, [
+                \   '[ZFDirDiff] diff these dirs?',
+                \   '  (y)es',
+                \   '  (n)o',
+                \   '',
+                \   'choose: ',
+                \ ])
+    echo join(hint, "\n")
 
     let choice = getchar()
     redraw!
@@ -65,8 +82,7 @@ function! s:PromptForDiff(fileLeft, fileRight) abort
     endif
 endfunction
 
-function! s:MarkAndPrint(path, msg)
-    let s:dir_marked_for_diff = a:path
+function! s:Print(path, msg)
     let shortname = ZF_DirDiffPathHint(s:dir_marked_for_diff)
     if len(a:msg) + len(shortname) > &columns
         " Try to avoid "Press ENTER to continue"
@@ -76,4 +92,5 @@ function! s:MarkAndPrint(path, msg)
 endfunction
 
 command! -nargs=* -complete=file ZFDirDiffMark :call ZF_DirDiffMark(<q-args>)
+command! -nargs=0 ZFDirDiffUnmark :call ZF_DirDiffUnmark()
 

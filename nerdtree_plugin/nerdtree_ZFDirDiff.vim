@@ -13,6 +13,7 @@ function! NERDTreeMarkToDiff()
     let path = g:NERDTreeFileNode.GetSelected().path.str()
     redraw!
     call ZF_DirDiffMark(path, {
+                \   'needConfirm' : 1,
                 \   'markDir' : 0,
                 \ })
 endfunction
