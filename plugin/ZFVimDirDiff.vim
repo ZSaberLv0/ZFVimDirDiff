@@ -418,10 +418,9 @@ function! ZF_DirDiffFoldOpenAll()
     let iEnd = len(t:ZFDirDiff_dataUI)
     while i < iEnd
         let dataUI = t:ZFDirDiff_dataUI[i]
-        if dataUI.data.level <= level
-            break
+        if dataUI.data.level > level
+            let dataUI.folded = 0
         endif
-        let dataUI.folded = 0
         let i += 1
     endwhile
 
