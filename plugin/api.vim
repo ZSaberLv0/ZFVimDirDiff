@@ -28,11 +28,11 @@ let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
 
 " return a shell cmd that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
-    if has('windows')
+    if has('windows') && !has('unix')
         function! ZFDirDiffCmd_listDir(absPath)
-            return printf('"%s\listDir.bat" "%s"'
-                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
-                        \ , substitute(a:absPath, '/', '\\', 'g')
+            return printf('"%s/listDir.bat" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPath
                         \ )
         endfunction
     else
@@ -47,11 +47,11 @@ endif
 
 " return a shell cmd that print a plain list of name or path of file
 if !exists('*ZFDirDiffCmd_listFile')
-    if has('windows')
+    if has('windows') && !has('unix')
         function! ZFDirDiffCmd_listFile(absPath)
-            return printf('"%s\listFile.bat" "%s"'
-                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
-                        \ , substitute(a:absPath, '/', '\\', 'g')
+            return printf('"%s/listFile.bat" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPath
                         \ )
         endfunction
     else
@@ -66,12 +66,12 @@ endif
 
 " return a shell cmd that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
 if !exists('*ZFDirDiffCmd_diff')
-    if has('windows')
+    if has('windows') && !has('unix')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return printf('"%s\diff.bat" "%s" "%s"'
-                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
-                        \ , substitute(a:absPathL, '/', '\\', 'g')
-                        \ , substitute(a:absPathR, '/', '\\', 'g')
+            return printf('"%s/diff.bat" "%s" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPathL
+                        \ , a:absPathR
                         \ )
         endfunction
     else
