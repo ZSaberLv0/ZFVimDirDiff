@@ -24,15 +24,23 @@ if !exists('*ZFDirDiff_excludeCheck')
 endif
 
 " ============================================================
+let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
+
 " return a shell cmd that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
     if has('win32') || has('win64')
         function! ZFDirDiffCmd_listDir(absPath)
-            return printf('dir /b /ad "%s"', substitute(a:absPath, '/', '\\', 'g'))
+            return printf('"%s\listDir.bat" "%s"'
+                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
+                        \ , substitute(a:absPath, '/', '\\', 'g')
+                        \ )
         endfunction
     else
         function! ZFDirDiffCmd_listDir(absPath)
-            return printf('find "%s" -mindepth 1 -maxdepth 1 -type d', a:absPath)
+            return printf('sh "%s/listDir.sh" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPath
+                        \ )
         endfunction
     endif
 endif
@@ -41,11 +49,17 @@ endif
 if !exists('*ZFDirDiffCmd_listFile')
     if has('win32') || has('win64')
         function! ZFDirDiffCmd_listFile(absPath)
-            return printf('dir /b /a-d "%s"', substitute(a:absPath, '/', '\\', 'g'))
+            return printf('"%s\listFile.bat" "%s"'
+                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
+                        \ , substitute(a:absPath, '/', '\\', 'g')
+                        \ )
         endfunction
     else
         function! ZFDirDiffCmd_listFile(absPath)
-            return printf('find "%s" -mindepth 1 -maxdepth 1 -type f', a:absPath)
+            return printf('sh "%s/listFile.sh" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPath
+                        \ )
         endfunction
     endif
 endif
@@ -54,16 +68,18 @@ endif
 if !exists('*ZFDirDiffCmd_diff')
     if has('win32') || has('win64')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return printf('fc /b "%s" "%s"'
-                        \   , substitute(a:absPathL, '/', '\\', 'g')
-                        \   , substitute(a:absPathR, '/', '\\', 'g')
+            return printf('"%s\diff.bat" "%s" "%s"'
+                        \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
+                        \ , substitute(a:absPathL, '/', '\\', 'g')
+                        \ , substitute(a:absPathR, '/', '\\', 'g')
                         \ )
         endfunction
     else
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return printf('diff --brief "%s" "%s"'
-                        \   , a:absPathL
-                        \   , a:absPathR
+            return printf('sh "%s/diff.sh" "%s" "%s"'
+                        \ , CygpathFix_absPath(s:scriptPath)
+                        \ , a:absPathL
+                        \ , a:absPathR
                         \ )
         endfunction
     endif
