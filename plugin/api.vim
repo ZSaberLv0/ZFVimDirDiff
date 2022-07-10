@@ -28,7 +28,7 @@ let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
 
 " return a shell cmd that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
-    if has('win32') || has('win64')
+    if has('windows')
         function! ZFDirDiffCmd_listDir(absPath)
             return printf('"%s\listDir.bat" "%s"'
                         \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
@@ -47,7 +47,7 @@ endif
 
 " return a shell cmd that print a plain list of name or path of file
 if !exists('*ZFDirDiffCmd_listFile')
-    if has('win32') || has('win64')
+    if has('windows')
         function! ZFDirDiffCmd_listFile(absPath)
             return printf('"%s\listFile.bat" "%s"'
                         \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
@@ -66,7 +66,7 @@ endif
 
 " return a shell cmd that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
 if !exists('*ZFDirDiffCmd_diff')
-    if has('win32') || has('win64')
+    if has('windows')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
             return printf('"%s\diff.bat" "%s" "%s"'
                         \ , substitute(CygpathFix_absPath(s:scriptPath), '/', '\\', 'g')
@@ -775,7 +775,7 @@ if !exists('*ZFDirDiffAPI_mkdir')
     function! ZFDirDiffAPI_mkdir(path)
         if has('unix')
             silent execute '!mkdir -p "' . a:path . '"'
-        elseif has('win32')
+        elseif has('windows')
             silent execute '!mkdir "' . substitute(a:path, '/', '\', 'g') . '"'
         endif
     endfunction
@@ -786,7 +786,7 @@ if !exists('*ZFDirDiffAPI_cpfile')
         call ZFDirDiffAPI_mkdir(fnamemodify(a:to, ":h"))
         if has('unix')
             silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
-        elseif has('win32')
+        elseif has('windows')
             silent execute '!copy "' . substitute(a:from, '/', '\', 'g') . '" "' . substitute(a:to, '/', '\', 'g') . '"'
         endif
     endfunction
@@ -796,7 +796,7 @@ if !exists('*ZFDirDiffAPI_rmdir')
     function! ZFDirDiffAPI_rmdir(path)
         if has('unix')
             silent execute '!rm -rf "' . a:path . '"'
-        elseif has('win32')
+        elseif has('windows')
             silent execute '!rmdir /s/q "' . substitute(a:path, '/', '\', 'g') . '"'
         endif
     endfunction
@@ -806,7 +806,7 @@ if !exists('*ZFDirDiffAPI_rmfile')
     function! ZFDirDiffAPI_rmfile(path)
         if has('unix')
             silent execute '!rm -f "' . a:path . '"'
-        elseif has('win32')
+        elseif has('windows')
             silent execute '!del /f/q "' . substitute(a:path, '/', '\', 'g') . '"'
         endif
     endfunction
