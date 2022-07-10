@@ -226,9 +226,6 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
 
     let childList = []
     for name in sort(keys(a:listChildData['dir']), 1)
-        if ZFDirDiff_excludeCheck(a:taskData, a:parentDiffNode, name)
-            continue
-        endif
         let side = a:listChildData['dir'][name]
         let diffNode = {
                     \   'parent' : parent,
@@ -250,12 +247,11 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        call add(childList, diffNode)
+        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+            call add(childList, diffNode)
+        endif
     endfor
     for name in sort(keys(a:listChildData['conflict']), 1)
-        if ZFDirDiff_excludeCheck(a:taskData, a:parentDiffNode, name)
-            continue
-        endif
         let side = a:listChildData['conflict'][name]
         let diffNode = {
                     \   'parent' : parent,
@@ -275,12 +271,11 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        call add(childList, diffNode)
+        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+            call add(childList, diffNode)
+        endif
     endfor
     for name in sort(keys(a:listChildData['file']), 1)
-        if ZFDirDiff_excludeCheck(a:taskData, a:parentDiffNode, name)
-            continue
-        endif
         let side = a:listChildData['file'][name]
         let diffNode = {
                     \   'parent' : parent,
@@ -302,7 +297,9 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        call add(childList, diffNode)
+        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+            call add(childList, diffNode)
+        endif
     endfor
 
     let a:parentDiffNode['child'] = childList

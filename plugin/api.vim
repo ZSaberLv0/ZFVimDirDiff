@@ -14,42 +14,14 @@ endif
 
 if !exists('*ZFDirDiff_excludeCheck')
     " return 1 if excluded, which means the item should not be diff-ed
-    function! ZFDirDiff_excludeCheck(taskData, parentDiffNode, name)
+    function! ZFDirDiff_excludeCheck(taskData, diffNode)
         if exists('*ZFIgnoreGet')
-            return ZFDirDiff_excludeCheck_ZFIgnore(a:taskData, a:parentDiffNode, a:name)
+            return ZFDirDiff_excludeCheck_ZFIgnore(a:taskData, a:diffNode)
         else
-            return ZFDirDiff_excludeCheck_fallback(a:taskData, a:parentDiffNode, a:name)
+            return ZFDirDiff_excludeCheck_fallback(a:taskData, a:diffNode)
         endif
     endfunction
 endif
-function! ZFDirDiff_excludeCheck_fallback(taskData, parentDiffNode, name)
-    for pattern in get(g:, 'ZFDirDiff_excludeCheck_fallback_patterns', [
-                \   '\..*',
-                \   '\~.*',
-                \   '.*\~',
-                \ ])
-        if match(a:name, pattern) >= 0
-            return 1
-        endif
-    endfor
-    return 0
-endfunction
-augroup ZFDirDiff_excludeCheck_ZFIgnore_augroup
-    autocmd!
-    autocmd User ZFIgnoreOnUpdate let g:ZFDirDiff_excludeCheck_ZFIgnore_patterns = ZFIgnoreToRegexp(ZFIgnoreGet(get(g:, 'ZFIgnoreOption_ZFDirDiff', {
-                \   'bin' : 0,
-                \   'media' : 0,
-                \   'ZFDirDiff' : 1,
-                \ })))
-augroup END
-function! ZFDirDiff_excludeCheck_ZFIgnore(taskData, parentDiffNode, name)
-    for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_patterns', [])
-        if match(a:name, pattern) >= 0
-            return 1
-        endif
-    endfor
-    return 0
-endfunction
 
 " ============================================================
 " return a shell cmd that print a plain list of name or path of dir
@@ -636,6 +608,77 @@ function! s:diffNodeInfo(diffNode, prefix)
                     \ . ' ' . ZFDirDiffAPI_parentPath(a:diffNode) . a:diffNode['name']
                     \ . (ZFDirDiffAPI_diffNodeCanOpen(a:diffNode) ? '/' : '')
     endif
+endfunction
+
+" ============================================================
+function! ZFDirDiff_excludeCheck_fallback(taskData, diffNode)
+    for pattern in get(g:, 'ZFDirDiff_excludeCheck_fallback_patterns', [
+                \   '\..*',
+                \   '\~.*',
+                \   '.*\~',
+                \ ])
+        if match(a:diffNode['name'], pattern) >= 0
+            return 1
+        endif
+    endfor
+    return 0
+endfunction
+augroup ZFDirDiff_excludeCheck_ZFIgnore_augroup
+    autocmd!
+    autocmd User ZFIgnoreOnUpdate call s:ZFIgnoreOnUpdate()
+augroup END
+function! s:ZFIgnoreOnUpdate()
+    let ignore = ZFIgnoreGet(get(g:, 'ZFIgnoreOption_ZFDirDiff', {
+                \   'bin' : 0,
+                \   'media' : 0,
+                \   'ZFDirDiff' : 1,
+                \ }))
+    let g:ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns = []
+    for pattern in ignore['dir']
+        let pattern = ZFIgnorePatternToRegexp(pattern)
+        if !empty(pattern)
+            call add(g:ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns, pattern)
+        endif
+    endfor
+    let g:ZFDirDiff_excludeCheck_ZFIgnore_filePatterns = []
+    for pattern in ignore['file']
+        let pattern = ZFIgnorePatternToRegexp(pattern)
+        if !empty(pattern)
+            call add(g:ZFDirDiff_excludeCheck_ZFIgnore_filePatterns, pattern)
+        endif
+    endfor
+endfunction
+let s:ZFIgnoreTypeList_dir = [
+            \   g:ZFDirDiff_T_DIR,
+            \   g:ZFDirDiff_T_DIR_LEFT,
+            \   g:ZFDirDiff_T_DIR_RIGHT,
+            \   g:ZFDirDiff_T_CONFLICT_DIR_LEFT,
+            \   g:ZFDirDiff_T_CONFLICT_DIR_RIGHT,
+            \ ]
+let s:ZFIgnoreTypeList_file = [
+            \   g:ZFDirDiff_T_SAME,
+            \   g:ZFDirDiff_T_DIFF,
+            \   g:ZFDirDiff_T_FILE_LEFT,
+            \   g:ZFDirDiff_T_FILE_RIGHT,
+            \   g:ZFDirDiff_T_CONFLICT_DIR_LEFT,
+            \   g:ZFDirDiff_T_CONFLICT_DIR_RIGHT,
+            \ ]
+function! ZFDirDiff_excludeCheck_ZFIgnore(taskData, diffNode)
+    if index(s:ZFIgnoreTypeList_dir, a:diffNode['type']) >= 0
+        for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns', [])
+            if match(a:diffNode['name'], pattern) >= 0
+                return 1
+            endif
+        endfor
+    endif
+    if index(s:ZFIgnoreTypeList_file, a:diffNode['type']) >= 0
+        for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_filePatterns', [])
+            if match(a:diffNode['name'], pattern) >= 0
+                return 1
+            endif
+        endfor
+    endif
+    return 0
 endfunction
 
 " ============================================================
