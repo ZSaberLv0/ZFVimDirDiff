@@ -12,7 +12,7 @@ call NERDTreeAddMenuItem({
 function! NERDTreeMarkToDiff()
     let path = g:NERDTreeFileNode.GetSelected().path.str()
     redraw!
-    call ZF_DirDiffMark(path, {
+    call ZFDirDiffMark(path, {
                 \   'needConfirm' : 1,
                 \   'markDir' : 0,
                 \ })

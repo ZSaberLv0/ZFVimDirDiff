@@ -17,5 +17,5 @@ exit /b 1
 for %%t in (%ZFDIRDIFF_VIM%) do (
     set ZFDIRDIFF_VIM=%%~t
 )
-"%ZFDIRDIFF_VIM%" -c "call ZF_DirDiff(\"%PATH_A%\", \"%PATH_B%\")"
+"%ZFDIRDIFF_VIM%" -c "call ZFDirDiff(\"%PATH_A%\", \"%PATH_B%\")"
 
