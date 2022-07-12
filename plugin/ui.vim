@@ -384,9 +384,9 @@ function! s:diffUI_tabDetachUnexpected(tabpagenr)
         return
     endif
     let taskData = s:diffUI_tabAttachMap[a:tabpagenr]
-    call s:diffUI_tabDetach(taskData)
+    call s:diffUI_tabDetach(a:tabpagenr, taskData)
     call ZFDirDiffAPI_cleanup(taskData)
-    call ZFDirDiffHLImpl_cleanup(t:ZFDirDiff_taskData)
+    call ZFDirDiffHLImpl_cleanup(taskData)
 endfunction
 
 function! s:diffUI_start(fileL, fileR)
