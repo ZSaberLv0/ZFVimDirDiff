@@ -145,13 +145,13 @@ function! s:redrawAction()
 
         wincmd h
         wincmd k
-        if bufnr == bufnrL
+        if bufnr('%') == bufnrL
             call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrL, bufnrL, bufnrR)
         endif
 
         wincmd l
         wincmd k
-        if bufnr == bufnrR
+        if bufnr('%') == bufnrR
             call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrR, bufnrL, bufnrR)
         endif
 
