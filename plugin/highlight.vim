@@ -145,13 +145,15 @@ function! s:redrawAction()
 
         wincmd h
         wincmd k
-        execute 'b' . bufnrL
-        call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrL, bufnrL, bufnrR)
+        if bufnr == bufnrL
+            call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrL, bufnrL, bufnrR)
+        endif
 
         wincmd l
         wincmd k
-        execute 'b' . bufnrR
-        call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrR, bufnrL, bufnrR)
+        if bufnr == bufnrR
+            call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrR, bufnrL, bufnrR)
+        endif
 
         if bufnr == bufnrL
             wincmd h
@@ -188,7 +190,10 @@ function! s:redrawBuf(taskData, tabpagenr, bufnr, bufnrL, bufnrR)
 
     " cleanup
     for matchId in a:taskData['HLImpl'][k_matchIds]
-        call matchdelete(matchId)
+        try
+            silent! call matchdelete(matchId)
+        catch
+        endtry
     endfor
     let a:taskData['HLImpl'][k_matchIds] = []
     let a:taskData['HLImpl'][k_start] = 0
