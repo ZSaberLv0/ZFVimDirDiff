@@ -177,6 +177,25 @@ for experienced user, here's some configs you may interest
 * `let g:ZFDirDiffUI_showSameFile = 1`
 
 
+### Highlight
+
+```
+highlight default link ZFDirDiffHL_Header Title
+highlight default link ZFDirDiffHL_Tail Title
+highlight default link ZFDirDiffHL_Checking SpecialKey
+highlight default link ZFDirDiffHL_DirSame Folded
+highlight default link ZFDirDiffHL_DirDiff DiffAdd
+highlight default link ZFDirDiffHL_FileSame Folded
+highlight default link ZFDirDiffHL_FileDiff DiffText
+highlight default link ZFDirDiffHL_DirOnlyHere DiffAdd
+highlight default link ZFDirDiffHL_FileOnlyHere DiffAdd
+highlight default link ZFDirDiffHL_ConflictDirHere ErrorMsg
+highlight default link ZFDirDiffHL_ConflictDirThere WarningMsg
+highlight default link ZFDirDiffHL_MarkToDiff Cursor
+highlight default link ZFDirDiffHL_MarkToSync Cursor
+```
+
+
 # FAQ
 
 * Q: screen keeps blink when diff updating in background
