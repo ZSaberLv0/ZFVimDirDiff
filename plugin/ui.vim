@@ -309,9 +309,11 @@ function! s:diffUI_bufSetup(isLeft)
     execute 'setlocal statusline=%!ZFDirDiffUI_statusline(' . (a:isLeft ? '1' : '0') . ')'
     execute 'setlocal tabstop=' . get(g:, 'ZFDirDiffUI_tabstop', 2)
     execute 'setlocal softtabstop=' . get(g:, 'ZFDirDiffUI_tabstop', 2)
-    setlocal buftype=nowrite
-    setlocal bufhidden=hide
+    setlocal buftype=nofile
+    setlocal bufhidden=delete
+    setlocal buflisted
     setlocal nowrap
+    setlocal noswapfile
     if a:isLeft
         silent! file [LEFT]
     else
@@ -331,9 +333,17 @@ function! s:diffUI_bufSetup(isLeft)
 endfunction
 
 function! s:ZF_DirDiff_diffUI_buf_augroup_cleanup()
-    execute 'augroup ZF_DirDiff_diffUI_buf_augroup_' . expand('<abuf>')
+    let bufnr = expand('<abuf>')
+
+    execute 'augroup ZF_DirDiff_diffUI_buf_augroup_' . bufnr
     autocmd!
     execute 'augroup END'
+
+    if exists('t:ZFDirDiff_taskData')
+                \ && (!buflisted(t:ZFDirDiff_bufnrL) || bufnr == t:ZFDirDiff_bufnrL)
+                \ && (!buflisted(t:ZFDirDiff_bufnrR) || bufnr == t:ZFDirDiff_bufnrR)
+        call ZFDirDiffUIAction_quit()
+    endif
 endfunction
 
 function! s:diffUI_start(fileL, fileR)
