@@ -247,12 +247,13 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+        if ZFDirDiff_excludeCheck(a:taskData, diffNode)
             if g:ZFJobVerboseLogEnable
-                call ZFGroupJobChildImpl()['jobLog'](a:jobStatus, '[ZFDirDiff] path ignored: '
+                call ZFGroupJobLog(a:jobStatus, '[ZFDirDiff] path ignored: '
                             \   . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
                             \ )
             endif
+        else
             call add(childList, diffNode)
         endif
     endfor
@@ -276,12 +277,13 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+        if ZFDirDiff_excludeCheck(a:taskData, diffNode)
             if g:ZFJobVerboseLogEnable
-                call ZFGroupJobChildImpl()['jobLog'](a:jobStatus, '[ZFDirDiff] path ignored: '
+                call ZFGroupJobLog(a:jobStatus, '[ZFDirDiff] path ignored: '
                             \   . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
                             \ )
             endif
+        else
             call add(childList, diffNode)
         endif
     endfor
@@ -307,12 +309,13 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
             let diffNode['diff'] = 1
         else
         endif
-        if !ZFDirDiff_excludeCheck(a:taskData, diffNode)
+        if ZFDirDiff_excludeCheck(a:taskData, diffNode)
             if g:ZFJobVerboseLogEnable
-                call ZFGroupJobChildImpl()['jobLog'](a:jobStatus, '[ZFDirDiff] path ignored: '
+                call ZFGroupJobLog(a:jobStatus, '[ZFDirDiff] path ignored: '
                             \   . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
                             \ )
             endif
+        else
             call add(childList, diffNode)
         endif
     endfor

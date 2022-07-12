@@ -629,9 +629,9 @@ endfunction
 " ============================================================
 function! ZFDirDiff_excludeCheck_fallback(taskData, diffNode)
     for pattern in get(g:, 'ZFDirDiff_excludeCheck_fallback_patterns', [
-                \   '\..*',
-                \   '\~.*',
-                \   '.*\~',
+                \   '^\..*$',
+                \   '^\~.*$',
+                \   '^.*\~$',
                 \ ])
         if match(a:diffNode['name'], pattern) >= 0
             return 1
