@@ -705,20 +705,27 @@ function! ZFDirDiffUIAction_open()
 endfunction
 
 function! ZFDirDiffUIAction_foldOpenAll()
-    let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
-    if empty(diffNode)
+    if !exists('t:ZFDirDiff_taskData')
+        echomsg '[ZFDirDiff] no previous diff task'
         return
     endif
-    if !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-        return
+    let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
+    if empty(diffNode)
+        let diffNode = t:ZFDirDiff_taskData
+    elseif !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
+        if empty(diffNode['parent'])
+            let diffNode = t:ZFDirDiff_taskData
+        else
+            let diffNode = diffNode['parent']
+        endif
     endif
 
     let queue = [diffNode]
     while !empty(queue)
         let diffNodeTmp = remove(queue, -1)
+        call extend(queue, diffNodeTmp['child'])
         if ZFDirDiffAPI_diffNodeCanOpen(diffNodeTmp)
             let diffNodeTmp['open'] = 1
-            call extend(queue, diffNodeTmp['child'])
         endif
     endwhile
 
@@ -727,21 +734,28 @@ function! ZFDirDiffUIAction_foldOpenAll()
 endfunction
 
 function! ZFDirDiffUIAction_foldOpenAllDiff()
-    let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
-    if empty(diffNode)
+    if !exists('t:ZFDirDiff_taskData')
+        echomsg '[ZFDirDiff] no previous diff task'
         return
     endif
-    if !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-        return
+    let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
+    if empty(diffNode)
+        let diffNode = t:ZFDirDiff_taskData
+    elseif !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
+        if empty(diffNode['parent'])
+            let diffNode = t:ZFDirDiff_taskData
+        else
+            let diffNode = diffNode['parent']
+        endif
     endif
 
     let queue = [diffNode]
     while !empty(queue)
         let diffNodeTmp = remove(queue, -1)
+        call extend(queue, diffNodeTmp['child'])
         if ZFDirDiffAPI_diffNodeCanOpen(diffNodeTmp)
                     \ && diffNodeTmp['diff'] == 1
             let diffNodeTmp['open'] = 1
-            call extend(queue, diffNodeTmp['child'])
         endif
     endwhile
 
