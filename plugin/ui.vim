@@ -323,19 +323,19 @@ function! s:diffUI_bufSetup(isLeft)
     setlocal nomodifiable
     set scrollbind
     set cursorbind
-    execute 'augroup ZF_DirDiff_diffUI_buf_augroup_' . bufnr('%')
+    execute 'augroup ZFDirDiff_diffUI_bufOnDelete_augroup_' . bufnr('%')
     autocmd!
     autocmd BufDelete <buffer> set noscrollbind | set nocursorbind
-                \| call s:ZF_DirDiff_diffUI_buf_augroup_cleanup()
+                \| call s:diffUI_bufOnDelete()
     autocmd BufHidden <buffer> set noscrollbind | set nocursorbind
     autocmd BufEnter <buffer> set scrollbind | set cursorbind
     execute 'augroup END'
 endfunction
 
-function! s:ZF_DirDiff_diffUI_buf_augroup_cleanup()
+function! s:diffUI_bufOnDelete()
     let bufnr = expand('<abuf>')
 
-    execute 'augroup ZF_DirDiff_diffUI_buf_augroup_' . bufnr
+    execute 'augroup ZFDirDiff_diffUI_bufOnDelete_augroup_' . bufnr
     autocmd!
     execute 'augroup END'
 
@@ -346,8 +346,52 @@ function! s:ZF_DirDiff_diffUI_buf_augroup_cleanup()
     endif
 endfunction
 
+function! s:diffUI_tabAttach(tabpagenr, taskData)
+    if !exists('##TabClosed')
+        return
+    endif
+
+    " <tabpagenr, taskData>
+    " used to auto stop diff task when tab accidentally closed by user
+    if !exists('s:diffUI_tabAttachMap')
+        let s:diffUI_tabAttachMap = {}
+    endif
+
+    let s:diffUI_tabAttachMap[a:tabpagenr] = a:taskData
+
+    execute 'augroup ZFDirDiff_diffUI_tabAttach_augroup_' . a:tabpagenr
+    autocmd!
+    autocmd TabClosed * call s:diffUI_tabDetachUnexpected(expand('<afile>'))
+    execute 'augroup END'
+endfunction
+
+function! s:diffUI_tabDetach(tabpagenr, taskData)
+    if !exists('##TabClosed')
+        return
+    endif
+
+    execute 'augroup ZFDirDiff_diffUI_tabAttach_augroup_' . a:tabpagenr
+    autocmd!
+    execute 'augroup END'
+
+    if exists("s:diffUI_tabAttachMap[a:tabpagenr]")
+        unlet s:diffUI_tabAttachMap[a:tabpagenr]
+    endif
+endfunction
+
+function! s:diffUI_tabDetachUnexpected(tabpagenr)
+    if !exists("s:diffUI_tabAttachMap[a:tabpagenr]")
+        return
+    endif
+    let taskData = s:diffUI_tabAttachMap[a:tabpagenr]
+    call s:diffUI_tabDetach(taskData)
+    call ZFDirDiffAPI_cleanup(taskData)
+    call ZFDirDiffHLImpl_cleanup(t:ZFDirDiff_taskData)
+endfunction
+
 function! s:diffUI_start(fileL, fileR)
     if exists('t:ZFDirDiff_taskData')
+        call s:diffUI_tabDetach(tabpagenr(), t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_cleanup(t:ZFDirDiff_taskData)
         call ZFDirDiffHLImpl_cleanup(t:ZFDirDiff_taskData)
     endif
@@ -362,6 +406,7 @@ function! s:diffUI_start(fileL, fileR)
         unlet t:ZFDirDiff_taskData
         return
     endif
+    call s:diffUI_tabAttach(tabpagenr(), t:ZFDirDiff_taskData)
     call ZFDirDiffHLImpl_init(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_update(t:ZFDirDiff_taskData)
 
@@ -1000,6 +1045,7 @@ endfunction
 function! ZFDirDiffUIAction_quit()
     if exists('t:ZFDirDiff_taskData')
         let taskData = t:ZFDirDiff_taskData
+        call s:diffUI_tabDetach(tabpagenr(), t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_cleanup(t:ZFDirDiff_taskData)
         call ZFDirDiffHLImpl_cleanup(taskData)
         unlet t:ZFDirDiff_taskData
