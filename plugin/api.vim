@@ -179,14 +179,14 @@ endif
 "
 "   'openState' : {}, // a dict of <path, dummy> that needs to be opened during ZFDirDiffAPI_dataChanged
 "                     // format: '/xxx/xxx'
-"                     // typically saved by ZFDirDiffAPI_stateSave
+"                     // typically saved by ZFDirDiffAPI_openStateSave
 "                     // match logic:
 "                     // * all dir type diffNode that `match(keys(openState), '^.' . parentPath . diffNode['name'])` would be opened
 "                     // * when something exactly matched openState,
 "                     //   the matched rule would be removed from openState after ZFDirDiffAPI_dataChanged
 "   'cursorState' : '', // a path that needs to restore cursor during ZFDirDiffUI_cbDataChanged
 "                       // format: '/xxx/xxx'
-"                       // typically saved by ZFDirDiffAPI_stateSave
+"                       // typically saved by ZFDirDiffAPI_cursorStateSave
 "                       // cursor should be restored by UI accorrding to taskData['cursorLine']
 " }
 "
@@ -259,38 +259,28 @@ function! ZFDirDiffAPI_update(taskData, ...)
 endfunction
 
 " save state which would automatically restored during ZFDirDiffAPI_dataChanged
-" opiton: {
-"   'openState' : 1,
-"   'cursorState' : 1,
-" }
-function! ZFDirDiffAPI_stateSave(taskData, ...)
-    let option = get(a:, 1, {})
-
-    let cursorLine = line('.')
-
-    if get(option, 'cursorState', 1)
-        let a:taskData['cursorState'] = ''
-        let index = cursorLine - 1
-        if index >= 0 && index < len(a:taskData['childVisible'])
-            let cursorNode = a:taskData['childVisible'][index]
-            if !empty(cursorNode)
-                let a:taskData['cursorState'] = ZFDirDiffAPI_parentPath(cursorNode) . cursorNode['name']
-            endif
-        endif
-    endif
-
-    if get(option, 'openState', 1)
-        let toCheck = []
-        call extend(toCheck, a:taskData['child'])
-        while !empty(toCheck)
-            let diffNode = remove(toCheck, 0)
-            if ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-                if diffNode['open']
-                    let a:taskData['openState'][ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']] = 1
-                endif
+function! ZFDirDiffAPI_openStateSave(taskData)
+    let toCheck = []
+    call extend(toCheck, a:taskData['child'])
+    while !empty(toCheck)
+        let diffNode = remove(toCheck, 0)
+        if ZFDirDiffAPI_diffNodeCanOpen(diffNode)
+            if diffNode['open']
+                let a:taskData['openState'][ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']] = 1
                 call extend(toCheck, diffNode['child'])
             endif
-        endwhile
+        endif
+    endwhile
+endfunction
+
+function! ZFDirDiffAPI_cursorStateSave(taskData)
+    let a:taskData['cursorState'] = ''
+    let index = line('.') - 1
+    if index >= 0 && index < len(a:taskData['childVisible'])
+        let cursorNode = a:taskData['childVisible'][index]
+        if !empty(cursorNode)
+            let a:taskData['cursorState'] = ZFDirDiffAPI_parentPath(cursorNode) . cursorNode['name']
+        endif
     endif
 endfunction
 

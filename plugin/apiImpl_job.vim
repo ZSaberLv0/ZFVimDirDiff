@@ -210,10 +210,10 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
         return
     endif
 
-    call ZFDirDiffAPI_stateSave(a:taskData, {
-                \   'openState' : 1,
-                \   'cursorState' : empty(a:taskData['cursorState']) ? 1 : 0,
-                \ })
+    call ZFDirDiffAPI_openStateSave(a:taskData)
+    if empty(a:taskData['cursorState'])
+        call ZFDirDiffAPI_cursorStateSave(a:taskData)
+    endif
 
     if !ZFDirDiffAPI_isTaskData(a:parentDiffNode)
         let parent = a:parentDiffNode
@@ -398,10 +398,10 @@ function! ZFDirDiffAPIImpl_diffChild_onExit(taskData, parentDiffNode, jobStatus,
         return
     endif
     call ZFDirDiffAPI_diffUpdate(a:parentDiffNode)
-    call ZFDirDiffAPI_stateSave(a:taskData, {
-                \   'openState' : 1,
-                \   'cursorState' : empty(a:taskData['cursorState']) ? 1 : 0,
-                \ })
+    call ZFDirDiffAPI_openStateSave(a:taskData)
+    if empty(a:taskData['cursorState'])
+        call ZFDirDiffAPI_cursorStateSave(a:taskData)
+    endif
     call ZFDirDiffAPI_dataChanged(a:taskData)
     call s:listChildRecursive(a:taskData, a:parentDiffNode)
 endfunction

@@ -608,10 +608,7 @@ function! s:diffUI_diffJumpFilePrev(cursorNode)
     endif
 
     let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(target) . target['name']
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData, {
-                \   'openState' : 1,
-                \   'cursorState' : 0,
-                \ })
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     return 1
 endfunction
@@ -672,10 +669,7 @@ function! s:diffUI_diffJumpFileNext(cursorNode)
     endif
 
     let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(target) . target['name']
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData, {
-                \   'openState' : 1,
-                \   'cursorState' : 0,
-                \ })
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     return 1
 endfunction
@@ -723,7 +717,8 @@ function! ZFDirDiffUIAction_update()
         return
     endif
     call s:diffUI_markClear()
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_update(t:ZFDirDiff_taskData)
 endfunction
 
@@ -734,7 +729,8 @@ function! ZFDirDiffUIAction_updateParent()
     endif
     call s:diffUI_markClear()
     let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, diffNode['parent'])
 endfunction
 
@@ -759,7 +755,8 @@ function! ZFDirDiffUIAction_open()
                 unlet t:ZFDirDiff_taskData['openState'][path]
             endif
         endif
-        call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
         return
     endif
@@ -801,7 +798,8 @@ function! ZFDirDiffUIAction_foldOpenAll()
         endif
     endwhile
 
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
 endfunction
 
@@ -831,7 +829,8 @@ function! ZFDirDiffUIAction_foldOpenAllDiff()
         endif
     endwhile
 
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+    call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
 endfunction
 
@@ -848,10 +847,7 @@ function! ZFDirDiffUIAction_foldClose()
             unlet t:ZFDirDiff_taskData['openState'][path]
         endif
         let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(diffNode['parent']) . diffNode['parent']['name']
-        call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData, {
-                    \   'openState' : 1,
-                    \   'cursorState' : 0,
-                    \ })
+        call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     endif
 endfunction
@@ -874,14 +870,12 @@ function! ZFDirDiffUIAction_foldCloseAll()
         endwhile
         let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
         let t:ZFDirDiff_taskData['openState'] = {}
-        call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData, {
-                    \   'openState' : 1,
-                    \   'cursorState' : 0,
-                    \ })
+        call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     else
         let t:ZFDirDiff_taskData['openState'] = {}
-        call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     endif
 endfunction
@@ -1223,7 +1217,8 @@ function! ZFDirDiffUIAction_add()
 
     if !empty(parentDiffNode) && !parentDiffNode['open']
         let parentDiffNode['open'] = 1
-        call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
+        call ZFDirDiffAPI_cursorStateSave(t:ZFDirDiff_taskData)
         call ZFDirDiffAPI_dataChanged(t:ZFDirDiff_taskData)
     endif
     if empty(parentDiffNode)
@@ -1231,10 +1226,7 @@ function! ZFDirDiffUIAction_add()
     else
         let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(parentDiffNode) . parentDiffNode['name'] . '/' . item
     endif
-    call ZFDirDiffAPI_stateSave(t:ZFDirDiff_taskData, {
-                \   'openState' : 1,
-                \   'cursorState' : 0,
-                \ })
+    call ZFDirDiffAPI_openStateSave(t:ZFDirDiff_taskData)
     call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, parentDiffNode)
 endfunction
 
@@ -1395,7 +1387,8 @@ function! ZFDirDiffUIAction_quitFileDiff()
     if ownerDiffTab != -1
         silent! execute 'silent! normal! ' . ownerDiffTab . 'gt'
         if !empty(taskData) && modified
-            call ZFDirDiffAPI_stateSave(taskData)
+            call ZFDirDiffAPI_openStateSave(taskData)
+            call ZFDirDiffAPI_cursorStateSave(taskData)
             call ZFDirDiffAPI_update(taskData, diffNode['parent'])
         else
             " UI won't update when tab not in foreground

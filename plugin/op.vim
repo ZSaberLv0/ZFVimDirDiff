@@ -13,7 +13,8 @@
 " return: a/y/n/q of user confirm
 function! ZFDirDiffOp(taskData, diffNode, op, ...)
     let ret = s:ZFDirDiffOp(a:taskData, ZFDirDiffAPI_parentPath(a:diffNode), a:diffNode, a:op, get(a:, 1, {}))
-    call ZFDirDiffAPI_stateSave(a:taskData)
+    call ZFDirDiffAPI_openStateSave(a:taskData)
+    call ZFDirDiffAPI_cursorStateSave(a:taskData)
     call ZFDirDiffAPI_update(a:taskData, a:diffNode['parent'])
     return ret
 endfunction
