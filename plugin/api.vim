@@ -164,6 +164,8 @@ endif
 "     ...
 "   ],
 "
+"   'dataChangedDelayId' : -1,
+"
 "   'headerLen' : N, // header length in linesL/linesR
 "   'tailLen' : N, // tail length in linesL/linesR
 "   'linesL' : [...], // raw content to display as buffer
@@ -216,6 +218,7 @@ function! ZFDirDiffAPI_init(fileL, fileR, option)
                 \   'pathL' : ZFDirDiffAPI_pathFormat(fileL),
                 \   'pathR' : ZFDirDiffAPI_pathFormat(fileR),
                 \   'child' : [],
+                \   'dataChangedDelayId' : -1,
                 \   'headerLen' : 0,
                 \   'tailLen' : 0,
                 \   'linesL' : [],
@@ -246,6 +249,10 @@ function! ZFDirDiffAPI_cleanup(taskData)
     endif
     call ZFDirDiffAPIImpl_job_cleanup(a:taskData)
     unlet a:taskData['fileL']
+    if a:taskData['dataChangedDelayId'] != -1
+        call ZFJobTimerStop(a:taskData['dataChangedDelayId'])
+        let a:taskData['dataChangedDelayId'] = -1
+    endif
 endfunction
 
 " if diffNode supplied, update specified file/dir
@@ -285,9 +292,37 @@ function! ZFDirDiffAPI_cursorStateSave(taskData)
 endfunction
 
 function! ZFDirDiffAPI_dataChanged(taskData)
+    " speed up first screen
+    if !empty(a:taskData['child'])
+                \ && len(a:taskData['childVisible']) == a:taskData['headerLen'] + a:taskData['tailLen']
+        call ZFDirDiffAPI_dataChangedImmediately(a:taskData)
+        return
+    endif
+
+    if a:taskData['dataChangedDelayId'] != -1
+        return
+    endif
+    let a:taskData['dataChangedDelayId'] = ZFJobTimerStart(
+                \ get(g:, 'ZFDirDiff_updateDelay', 1000),
+                \ ZFJobFunc(function('ZFDirDiffAPI_dataChangedDelayCallback'), [a:taskData]))
+endfunction
+function! ZFDirDiffAPI_dataChangedDelayCallback(taskData, ...)
+    let a:taskData['dataChangedDelayId'] = -1
+    call ZFDirDiffAPI_dataChangedImmediately(a:taskData)
+endfunction
+function! ZFDirDiffAPI_dataChangedImmediately(taskData)
     if !exists("a:taskData['fileL']")
         echomsg '[ZFDirDiff] invalid taskData'
         return
+    endif
+    if a:taskData['dataChangedDelayId'] != -1
+        call ZFJobTimerStop(a:taskData['dataChangedDelayId'])
+        let a:taskData['dataChangedDelayId'] = -1
+    endif
+
+    call ZFDirDiffAPI_openStateSave(a:taskData)
+    if empty(a:taskData['cursorState'])
+        call ZFDirDiffAPI_cursorStateSave(a:taskData)
     endif
 
     let a:taskData['headerLen'] = 0
