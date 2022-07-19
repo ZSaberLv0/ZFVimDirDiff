@@ -28,7 +28,7 @@ let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
 
 " return a shell cmd that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
-    if has('windows') && !has('unix')
+    if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listDir(absPath)
             return printf('"%s/listDir.bat" "%s"'
                         \ , CygpathFix_absPath(s:scriptPath)
@@ -47,7 +47,7 @@ endif
 
 " return a shell cmd that print a plain list of name or path of file
 if !exists('*ZFDirDiffCmd_listFile')
-    if has('windows') && !has('unix')
+    if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listFile(absPath)
             return printf('"%s/listFile.bat" "%s"'
                         \ , CygpathFix_absPath(s:scriptPath)
@@ -66,7 +66,7 @@ endif
 
 " return a shell cmd that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
 if !exists('*ZFDirDiffCmd_diff')
-    if has('windows') && !has('unix')
+    if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
             return printf('"%s/diff.bat" "%s" "%s"'
                         \ , CygpathFix_absPath(s:scriptPath)
@@ -689,37 +689,45 @@ function! s:ZFIgnoreOnUpdate()
         endif
     endfor
 endfunction
-let s:ZFIgnoreTypeList_dir = [
-            \   g:ZFDirDiff_T_DIR,
-            \   g:ZFDirDiff_T_DIR_LEFT,
-            \   g:ZFDirDiff_T_DIR_RIGHT,
-            \   g:ZFDirDiff_T_CONFLICT_DIR_LEFT,
-            \   g:ZFDirDiff_T_CONFLICT_DIR_RIGHT,
-            \ ]
-let s:ZFIgnoreTypeList_file = [
-            \   g:ZFDirDiff_T_SAME,
-            \   g:ZFDirDiff_T_DIFF,
-            \   g:ZFDirDiff_T_FILE_LEFT,
-            \   g:ZFDirDiff_T_FILE_RIGHT,
-            \   g:ZFDirDiff_T_CONFLICT_DIR_LEFT,
-            \   g:ZFDirDiff_T_CONFLICT_DIR_RIGHT,
-            \ ]
+function! s:ZFIgnoreAction_dir(taskData, diffNode)
+    for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns', [])
+        if match(a:diffNode['name'], pattern) >= 0
+            return 1
+        endif
+    endfor
+endfunction
+function! s:ZFIgnoreAction_file(taskData, diffNode)
+    for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_filePatterns', [])
+        if match(a:diffNode['name'], pattern) >= 0
+            return 1
+        endif
+    endfor
+endfunction
+function! s:ZFIgnoreAction_both(taskData, diffNode)
+    for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns', [])
+        if match(a:diffNode['name'], pattern) >= 0
+            return 1
+        endif
+    endfor
+    for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_filePatterns', [])
+        if match(a:diffNode['name'], pattern) >= 0
+            return 1
+        endif
+    endfor
+endfunction
+let s:ZFIgnoreTypeMap = {
+            \   g:ZFDirDiff_T_DIR : function('s:ZFIgnoreAction_dir'),
+            \   g:ZFDirDiff_T_SAME : function('s:ZFIgnoreAction_file'),
+            \   g:ZFDirDiff_T_DIFF : function('s:ZFIgnoreAction_file'),
+            \   g:ZFDirDiff_T_DIR_LEFT : function('s:ZFIgnoreAction_dir'),
+            \   g:ZFDirDiff_T_DIR_RIGHT : function('s:ZFIgnoreAction_dir'),
+            \   g:ZFDirDiff_T_FILE_LEFT : function('s:ZFIgnoreAction_file'),
+            \   g:ZFDirDiff_T_FILE_RIGHT : function('s:ZFIgnoreAction_file'),
+            \   g:ZFDirDiff_T_CONFLICT_DIR_LEFT : function('s:ZFIgnoreAction_both'),
+            \   g:ZFDirDiff_T_CONFLICT_DIR_RIGHT : function('s:ZFIgnoreAction_both'),
+            \ }
 function! ZFDirDiff_excludeCheck_ZFIgnore(taskData, diffNode)
-    if index(s:ZFIgnoreTypeList_dir, a:diffNode['type']) >= 0
-        for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_dirPatterns', [])
-            if match(a:diffNode['name'], pattern) >= 0
-                return 1
-            endif
-        endfor
-    endif
-    if index(s:ZFIgnoreTypeList_file, a:diffNode['type']) >= 0
-        for pattern in get(g:, 'ZFDirDiff_excludeCheck_ZFIgnore_filePatterns', [])
-            if match(a:diffNode['name'], pattern) >= 0
-                return 1
-            endif
-        endfor
-    endif
-    return 0
+    return s:ZFIgnoreTypeMap[a:diffNode['type']](a:taskData, a:diffNode)
 endfunction
 
 " ============================================================
@@ -798,10 +806,10 @@ endfunction
 " ============================================================
 if !exists('*ZFDirDiffAPI_mkdir')
     function! ZFDirDiffAPI_mkdir(path)
-        if has('unix')
-            silent execute '!mkdir -p "' . a:path . '"'
-        elseif has('windows')
+        if (has('win32') || has('win64')) && !has('unix')
             silent execute '!mkdir "' . substitute(a:path, '/', '\', 'g') . '"'
+        else
+            silent execute '!mkdir -p "' . a:path . '"'
         endif
     endfunction
 endif
@@ -809,30 +817,30 @@ endif
 if !exists('*ZFDirDiffAPI_cpfile')
     function! ZFDirDiffAPI_cpfile(from, to)
         call ZFDirDiffAPI_mkdir(fnamemodify(a:to, ":h"))
-        if has('unix')
-            silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
-        elseif has('windows')
+        if (has('win32') || has('win64')) && !has('unix')
             silent execute '!copy "' . substitute(a:from, '/', '\', 'g') . '" "' . substitute(a:to, '/', '\', 'g') . '"'
+        else
+            silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
         endif
     endfunction
 endif
 
 if !exists('*ZFDirDiffAPI_rmdir')
     function! ZFDirDiffAPI_rmdir(path)
-        if has('unix')
-            silent execute '!rm -rf "' . a:path . '"'
-        elseif has('windows')
+        if (has('win32') || has('win64')) && !has('unix')
             silent execute '!rmdir /s/q "' . substitute(a:path, '/', '\', 'g') . '"'
+        else
+            silent execute '!rm -rf "' . a:path . '"'
         endif
     endfunction
 endif
 
 if !exists('*ZFDirDiffAPI_rmfile')
     function! ZFDirDiffAPI_rmfile(path)
-        if has('unix')
-            silent execute '!rm -f "' . a:path . '"'
-        elseif has('windows')
+        if (has('win32') || has('win64')) && !has('unix')
             silent execute '!del /f/q "' . substitute(a:path, '/', '\', 'g') . '"'
+        else
+            silent execute '!rm -f "' . a:path . '"'
         endif
     endfunction
 endif
