@@ -87,10 +87,16 @@ function! s:ZFIgnoreUpdate(taskData)
                 \   'ZFDirDiff' : 1,
                 \ }))
     for pattern in ignore['dir']
-        let dir_patterns[ZFIgnorePatternToRegexp(pattern)] = 1
+        let patternTmp = ZFIgnorePatternToRegexp(pattern)
+        if !empty(patternTmp)
+            let dir_patterns[patternTmp] = 1
+        endif
     endfor
     for pattern in ignore['file']
-        let file_patterns[ZFIgnorePatternToRegexp(pattern)] = 1
+        let patternTmp = ZFIgnorePatternToRegexp(pattern)
+        if !empty(patternTmp)
+            let file_patterns[patternTmp] = 1
+        endif
     endfor
 
     " gitignore for each side
@@ -116,10 +122,16 @@ function! s:ZFIgnoreUpdate(taskData)
                 \ }
     call ZFIgnoreFilterApply(gitignore)
     for pattern in gitignore['dir']
-        let dir_patterns[ZFIgnorePatternToRegexp(pattern)] = 1
+        let patternTmp = ZFIgnorePatternToRegexp(pattern)
+        if !empty(patternTmp)
+            let dir_patterns[patternTmp] = 1
+        endif
     endfor
     for pattern in gitignore['file']
-        let file_patterns[ZFIgnorePatternToRegexp(pattern)] = 1
+        let patternTmp = ZFIgnorePatternToRegexp(pattern)
+        if !empty(patternTmp)
+            let file_patterns[patternTmp] = 1
+        endif
     endfor
 
     let a:taskData['ZFIgnore_excludeState'] = {
