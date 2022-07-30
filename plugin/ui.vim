@@ -22,27 +22,10 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZFDirDiff(<f-args>)
 "   'reuseTab' : 0/1, // whether to reuse current tab, 1 by default
 " }
 function! ZFDirDiff(fileL, fileR, ...)
-    let fileL = ZFDirDiffAPI_pathFormat(a:fileL)
-    let fileR = ZFDirDiffAPI_pathFormat(a:fileR)
-    let typeL = filereadable(fileL)
-                \ ? 'file'
-                \ : (isdirectory(fileL)
-                \     ? 'dir'
-                \     : 'invalid'
-                \ )
-    let typeR = filereadable(fileR)
-                \ ? 'file'
-                \ : (isdirectory(fileR)
-                \     ? 'dir'
-                \     : 'invalid'
-                \ )
-    if typeL == 'invalid' || typeR == 'invalid'
-                \ || typeL != typeR
-        redraw!
-        echo '[ZFDirDiff] can not be compared: ' . a:fileL . ' <=> ' . a:fileR
-        return
-    elseif typeL == 'file'
-        call s:fileDiffUI_start(-1, {}, fileL, fileR)
+    let pathL = ZFDirDiffAPI_pathFormat(a:fileL)
+    let pathR = ZFDirDiffAPI_pathFormat(a:fileR)
+    if !isdirectory(pathL) || !isdirectory(pathR)
+        call s:fileDiffUI_start(-1, {}, pathL, pathR)
         return
     endif
 

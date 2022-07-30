@@ -102,27 +102,15 @@ endif
 
 " ============================================================
 " T_DIR,T_SAME,T_DIFF,T_DIR_LEFT,T_DIR_RIGHT,T_FILE_LEFT,T_FILE_RIGHT,T_CONFLICT_DIR_LEFT,T_CONFLICT_DIR_RIGHT
-if !get(g:, 'ZFDirDiff_readableType', 0)
-    let g:ZFDirDiff_T_DIR = 1 " both dir
-    let g:ZFDirDiff_T_SAME = 2 " both file, and contents are same
-    let g:ZFDirDiff_T_DIFF = 3 " both file, and contents are diff
-    let g:ZFDirDiff_T_DIR_LEFT = 4 " left is dir, right not exist
-    let g:ZFDirDiff_T_DIR_RIGHT = 5 " right is dir, left not exist
-    let g:ZFDirDiff_T_FILE_LEFT = 6 " left is file, right not exist
-    let g:ZFDirDiff_T_FILE_RIGHT = 7 " right is file, left not exist
-    let g:ZFDirDiff_T_CONFLICT_DIR_LEFT = 8 " left is dir, right is file
-    let g:ZFDirDiff_T_CONFLICT_DIR_RIGHT = 9 " left is file, right is dir
-else
-    let g:ZFDirDiff_T_DIR = 'DD'
-    let g:ZFDirDiff_T_SAME = 'FF'
-    let g:ZFDirDiff_T_DIFF = 'xx'
-    let g:ZFDirDiff_T_DIR_LEFT = 'D-'
-    let g:ZFDirDiff_T_DIR_RIGHT = '-D'
-    let g:ZFDirDiff_T_FILE_LEFT = 'F-'
-    let g:ZFDirDiff_T_FILE_RIGHT = '-F'
-    let g:ZFDirDiff_T_CONFLICT_DIR_LEFT = 'DF'
-    let g:ZFDirDiff_T_CONFLICT_DIR_RIGHT = 'FD'
-endif
+let g:ZFDirDiff_T_DIR = 'DD' " both dir
+let g:ZFDirDiff_T_SAME = 'FF' " both file, and contents are same
+let g:ZFDirDiff_T_DIFF = 'xx' " both file, and contents are diff
+let g:ZFDirDiff_T_DIR_LEFT = 'D-' " left is dir, right not exist
+let g:ZFDirDiff_T_DIR_RIGHT = '-D' " right is dir, left not exist
+let g:ZFDirDiff_T_FILE_LEFT = 'F-' " left is file, right not exist
+let g:ZFDirDiff_T_FILE_RIGHT = '-F' " right is file, left not exist
+let g:ZFDirDiff_T_CONFLICT_DIR_LEFT = 'DF' " left is dir, right is file
+let g:ZFDirDiff_T_CONFLICT_DIR_RIGHT = 'FD' " left is file, right is dir
 
 if !exists('*ZFDirDiffAPI_typeHint')
     function! ZFDirDiffAPI_typeHint(type)
@@ -610,6 +598,8 @@ let s:typeList_canOpen = [
 let s:typeList_canDiff = [
             \   g:ZFDirDiff_T_SAME,
             \   g:ZFDirDiff_T_DIFF,
+            \   g:ZFDirDiff_T_FILE_LEFT,
+            \   g:ZFDirDiff_T_FILE_RIGHT,
             \ ]
 function! ZFDirDiffAPI_diffNodeCanOpen(diffNode)
     return index(s:typeList_canOpen, get(a:diffNode, 'type', g:ZFDirDiff_T_DIFF)) >= 0
