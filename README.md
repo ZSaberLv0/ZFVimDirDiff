@@ -5,11 +5,12 @@ vim plugin to diff two directories like BeyondCompare by using `diff`
 
 inspired by [will133/vim-dirdiff](https://github.com/will133/vim-dirdiff)
 
-* why another directory diffing plugin?
+* why another directory diff plugin?
 
     * fully async and queued, works well with tons of files, even for vim 7.3!
         (by [ZFVimJob](https://github.com/ZSaberLv0/ZFVimJob))
-    * format the `diff` result as vertical split file tree view,
+    * works well on Windows without `sh` or `diff` env
+    * format the diff result as vertical split file tree view,
         which should be more human-readable
     * more friendly file sync operation using the same mappings as builtin `vimdiff`
     * automatically backup before destructive actions

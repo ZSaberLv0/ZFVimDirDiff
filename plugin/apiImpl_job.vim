@@ -96,24 +96,20 @@ function! s:listChild(taskData, parentDiffNode)
     let jobList = []
 
     if isdirectory(a:taskData['pathL'] . parentPath)
-        call add(jobList, {
-                    \   'jobCmd' : ZFDirDiffCmd_listDir(a:taskData['pathL'] . parentPath),
+        call add(jobList, extend(ZFDirDiffCmd_listDir(a:taskData['pathL'] . parentPath), {
                     \   'onOutput' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_listChild_onOutput'), [listChildData, 1, 1]),
-                    \ })
-        call add(jobList, {
-                    \   'jobCmd' : ZFDirDiffCmd_listFile(a:taskData['pathL'] . parentPath),
+                    \ }))
+        call add(jobList, extend(ZFDirDiffCmd_listFile(a:taskData['pathL'] . parentPath), {
                     \   'onOutput' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_listChild_onOutput'), [listChildData, 0, 1]),
-                    \ })
+                    \ }))
     endif
     if isdirectory(a:taskData['pathR'] . parentPath)
-        call add(jobList, {
-                    \   'jobCmd' : ZFDirDiffCmd_listDir(a:taskData['pathR'] . parentPath),
+        call add(jobList, extend(ZFDirDiffCmd_listDir(a:taskData['pathR'] . parentPath), {
                     \   'onOutput' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_listChild_onOutput'), [listChildData, 1, 0]),
-                    \ })
-        call add(jobList, {
-                    \   'jobCmd' : ZFDirDiffCmd_listFile(a:taskData['pathR'] . parentPath),
+                    \ }))
+        call add(jobList, extend(ZFDirDiffCmd_listFile(a:taskData['pathR'] . parentPath), {
                     \   'onOutput' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_listChild_onOutput'), [listChildData, 0, 0]),
-                    \ })
+                    \ }))
     endif
 
     if empty(jobList)
@@ -343,13 +339,13 @@ function! s:diffChild(taskData, parentDiffNode)
         if child['diff'] != -1 || child['type'] == g:ZFDirDiff_T_DIR
             continue
         endi
-        call add(jobList, {
-                    \   'jobCmd' : ZFDirDiffCmd_diff(
+        call add(jobList, extend(ZFDirDiffCmd_diff(
                     \       a:taskData['pathL'] . parentPath . child['name'],
                     \       a:taskData['pathR'] . parentPath . child['name']
-                    \   ),
-                    \   'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_diffChild_child_onExit'), [child]),
-                    \ })
+                    \   ), {
+                    \     'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_diffChild_child_onExit'), [child]),
+                    \   }
+                    \ ))
     endfor
     if empty(jobList)
         return 0

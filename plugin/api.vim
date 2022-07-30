@@ -26,61 +26,76 @@ endif
 " ============================================================
 let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
 
-" return a shell cmd that print a plain list of name or path of dir
+" return a jobOption that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listDir(absPath)
-            return printf('"%s/listDir.bat" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPath
-                        \ )
+            return {
+                        \   'jobCmd' : printf('"%s/listDir.bat" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPath
+                        \   ),
+                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
+                        \ }
         endfunction
     else
         function! ZFDirDiffCmd_listDir(absPath)
-            return printf('sh "%s/listDir.sh" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPath
-                        \ )
+            return {
+                        \   'jobCmd' : printf('sh "%s/listDir.sh" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPath
+                        \   ),
+                        \ }
         endfunction
     endif
 endif
 
-" return a shell cmd that print a plain list of name or path of file
+" return a jobOption that print a plain list of name or path of file
 if !exists('*ZFDirDiffCmd_listFile')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listFile(absPath)
-            return printf('"%s/listFile.bat" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPath
-                        \ )
+            return {
+                        \   'jobCmd' : printf('"%s/listFile.bat" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPath
+                        \   ),
+                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
+                        \ }
         endfunction
     else
         function! ZFDirDiffCmd_listFile(absPath)
-            return printf('sh "%s/listFile.sh" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPath
-                        \ )
+            return {
+                        \   'jobCmd' : printf('sh "%s/listFile.sh" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPath
+                        \   ),
+                        \ }
         endfunction
     endif
 endif
 
-" return a shell cmd that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
+" return a jobOption that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
 if !exists('*ZFDirDiffCmd_diff')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return printf('"%s/diff.bat" "%s" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPathL
-                        \ , a:absPathR
-                        \ )
+            return {
+                        \   'jobCmd' : printf('"%s/diff.bat" "%s" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPathL
+                        \       , a:absPathR
+                        \   ),
+                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
+                        \ }
         endfunction
     else
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return printf('sh "%s/diff.sh" "%s" "%s"'
-                        \ , CygpathFix_absPath(s:scriptPath)
-                        \ , a:absPathL
-                        \ , a:absPathR
-                        \ )
+            return {
+                        \   'jobCmd' : printf('sh "%s/diff.sh" "%s" "%s"'
+                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , a:absPathL
+                        \       , a:absPathR
+                        \   ),
+                        \ }
         endfunction
     endif
 endif
