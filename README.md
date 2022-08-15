@@ -132,6 +132,14 @@ for experienced user, here's some configs you may interest
 * `let g:ZFDirDiff_autoBackup = 1` : whether perform auto backup, see https://github.com/ZSaberLv0/ZFVimBackup
 * `let g:ZFIgnoreOption_ZFDirDiff = {...}` : ignore options, see https://github.com/ZSaberLv0/ZFVimIgnore
 
+    ```
+    let g:ZFIgnoreOption_ZFDirDiff = {
+                \   'bin' : 0,
+                \   'media' : 0,
+                \   'ZFDirDiff' : 1,
+                \ }
+    ```
+
 
 ## Keymap (inside diff window)
 
