@@ -559,16 +559,20 @@ function! s:diffUI_diffJumpFilePrev(cursorNode)
     if empty(a:cursorNode)
         let toCheck = copy(t:ZFDirDiff_taskData['child'])
     else
-        if empty(get(a:cursorNode, 'parent', {}))
-            let childList = t:ZFDirDiff_taskData['child']
-        else
-            let childList = a:cursorNode['parent']['child']
-        endif
-        let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, a:cursorNode)
-        if index <= 0
-            return 0
-        endif
-        execute 'let toCheck=childList[0:' . (index - 1) . ']'
+        let toCheck = []
+        let cursorNodeTmp = a:cursorNode
+        while empty(toCheck) && !empty(cursorNodeTmp)
+            if empty(get(cursorNodeTmp, 'parent', {}))
+                let childList = t:ZFDirDiff_taskData['child']
+            else
+                let childList = cursorNodeTmp['parent']['child']
+            endif
+            let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, cursorNodeTmp)
+            if index > 0
+                execute 'let toCheck=childList[0:' . (index - 1) . ']'
+            endif
+            let cursorNodeTmp = get(cursorNodeTmp, 'parent', {})
+        endwhile
     endif
 
     let target = {}
