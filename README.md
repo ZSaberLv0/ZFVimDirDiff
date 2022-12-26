@@ -130,6 +130,7 @@ for experienced user, here's some configs you may interest
 ## Diff logic
 
 * `let g:ZFDirDiff_autoBackup = 1` : whether perform auto backup, see https://github.com/ZSaberLv0/ZFVimBackup
+* `let g:ZFDirDiff_ignoreEmptyDir = 1` : whether ignore empty dir
 * `let g:ZFIgnoreOption_ZFDirDiff = {...}` : ignore options, see https://github.com/ZSaberLv0/ZFVimIgnore
 
     ```

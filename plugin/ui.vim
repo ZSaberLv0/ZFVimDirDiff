@@ -711,7 +711,7 @@ function! ZFDirDiffUIAction_updateParent()
     endif
     call s:diffUI_markClear()
     let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
-    call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, diffNode['parent'])
+    call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, get(diffNode, 'parent', {}))
 endfunction
 
 function! ZFDirDiffUIAction_open()
@@ -1109,32 +1109,45 @@ endfunction
 function! ZFDirDiffUIAction_add()
     let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
     if empty(diffNode)
+        let diffNode = t:ZFDirDiff_taskData
+    endif
+    if empty(diffNode)
         echo '[ZFDirDiff] no file or dir under cursor'
         return
     endif
 
     let bufnr = bufnr('%')
     if bufnr == t:ZFDirDiff_bufnrL
-        let fullParentPath = t:ZFDirDiff_taskData['fileL'] . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
-        if index([
-                    \   g:ZFDirDiff_T_DIR,
-                    \   g:ZFDirDiff_T_DIR_LEFT,
-                    \ ], diffNode['type']) >= 0
-            let parentDiffNode = diffNode
+        if ZFDirDiffAPI_isTaskData(diffNode)
+            let fullParentPath = t:ZFDirDiff_taskData['fileL']
+            let parentDiffNode = {}
         else
-            let parentDiffNode = diffNode['parent']
-            let fullParentPath = fnamemodify(fullParentPath, ':h')
+            let fullParentPath = t:ZFDirDiff_taskData['fileL'] . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
+            if index([
+                        \   g:ZFDirDiff_T_DIR,
+                        \   g:ZFDirDiff_T_DIR_LEFT,
+                        \ ], diffNode['type']) >= 0
+                let parentDiffNode = diffNode
+            else
+                let parentDiffNode = diffNode['parent']
+                let fullParentPath = fnamemodify(fullParentPath, ':h')
+            endif
         endif
     elseif bufnr == t:ZFDirDiff_bufnrR
-        let fullParentPath = t:ZFDirDiff_taskData['fileR'] . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
-        if index([
-                    \   g:ZFDirDiff_T_DIR,
-                    \   g:ZFDirDiff_T_DIR_RIGHT,
-                    \ ], diffNode['type']) >= 0
-            let parentDiffNode = diffNode
+        if ZFDirDiffAPI_isTaskData(diffNode)
+            let fullParentPath = t:ZFDirDiff_taskData['fileR']
+            let parentDiffNode = {}
         else
-            let parentDiffNode = diffNode['parent']
-            let fullParentPath = fnamemodify(fullParentPath, ':h')
+            let fullParentPath = t:ZFDirDiff_taskData['fileR'] . ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
+            if index([
+                        \   g:ZFDirDiff_T_DIR,
+                        \   g:ZFDirDiff_T_DIR_RIGHT,
+                        \ ], diffNode['type']) >= 0
+                let parentDiffNode = diffNode
+            else
+                let parentDiffNode = diffNode['parent']
+                let fullParentPath = fnamemodify(fullParentPath, ':h')
+            endif
         endif
     else
         echomsg '[ZFDirDiff] invalid bufnr: ' . bufnr

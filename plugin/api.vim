@@ -8,8 +8,8 @@ if !exists('g:ZFDirDiffUI_showSameDir')
     let g:ZFDirDiffUI_showSameDir = 1
 endif
 
-if !exists('g:ZFDirDiff_maxDepth')
-    let g:ZFDirDiff_maxDepth = 100
+if !exists('g:ZFDirDiff_ignoreEmptyDir')
+    let g:ZFDirDiff_ignoreEmptyDir = 1
 endif
 
 if !exists('*ZFDirDiff_excludeCheck')
@@ -147,7 +147,7 @@ endif
 "
 "   'child' : [ // each diffNode of child
 "     {
-"       'parent' : {...}, // parent node
+"       'parent' : {...}, // parent node, empty for top level item
 "       'name' : 'file name of the node',
 "
 "       'type' : 'type of the node, see g:ZFDirDiff_T_DIR series',
