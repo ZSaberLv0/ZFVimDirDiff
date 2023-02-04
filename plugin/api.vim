@@ -732,7 +732,9 @@ endfunction
 " ============================================================
 if !exists('*ZFDirDiffAPI_mkdir')
     function! ZFDirDiffAPI_mkdir(path)
-        if (has('win32') || has('win64')) && !has('unix')
+        if exists("*mkdir")
+            call mkdir(a:path, 'p')
+        elseif (has('win32') || has('win64')) && !has('unix')
             silent execute '!mkdir "' . substitute(a:path, '/', '\', 'g') . '"'
         else
             silent execute '!mkdir -p "' . a:path . '"'
