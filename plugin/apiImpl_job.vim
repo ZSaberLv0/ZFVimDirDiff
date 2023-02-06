@@ -411,8 +411,7 @@ endfunction
 
 function! s:checkRemoveEmptyDir(taskData, parentDiffNode)
     let type = get(a:parentDiffNode, 'type', g:ZFDirDiff_T_DIFF)
-    if get(a:parentDiffNode, 'diff', -1) != -1
-                \ && (type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT)
+    if type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT
         let hasChildDiff = 0
         for child in a:parentDiffNode['child']
             if child['diff'] == -1
@@ -444,13 +443,11 @@ function! s:checkRemoveEmptyDir(taskData, parentDiffNode)
     return 0
 endfunction
 function! s:parentDiffNodeTaskOnFinish(taskData, parentDiffNode)
-    if g:ZFDirDiff_ignoreEmptyDir
-        if s:checkRemoveEmptyDir(a:taskData, a:parentDiffNode)
-            return
-        endif
-    endif
-
     call ZFDirDiffAPI_diffUpdate(a:parentDiffNode)
     call s:listChildRecursive(a:taskData, a:parentDiffNode)
+
+    if g:ZFDirDiff_ignoreEmptyDir
+        call s:checkRemoveEmptyDir(a:taskData, a:parentDiffNode)
+    endif
 endfunction
 
