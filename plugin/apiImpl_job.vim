@@ -411,7 +411,8 @@ endfunction
 
 function! s:checkRemoveEmptyDir(taskData, parentDiffNode)
     let type = get(a:parentDiffNode, 'type', g:ZFDirDiff_T_DIFF)
-    if type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT
+    if get(a:parentDiffNode, 'diff', -1) != -1
+                \ && (type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT)
         let hasChildDiff = 0
         for child in a:parentDiffNode['child']
             if child['diff'] == -1
