@@ -245,11 +245,15 @@ endfunction
 if !exists('s:defKeymap')
     let s:defKeymap = {}
 endif
-function! s:makeKeymap(action, option, def)
+function! s:makeKeymap(action, option, def, ...)
+    let supportRange = get(a:, 1, 0)
     let s:defKeymap[a:option] = a:def
     for k in get(g:, a:option, a:def)
         if !empty(k)
             execute 'nnoremap <buffer><silent> ' . k . ' :call ' . a:action . '()<cr>'
+            if supportRange
+                execute 'xnoremap <buffer><silent> ' . k . ' :call ' . a:action . '()<cr>'
+            endif
         endif
     endfor
 endfunction
@@ -670,7 +674,7 @@ endfunction
 
 " ============================================================
 function! s:diffUI_makeKeymap()
-    call s:makeKeymap('ZFDirDiffUIAction_update', 'ZFDirDiffKeymap_update', [])
+    call s:makeKeymap('ZFDirDiffUIAction_update', 'ZFDirDiffKeymap_update', ['DU'])
     call s:makeKeymap('ZFDirDiffUIAction_updateParent', 'ZFDirDiffKeymap_updateParent', ['DD'])
     call s:makeKeymap('ZFDirDiffUIAction_open', 'ZFDirDiffKeymap_open', ['<cr>', 'o'])
     call s:makeKeymap('ZFDirDiffUIAction_foldOpenAll', 'ZFDirDiffKeymap_foldOpenAll', [])
@@ -681,16 +685,16 @@ function! s:diffUI_makeKeymap()
     call s:makeKeymap('ZFDirDiffUIAction_diffThisDir', 'ZFDirDiffKeymap_diffThisDir', ['cd'])
     call s:makeKeymap('ZFDirDiffUIAction_diffParentDir', 'ZFDirDiffKeymap_diffParentDir', ['u'])
     call s:makeKeymap('ZFDirDiffUIAction_markToDiff', 'ZFDirDiffKeymap_markToDiff', ['DM'])
-    call s:makeKeymap('ZFDirDiffUIAction_markToSync', 'ZFDirDiffKeymap_markToSync', ['DN'])
+    call s:makeKeymap('ZFDirDiffUIAction_markToSync', 'ZFDirDiffKeymap_markToSync', ['DN'], 1)
     call s:makeKeymap('ZFDirDiffUIAction_quit', 'ZFDirDiffKeymap_quit', ['q'])
     call s:makeKeymap('ZFDirDiffUIAction_diffNext', 'ZFDirDiffKeymap_diffNext', [']c', 'DJ'])
     call s:makeKeymap('ZFDirDiffUIAction_diffPrev', 'ZFDirDiffKeymap_diffPrev', ['[c', 'DK'])
     call s:makeKeymap('ZFDirDiffUIAction_diffNextFile', 'ZFDirDiffKeymap_diffNextFile', ['Dj'])
     call s:makeKeymap('ZFDirDiffUIAction_diffPrevFile', 'ZFDirDiffKeymap_diffPrevFile', ['Dk'])
-    call s:makeKeymap('ZFDirDiffUIAction_syncToHere', 'ZFDirDiffKeymap_syncToHere', ['do', 'DH'])
-    call s:makeKeymap('ZFDirDiffUIAction_syncToThere', 'ZFDirDiffKeymap_syncToThere', ['dp', 'DL'])
+    call s:makeKeymap('ZFDirDiffUIAction_syncToHere', 'ZFDirDiffKeymap_syncToHere', ['do', 'DH'], 1)
+    call s:makeKeymap('ZFDirDiffUIAction_syncToThere', 'ZFDirDiffKeymap_syncToThere', ['dp', 'DL'], 1)
     call s:makeKeymap('ZFDirDiffUIAction_add', 'ZFDirDiffKeymap_add', ['a'])
-    call s:makeKeymap('ZFDirDiffUIAction_delete', 'ZFDirDiffKeymap_delete', ['dd'])
+    call s:makeKeymap('ZFDirDiffUIAction_delete', 'ZFDirDiffKeymap_delete', ['dd'], 1)
     call s:makeKeymap('ZFDirDiffUIAction_getPath', 'ZFDirDiffKeymap_getPath', ['p'])
     call s:makeKeymap('ZFDirDiffUIAction_getFullPath', 'ZFDirDiffKeymap_getFullPath', ['P'])
 endfunction
@@ -1102,7 +1106,7 @@ endfunction
 function! ZFDirDiffUIAction_syncToHere() range
     call s:ZFDirDiffUIAction_syncToHereOrThere(a:firstline, a:lastline, 1)
 endfunction
-function! ZFDirDiffUIAction_syncToThere()
+function! ZFDirDiffUIAction_syncToThere() range
     call s:ZFDirDiffUIAction_syncToHereOrThere(a:firstline, a:lastline, 0)
 endfunction
 
@@ -1210,7 +1214,7 @@ function! ZFDirDiffUIAction_add()
     call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, parentDiffNode)
 endfunction
 
-function! ZFDirDiffUIAction_delete()
+function! ZFDirDiffUIAction_delete() range
     if !exists('t:ZFDirDiff_taskData')
         echomsg '[ZFDirDiff] no previous diff task'
         return
