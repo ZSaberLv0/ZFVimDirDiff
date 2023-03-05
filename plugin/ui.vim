@@ -19,7 +19,7 @@ command! -nargs=+ -complete=file ZFDirDiff :call ZFDirDiff(<f-args>)
 "   ]
 "
 " option: { // all option is optional
-"   'reuseTab' : 0/1, // whether to reuse current tab, 1 by default
+"   'reuseTab' : 0/1, // whether to reuse current tab, g:ZFDirDiff_reuseTab by default
 " }
 function! ZFDirDiff(fileL, fileR, ...)
     let pathL = ZFDirDiffAPI_pathFormat(a:fileL)
@@ -30,7 +30,7 @@ function! ZFDirDiff(fileL, fileR, ...)
     endif
 
     let option = get(a:, 1, {})
-    call s:diffUI_create(get(option, 'reuseTab', 1))
+    call s:diffUI_create(get(option, 'reuseTab', get(g:, 'ZFDirDiff_reuseTab', 0)))
     call s:diffUI_start(a:fileL, a:fileR)
     call s:diffUI_cursorReset(option)
 endfunction
@@ -318,9 +318,9 @@ function! s:diffUI_bufSetup(isLeft)
     setlocal nowrap
     setlocal noswapfile
     if a:isLeft
-        silent! file [LEFT]
+        execute 'silent! file [LEFT] ' . bufnr()
     else
-        silent! file [RIGHT]
+        execute 'silent! file [RIGHT] ' . bufnr()
     endif
     setlocal nomodified
     setlocal nomodifiable
