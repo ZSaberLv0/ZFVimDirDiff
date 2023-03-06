@@ -400,7 +400,9 @@ function! ZFDirDiffAPI_dataChangedImmediately(taskData)
 
     let Fn_cbDataChanged = a:taskData['option']['cbDataChanged']
     call Fn_cbDataChanged()
+    redraw!
 endfunction
+
 function! s:dataChanged_openStateRestore(taskData)
     if empty(get(a:taskData, 'openState', {}))
         return
