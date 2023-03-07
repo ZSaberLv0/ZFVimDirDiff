@@ -38,13 +38,13 @@ endfunction
 if !exists('*ZFDirDiffUI_cbHeader')
     function! ZFDirDiffUI_cbHeader(taskData)
         let headerL = [
-                    \   '[LEFT]: ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':~'),
-                    \   '[LEFT]: ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':.'),
+                    \   ZFDirDiffUI_bufLabel(v:true) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':~'),
+                    \   ZFDirDiffUI_bufLabel(v:true) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':.'),
                     \   '------------------------------------------------------------',
                     \ ]
         let headerR = [
-                    \   '[RIGHT]: ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':~'),
-                    \   '[RIGHT]: ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':.'),
+                    \   ZFDirDiffUI_bufLabel(v:false) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':~'),
+                    \   ZFDirDiffUI_bufLabel(v:false) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':.'),
                     \   '------------------------------------------------------------',
                     \ ]
         return {
@@ -82,7 +82,7 @@ if !exists('*ZFDirDiffUI_statusline')
         if !exists('t:ZFDirDiff_taskData')
             return ''
         endif
-        return '[' . (a:isLeft ? 'LEFT' : 'RIGHT') . ']: '
+        return ZFDirDiffUI_bufLabel(a:isLeft) . ': '
                     \ . substitute(t:ZFDirDiff_taskData[a:isLeft ? 'fileL' : 'fileR'], '%', '%%', 'g')
                     \ . '%=%k %3p%%'
     endfunction
@@ -95,7 +95,7 @@ if !exists('*ZFDirDiffUI_confirmHeader')
         if !empty(a:pathL)
             let path = ZFDirDiffAPI_pathHint(a:pathL, ':t')
             let relpath = ZFDirDiffAPI_pathHint(a:pathL, ':~')
-            call add(text, '[LEFT] : ' . path)
+            call add(text, ZFDirDiffUI_bufLabel(v:true) . ': ' . path)
             if path != relpath
                 call add(text, '    ' . relpath)
             endif
@@ -103,7 +103,7 @@ if !exists('*ZFDirDiffUI_confirmHeader')
         if !empty(a:pathR)
             let path = ZFDirDiffAPI_pathHint(a:pathR, ':t')
             let relpath = ZFDirDiffAPI_pathHint(a:pathR, ':~')
-            call add(text, '[RIGHT]: ' . path)
+            call add(text, ZFDirDiffUI_bufLabel(v:false) . ': ' . path)
             if path != relpath
                 call add(text, '    ' . relpath)
             endif
@@ -306,6 +306,12 @@ function! s:diffUI_create(reuseTab)
     call s:diffUI_bufSetup(0)
 endfunction
 
+if !exists('*ZFDirDiffUI_bufLabel')
+    function! ZFDirDiffUI_bufLabel(isLeft)
+        return a:isLeft ? '[LEFT]': '[RIGHT]'
+    endfunction
+endif
+
 function! s:diffUI_bufSetup(isLeft)
     call s:diffUI_makeKeymap()
     execute 'set filetype=' . get(g:, 'ZFDirDiffUI_filetype', 'ZFDirDiff')
@@ -317,11 +323,7 @@ function! s:diffUI_bufSetup(isLeft)
     setlocal buflisted
     setlocal nowrap
     setlocal noswapfile
-    if a:isLeft
-        execute 'silent! file [LEFT] ' . bufnr()
-    else
-        execute 'silent! file [RIGHT] ' . bufnr()
-    endif
+    execute 'silent! file ' . ZFDirDiffUI_bufLabel(a:isLeft) . ' ' . bufnr()
     setlocal nomodified
     setlocal nomodifiable
     set scrollbind
@@ -928,7 +930,7 @@ function! ZFDirDiffUIAction_markToDiff()
                     \ }
         call ZFDirDiffHLImpl_dataChanged(t:ZFDirDiff_taskData, bufnr)
         echo '[ZFDirDiff] mark again to diff with: '
-                    \ . (isLeft ? '[LEFT]' : '[RIGHT]')
+                    \ . ZFDirDiffUI_bufLabel(a:isLeft)
                     \ . parentPath . diffNode['name']
         return
     endif

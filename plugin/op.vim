@@ -48,11 +48,11 @@ if !exists('*ZFDirDiffOp_confirmHeader')
         let text = []
         call add(text, '----------------------------------------')
         if a:op != 'dr'
-            call add(text, '[LEFT] : ' . a:diffNode['name'])
+            call add(text, ZFDirDiffUI_bufLabel(v:true) . ': ' . a:diffNode['name'])
             call add(text, '    ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'] . a:parentPath . a:diffNode['name'], ':~'))
         endif
         if a:op != 'dl'
-            call add(text, '[RIGHT]: ' . a:diffNode['name'])
+            call add(text, ZFDirDiffUI_bufLabel(v:false) . ': ' . a:diffNode['name'])
             call add(text, '    ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'] . a:parentPath . a:diffNode['name'], ':~'))
         endif
         call add(text, '----------------------------------------')
@@ -147,16 +147,16 @@ function! s:opDelete(taskData, parentPath, diffNode, op, option)
     if a:option['confirm'] != 'a' && needConfirm
         if isLeft
             if isDir
-                let hint = 'confirm DELETE?  ' . '[LEFT(dir)] <= [RIGHT(___)]'
+                let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(dir) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             else
-                let hint = 'confirm DELETE?  ' . '[LEFT(file)] <= [RIGHT(___)]'
+                let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(file) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             endif
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
         else
             if isDir
-                let hint = 'confirm DELETE?  ' . '[LEFT(___)] => [RIGHT(dir)]'
+                let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) => ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)'
             else
-                let hint = 'confirm DELETE?  ' . '[LEFT(___)] => [RIGHT(file)]'
+                let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) => ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
             endif
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
         endif
@@ -240,7 +240,7 @@ endfunction
 " ============================================================
 function! s:op_T_DIR(taskData, parentPath, diffNode, op, option)
     if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncDir', 1)
-        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? '[LEFT(dir)] => [RIGHT(dir)]' : '[LEFT(dir)] <= [RIGHT(dir)]')
+        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(v:true) . '(dir) => ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)' : ZFDirDiffUI_bufLabel(v:true) . '(dir) <= [RIGHT(dir)]')
         let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
         if choice == 'n' || choice == 'q' | return choice | endif
     endif
@@ -252,7 +252,7 @@ function! s:op_T_SAME(taskData, parentPath, diffNode, op, option)
         return a:option['confirm']
     endif
     if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
-        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? '[LEFT(file)] => [RIGHT(file)]' : '[LEFT(file)] <= [RIGHT(file)]')
+        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(v:true) . '(file) => '. ZFDirDiffUI_bufLabel(v:false) . '(file)' : ZFDirDiffUI_bufLabel(v:true) . '(file) <= [RIGHT(file)]')
         let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
         if choice == 'n' || choice == 'q' | return choice | endif
     endif
@@ -261,7 +261,7 @@ endfunction
 
 function! s:op_T_DIFF(taskData, parentPath, diffNode, op, option)
     if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
-        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? '[LEFT(file)] => [RIGHT(file)]' : '[LEFT(file)] <= [RIGHT(file)]')
+        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(v:true) . '(file) => ' . ZFDirDiffUI_bufLabel(v:false) . '(file)' : ZFDirDiffUI_bufLabel(v:true) . '(file) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(file)')
         let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
         if choice == 'n' || choice == 'q' | return choice | endif
     endif
@@ -271,14 +271,14 @@ endfunction
 function! s:op_T_DIR_LEFT(taskData, parentPath, diffNode, op, option)
     if a:op == 'l2r'
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmCopyDir', 1)
-            let hint = 'confirm copy?  ' . '[LEFT(dir)] => [RIGHT(___)]'
+            let hint = 'confirm copy?  ' . ZFDirDiffUI_bufLabel(v:true) . '(dir) => ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
         return s:opCopyDir(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteDir', 1)
-            let hint = 'confirm DELETE?  ' . '[LEFT(dir)] <= [RIGHT(___)]'
+            let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(dir) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -289,14 +289,14 @@ endfunction
 function! s:op_T_DIR_RIGHT(taskData, parentPath, diffNode, op, option)
     if !(a:op == 'l2r')
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmCopyDir', 1)
-            let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(dir)]'
+            let hint = 'confirm copy?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
         return s:opCopyDir(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteDir', 1)
-            let hint = 'confirm DELETE?  ' . '[LEFT(___)] => [RIGHT(dir)]'
+            let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) => ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -307,14 +307,14 @@ endfunction
 function! s:op_T_FILE_LEFT(taskData, parentPath, diffNode, op, option)
     if a:op == 'l2r'
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmCopyFile', 0)
-            let hint = 'confirm copy?  ' . '[LEFT(file)] => [RIGHT(___)]'
+            let hint = 'confirm copy?  ' . ZFDirDiffUI_bufLabel(v:true) . '(file) => ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
         return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteFile', 1)
-            let hint = 'confirm DELETE?  ' . '[LEFT(file)] <= [RIGHT(___)]'
+            let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(file) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(___)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -325,14 +325,14 @@ endfunction
 function! s:op_T_FILE_RIGHT(taskData, parentPath, diffNode, op, option)
     if !(a:op == 'l2r')
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmCopyFile', 0)
-            let hint = 'confirm copy?  ' . '[LEFT(___)] <= [RIGHT(file)]'
+            let hint = 'confirm copy?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
         return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteFile', 1)
-            let hint = 'confirm DELETE?  ' . '[LEFT(___)] => [RIGHT(file)]'
+            let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) => ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
             let choice = s:opConfirm(hint, '', a:fileRight . '/' . a:path, 'dr')
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -343,7 +343,7 @@ endfunction
 function! s:op_T_CONFLICT_DIR_LEFT(taskData, parentPath, diffNode, op, option)
     if a:op == 'l2r'
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteFile', 1)
-            let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] => [RIGHT(file)]'
+            let hint = 'confirm sync CONFLICT?  ' . ZFDirDiffUI_bufLabel(v:true) . '(dir) => ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -351,7 +351,7 @@ function! s:op_T_CONFLICT_DIR_LEFT(taskData, parentPath, diffNode, op, option)
         return s:opCopyDir(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteDir', 1)
-            let hint = 'confirm sync CONFLICT?  ' . '[LEFT(dir)] <= [RIGHT(file)]'
+            let hint = 'confirm sync CONFLICT?  ' . ZFDirDiffUI_bufLabel(v:true) . '(dir) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -363,7 +363,7 @@ endfunction
 function! s:op_T_CONFLICT_DIR_RIGHT(taskData, parentPath, diffNode, op, option)
     if !(a:op == 'l2r')
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteFile', 1)
-            let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] <= [RIGHT(dir)]'
+            let hint = 'confirm sync CONFLICT?  ' . ZFDirDiffUI_bufLabel(v:true) . '(file) <= ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
@@ -371,7 +371,7 @@ function! s:op_T_CONFLICT_DIR_RIGHT(taskData, parentPath, diffNode, op, option)
         return s:opCopyDir(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteDir', 1)
-            let hint = 'confirm sync CONFLICT?  ' . '[LEFT(file)] => [RIGHT(dir)]'
+            let hint = 'confirm sync CONFLICT?  ' . ZFDirDiffUI_bufLabel(v:true) . '(file) => ' . ZFDirDiffUI_bufLabel(v:false) . '(dir)'
             let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
