@@ -122,7 +122,7 @@ augroup ZFDirDiffHLImpl_CmdWin_augroup
     if !exists('s:cmdFlag')
         let s:cmdFlag = 0
     endif
-    if exists('##OptionSet')
+    if exists('##CmdlineEnter')
         autocmd CmdlineEnter * let s:cmdFlag += 1
         autocmd CmdlineLeave * let s:cmdFlag -= 1
     endif
