@@ -54,14 +54,12 @@ function! ZFDirDiffHLImpl_cleanup(taskData)
     noautocmd call s:cleanup(a:taskData)
 endfunction
 function! s:cleanup(taskData)
-    wincmd h
-    wincmd k
+    call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrL, 1)
     call clearmatches()
     let a:taskData['HLImpl']['matchIdsL'] = []
     let a:taskData['HLImpl']['startL'] = 0
 
-    wincmd l
-    wincmd k
+    call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrR, 0)
     call clearmatches()
     let a:taskData['HLImpl']['matchIdsR'] = []
     let a:taskData['HLImpl']['startR'] = 0
@@ -86,11 +84,12 @@ endfunction
 
 " ============================================================
 function! s:redrawDelayed(forceUpdate)
+    if exists('s:redrawFlag')
+        return
+    endif
+
     if !a:forceUpdate
         if !exists('t:ZFDirDiff_taskData')
-            return
-        endif
-        if exists('s:redrawFlag')
             return
         endif
         let bufnr = bufnr('%')
@@ -103,6 +102,8 @@ function! s:redrawDelayed(forceUpdate)
             if !HLImpl['needUpdateR'] && line('w0') == HLImpl['startR']
                 return
             endif
+        else
+            return
         endif
     endif
 
@@ -139,25 +140,25 @@ function! s:redrawAction()
     try
         let s:redrawFlag = 1
         let bufnr = bufnr('%')
+        let winnr = winnr()
         let tabpagenr = t:ZFDirDiff_taskData['HLImpl']['tabpagenr']
         let bufnrL = gettabvar(tabpagenr, 'ZFDirDiff_bufnrL')
         let bufnrR = gettabvar(tabpagenr, 'ZFDirDiff_bufnrR')
 
-        wincmd h
-        wincmd k
+        call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrL, 1)
         if bufnr('%') == bufnrL
             call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrL, bufnrL, bufnrR)
         endif
 
-        wincmd l
-        wincmd k
+        call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrR, 0)
         if bufnr('%') == bufnrR
             call s:redrawBuf(t:ZFDirDiff_taskData, tabpagenr, bufnrR, bufnrL, bufnrR)
         endif
 
         if bufnr == bufnrL
-            wincmd h
-            wincmd k
+            call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrL, 1)
+        else
+            execute winnr . 'wincmd w'
         endif
     finally
         unlet s:redrawFlag

@@ -114,6 +114,35 @@ if !exists('*ZFDirDiffUI_confirmHeader')
     endfunction
 endif
 
+function! ZFDirDiffUI_jumpWin(bufnr, ...)
+    let isLeft = get(a:, 1, -1)
+    if a:bufnr < 0
+        return 0
+    endif
+    let winnr = bufwinnr(a:bufnr)
+    if winnr < 0
+        if isLeft >= 0
+            " fallback, just try to use proper side window
+            if a:isLeft
+                wincmd h
+            else
+                wincmd l
+            endif
+            return 1
+        else
+            return 0
+        endif
+    else
+        try
+            execute winnr . 'wincmd w'
+        catch
+            return 0
+        finally
+            return 1
+        endtry
+    endif
+endfunction
+
 function! ZFDirDiffUI_diffNodeAtLine(taskData, iLine)
     let index = a:iLine - 1
     if index < len(get(a:taskData, 'childVisible', []))
@@ -298,11 +327,11 @@ function! s:diffUI_create(reuseTab)
     enew
     wincmd h
     wincmd k
-    execute 'let t:ZFDirDiff_bufnrL=' . bufnr('%')
+    execute 'let t:ZFDirDiff_bufnrL = ' . bufnr('%')
     call s:diffUI_bufSetup(1)
     wincmd l
     wincmd k
-    execute 'let t:ZFDirDiff_bufnrR=' . bufnr('%')
+    execute 'let t:ZFDirDiff_bufnrR = ' . bufnr('%')
     call s:diffUI_bufSetup(0)
 endfunction
 
@@ -442,11 +471,9 @@ if exists('*setbufline') && exists('*deletebufline')
             call setpos('.', a:cursorSaved)
         endif
         if a:bufnrSaved == t:ZFDirDiff_bufnrL
-            wincmd h
-            wincmd k
+            call ZFDirDiffUI_jumpWin(a:bufnrSaved, 1)
         elseif a:bufnrSaved == t:ZFDirDiff_bufnrR
-            wincmd l
-            wincmd k
+            call ZFDirDiffUI_jumpWin(a:bufnrSaved, 0)
         endif
     endfunction
     function! s:diffUI_bufContentUpdate(bufnr, lines)
@@ -460,21 +487,18 @@ if exists('*setbufline') && exists('*deletebufline')
     endfunction
 else
     function! s:diffUI_redraw(bufnrSaved, cursorSaved)
-        wincmd h
-        wincmd k
+        call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrL, 1)
         execute 'b' . t:ZFDirDiff_bufnrL
         call s:diffUI_bufContentUpdate(t:ZFDirDiff_bufnrL, t:ZFDirDiff_taskData['linesL'])
         call setpos('.', a:cursorSaved)
 
-        wincmd l
-        wincmd k
+        call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrR, 0)
         execute 'b' . t:ZFDirDiff_bufnrR
         call s:diffUI_bufContentUpdate(t:ZFDirDiff_bufnrR, t:ZFDirDiff_taskData['linesR'])
         call setpos('.', a:cursorSaved)
 
         if a:bufnrSaved == t:ZFDirDiff_bufnrL
-            wincmd h
-            wincmd k
+            call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrL, 1)
         endif
     endfunction
     function! s:diffUI_bufContentUpdate(bufnr, lines)
@@ -492,8 +516,7 @@ function! s:diffUI_cursorReset(option)
     if !exists('t:ZFDirDiff_taskData')
         return
     endif
-    wincmd l
-    wincmd k
+    call ZFDirDiffUI_jumpWin(t:ZFDirDiff_bufnrR, 0)
     call setpos('.', [0, t:ZFDirDiff_taskData['headerLen'] + 1, 1, 1])
 endfunction
 
@@ -1351,15 +1374,13 @@ function! ZFDirDiffUIAction_quitFileDiff()
     let diffNode = t:ZFDirDiff_ownerDiffNode
     let modified = 0
 
-    wincmd h
-    wincmd k
+    call ZFDirDiffUI_jumpWin(t:ZFDirDiff_fileDiff_bufnrL, 1)
     execute 'b' . t:ZFDirDiff_fileDiff_bufnrL
     if s:fileDiffUI_askWrite()
         let modified = 1
     endif
 
-    wincmd l
-    wincmd k
+    call ZFDirDiffUI_jumpWin(t:ZFDirDiff_fileDiff_bufnrR, 0)
     execute 'b' . t:ZFDirDiff_fileDiff_bufnrR
     if s:fileDiffUI_askWrite()
         let modified = 1
