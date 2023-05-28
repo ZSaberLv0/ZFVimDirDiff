@@ -333,7 +333,7 @@ function! s:op_T_FILE_RIGHT(taskData, parentPath, diffNode, op, option)
     else
         if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmDeleteFile', 1)
             let hint = 'confirm DELETE?  ' . ZFDirDiffUI_bufLabel(v:true) . '(___) => ' . ZFDirDiffUI_bufLabel(v:false) . '(file)'
-            let choice = s:opConfirm(hint, '', a:fileRight . '/' . a:path, 'dr')
+            let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
             if choice == 'n' || choice == 'q' | return choice | endif
         endif
         return s:opDeleteFile(a:taskData, a:parentPath, a:diffNode, 'dr', a:option)
