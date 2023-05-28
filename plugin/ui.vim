@@ -38,13 +38,13 @@ endfunction
 if !exists('*ZFDirDiffUI_cbHeader')
     function! ZFDirDiffUI_cbHeader(taskData)
         let headerL = [
-                    \   ZFDirDiffUI_bufLabel(v:true) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':~'),
-                    \   ZFDirDiffUI_bufLabel(v:true) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':.'),
+                    \   ZFDirDiffUI_bufLabel(1) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':~'),
+                    \   ZFDirDiffUI_bufLabel(1) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathL'], ':.'),
                     \   '------------------------------------------------------------',
                     \ ]
         let headerR = [
-                    \   ZFDirDiffUI_bufLabel(v:false) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':~'),
-                    \   ZFDirDiffUI_bufLabel(v:false) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':.'),
+                    \   ZFDirDiffUI_bufLabel(0) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':~'),
+                    \   ZFDirDiffUI_bufLabel(0) . ': ' . ZFDirDiffAPI_pathHint(a:taskData['pathR'], ':.'),
                     \   '------------------------------------------------------------',
                     \ ]
         return {
@@ -95,7 +95,7 @@ if !exists('*ZFDirDiffUI_confirmHeader')
         if !empty(a:pathL)
             let path = ZFDirDiffAPI_pathHint(a:pathL, ':t')
             let relpath = ZFDirDiffAPI_pathHint(a:pathL, ':~')
-            call add(text, ZFDirDiffUI_bufLabel(v:true) . ': ' . path)
+            call add(text, ZFDirDiffUI_bufLabel(1) . ': ' . path)
             if path != relpath
                 call add(text, '    ' . relpath)
             endif
@@ -103,7 +103,7 @@ if !exists('*ZFDirDiffUI_confirmHeader')
         if !empty(a:pathR)
             let path = ZFDirDiffAPI_pathHint(a:pathR, ':t')
             let relpath = ZFDirDiffAPI_pathHint(a:pathR, ':~')
-            call add(text, ZFDirDiffUI_bufLabel(v:false) . ': ' . path)
+            call add(text, ZFDirDiffUI_bufLabel(0) . ': ' . path)
             if path != relpath
                 call add(text, '    ' . relpath)
             endif
