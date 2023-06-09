@@ -8,6 +8,7 @@ command! -nargs=0 ZFDirDiffUnmark :call ZFDirDiffUnmark()
 " * option: {
 "   'needConfirm' : '0/1, default to g:ZFDirDiffMark_needConfirm',
 "   'markDir' : '0/1, whether mark parent dir if path is file, default 1',
+"   'unmarkIfSame' : '0/1, whether unmark if mark same path, default 1',
 " }
 function! ZFDirDiffMark(...)
     let path = get(a:, 1, '')
@@ -38,6 +39,8 @@ function! ZFDirDiffMark(...)
             let s:markedPath = path
             echo '[ZFDirDiff] mark changed to: ' . ZFDirDiffAPI_pathHint(path, ':t')
         endif
+    elseif get(option, 'unmarkIfSame', 1) && exists('s:markedPath') && s:markedPath == path
+        call ZFDirDiffUnmark()
     else
         let s:markedPath = path
         echo '[ZFDirDiff] mark again to diff with: ' . ZFDirDiffAPI_pathHint(path, ':t')
