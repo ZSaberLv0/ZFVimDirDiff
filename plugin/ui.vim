@@ -585,38 +585,47 @@ function! s:diffUI_diffJumpFile(isNext)
 endfunction
 
 function! s:diffUI_diffJumpFilePrev(cursorNode)
+    let skipFlag = 0
     if empty(a:cursorNode)
         let toCheck = copy(t:ZFDirDiff_taskData['child'])
     else
-        let toCheck = []
-        let cursorNodeTmp = a:cursorNode
-        while empty(toCheck) && !empty(cursorNodeTmp)
-            if empty(get(cursorNodeTmp, 'parent', {}))
-                let childList = t:ZFDirDiff_taskData['child']
-            else
-                let childList = cursorNodeTmp['parent']['child']
-            endif
-            let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, cursorNodeTmp)
-            if index > 0
-                execute 'let toCheck=childList[0:' . (index - 1) . ']'
-            endif
-            let cursorNodeTmp = get(cursorNodeTmp, 'parent', {})
-        endwhile
+        let toCheck = [a:cursorNode]
+        let skipFlag = 1
     endif
 
     let target = {}
     while !empty(toCheck)
-        let check = toCheck[-1]
-        if !ZFDirDiffAPI_diffNodeCanOpen(check)
-            if check['diff'] == 1
-                let target = check
-                break
+        let check = remove(toCheck, -1)
+        if !skipFlag
+            if !ZFDirDiffAPI_diffNodeCanOpen(check)
+                if check['diff'] == 1
+                    let target = check
+                    break
+                endif
             endif
-            call remove(toCheck, -1)
-        else
-            call remove(toCheck, -1)
-            call extend(toCheck, check['child'])
         endif
+
+        if !skipFlag && ZFDirDiffAPI_diffNodeCanOpen(check) && !empty(check['child'])
+            " search children
+            call add(toCheck, check['child'][-1])
+        else
+            " search and add prev sibling
+            let sibling = check
+            while !empty(sibling)
+                if empty(sibling['parent'])
+                    let childList = t:ZFDirDiff_taskData['child']
+                else
+                    let childList = sibling['parent']['child']
+                endif
+                let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
+                if index > 0
+                    call add(toCheck, childList[index - 1])
+                    break
+                endif
+                let sibling = sibling['parent']
+            endwhile
+        endif
+        let skipFlag = 0
     endwhile
     if empty(target)
         return 0
@@ -652,29 +661,24 @@ function! s:diffUI_diffJumpFileNext(cursorNode)
             endif
         endif
 
-        " search and add next sibling
-        let sibling = check
-        while !empty(sibling)
-            if empty(sibling['parent'])
-                let childList = t:ZFDirDiff_taskData['child']
-            else
-                let childList = sibling['parent']['child']
-            endif
-            let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
-            if index >= 0 && index < len(childList) - 1
-                call insert(toCheck, childList[index + 1], 0)
-                break
-            endif
-            let sibling = sibling['parent']
-        endwhile
-
-        " search children
-        if ZFDirDiffAPI_diffNodeCanOpen(check)
-            let i = len(check['child']) - 1
-            let childList = check['child']
-            while i >= 0
-                call insert(toCheck, childList[i], 0)
-                let i -= 1
+        if ZFDirDiffAPI_diffNodeCanOpen(check) && !empty(check['child'])
+            " search children
+            call insert(toCheck, check['child'][0], 0)
+        else
+            " search and add next sibling
+            let sibling = check
+            while !empty(sibling)
+                if empty(sibling['parent'])
+                    let childList = t:ZFDirDiff_taskData['child']
+                else
+                    let childList = sibling['parent']['child']
+                endif
+                let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
+                if index >= 0 && index < len(childList) - 1
+                    call insert(toCheck, childList[index + 1], 0)
+                    break
+                endif
+                let sibling = sibling['parent']
             endwhile
         endif
     endwhile
