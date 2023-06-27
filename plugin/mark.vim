@@ -36,8 +36,7 @@ function! ZFDirDiffMark(...)
             endif
             unlet s:markedPath
         else
-            let s:markedPath = path
-            echo '[ZFDirDiff] mark changed to: ' . ZFDirDiffAPI_pathHint(path, ':t')
+            call ZFDirDiffUnmark()
         endif
     elseif get(option, 'unmarkIfSame', 1) && exists('s:markedPath') && s:markedPath == path
         call ZFDirDiffUnmark()
