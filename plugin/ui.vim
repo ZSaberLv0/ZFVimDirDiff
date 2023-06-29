@@ -352,7 +352,7 @@ function! s:diffUI_bufSetup(isLeft)
     setlocal buflisted
     setlocal nowrap
     setlocal noswapfile
-    execute 'silent! file ' . ZFDirDiffUI_bufLabel(a:isLeft) . ' ' . bufnr()
+    execute 'silent! file ' . ZFDirDiffUI_bufLabel(a:isLeft) . ' ' . bufnr('%')
     setlocal nomodified
     setlocal nomodifiable
     set scrollbind
