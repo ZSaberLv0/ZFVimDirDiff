@@ -167,8 +167,6 @@ endif
 "     ...
 "   ],
 "
-"   'dataChangedDelayId' : -1,
-"
 "   'headerLen' : N, // header length in linesL/linesR
 "   'tailLen' : N, // tail length in linesL/linesR
 "   'linesL' : [...], // raw content to display as buffer
@@ -221,7 +219,6 @@ function! ZFDirDiffAPI_init(fileL, fileR, option)
                 \   'pathL' : ZFDirDiffAPI_pathFormat(fileL),
                 \   'pathR' : ZFDirDiffAPI_pathFormat(fileR),
                 \   'child' : [],
-                \   'dataChangedDelayId' : -1,
                 \   'headerLen' : 0,
                 \   'tailLen' : 0,
                 \   'linesL' : [],
@@ -252,9 +249,13 @@ function! ZFDirDiffAPI_cleanup(taskData)
     endif
     call ZFDirDiffAPIImpl_job_cleanup(a:taskData)
     unlet a:taskData['fileL']
-    if a:taskData['dataChangedDelayId'] != -1
-        call ZFJobTimerStop(a:taskData['dataChangedDelayId'])
-        let a:taskData['dataChangedDelayId'] = -1
+    if get(a:taskData, '_updateDelayId', -1) != -1
+        call ZFJobTimerStop(a:taskData['_updateDelayId'])
+        let a:taskData['_updateDelayId'] = -1
+    endif
+    if get(a:taskData, '_dataChangedDelayId', -1) != -1
+        call ZFJobTimerStop(a:taskData['_dataChangedDelayId'])
+        let a:taskData['_dataChangedDelayId'] = -1
     endif
 endfunction
 
@@ -265,7 +266,23 @@ function! ZFDirDiffAPI_update(taskData, ...)
         echomsg '[ZFDirDiff] invalid taskData'
         return
     endif
-    call ZFDirDiffAPIImpl_job_update(a:taskData, get(a:, 1, {}))
+    if get(a:taskData, '_updateDelayId', -1) != -1
+        return
+    endif
+    let a:taskData['_updateDelayId'] = ZFJobTimerStart(
+                \ get(g:, 'ZFDirDiff_updateDelay', 500),
+                \ ZFJobFunc(function('ZFDirDiffAPI_updateDelayCallback'), [a:taskData, get(a:, 1, {})]))
+endfunction
+function! ZFDirDiffAPI_updateDelayCallback(taskData, diffNode, ...)
+    let a:taskData['_updateDelayId'] = -1
+    call ZFDirDiffAPIImpl_job_update(a:taskData, a:diffNode)
+endfunction
+function! ZFDirDiffAPI_updateImmediately(taskData, ...)
+    if get(a:taskData, '_updateDelayId', -1) != -1
+        call ZFJobTimerStop(a:taskData['_updateDelayId'])
+        let a:taskData['_updateDelayId'] = -1
+    endif
+    call ZFDirDiffAPIImpl_job_update(a:taskData, a:diffNode)
 endfunction
 
 " save state which would automatically restored during ZFDirDiffAPI_dataChanged
@@ -302,15 +319,15 @@ function! ZFDirDiffAPI_dataChanged(taskData)
         return
     endif
 
-    if a:taskData['dataChangedDelayId'] != -1
+    if get(a:taskData, '_dataChangedDelayId', -1) != -1
         return
     endif
-    let a:taskData['dataChangedDelayId'] = ZFJobTimerStart(
-                \ get(g:, 'ZFDirDiff_updateDelay', 1000),
+    let a:taskData['_dataChangedDelayId'] = ZFJobTimerStart(
+                \ get(g:, 'ZFDirDiff_updateDelay', 500),
                 \ ZFJobFunc(function('ZFDirDiffAPI_dataChangedDelayCallback'), [a:taskData]))
 endfunction
 function! ZFDirDiffAPI_dataChangedDelayCallback(taskData, ...)
-    let a:taskData['dataChangedDelayId'] = -1
+    let a:taskData['_dataChangedDelayId'] = -1
     call ZFDirDiffAPI_dataChangedImmediately(a:taskData)
 endfunction
 function! ZFDirDiffAPI_dataChangedImmediately(taskData)
@@ -318,9 +335,9 @@ function! ZFDirDiffAPI_dataChangedImmediately(taskData)
         echomsg '[ZFDirDiff] invalid taskData'
         return
     endif
-    if a:taskData['dataChangedDelayId'] != -1
-        call ZFJobTimerStop(a:taskData['dataChangedDelayId'])
-        let a:taskData['dataChangedDelayId'] = -1
+    if get(a:taskData, '_dataChangedDelayId', -1) != -1
+        call ZFJobTimerStop(a:taskData['_dataChangedDelayId'])
+        let a:taskData['_dataChangedDelayId'] = -1
     endif
 
     call ZFDirDiffAPI_openStateSave(a:taskData)
