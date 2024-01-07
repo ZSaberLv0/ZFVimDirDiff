@@ -123,7 +123,7 @@ function! ZFDirDiffUI_jumpWin(bufnr, ...)
     if winnr < 0
         if isLeft >= 0
             " fallback, just try to use proper side window
-            if a:isLeft
+            if isLeft
                 wincmd h
             else
                 wincmd l
