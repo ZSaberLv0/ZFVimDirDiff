@@ -12,6 +12,10 @@ if !exists('g:ZFDirDiff_ignoreEmptyDir')
     let g:ZFDirDiff_ignoreEmptyDir = 1
 endif
 
+if !exists('g:ZFDirDiff_ignoreSpace')
+    let g:ZFDirDiff_ignoreSpace = 0
+endif
+
 if !exists('*ZFDirDiff_excludeCheck')
     " return 1 if excluded, which means the item should not be diff-ed
     function! ZFDirDiff_excludeCheck(taskData, diffNode)
@@ -85,6 +89,9 @@ if !exists('*ZFDirDiffCmd_diff')
                         \       , a:absPathR
                         \   ),
                         \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
+                        \   'jobEnv' : {
+                        \     'ZFDIRDIFF_IGNORE_SPACE' : get(t:, 'ZFDirDiff_ignoreSpace', get(g:, 'ZFDirDiff_ignoreSpace', 0)),
+                        \   },
                         \ }
         endfunction
     else
@@ -95,6 +102,9 @@ if !exists('*ZFDirDiffCmd_diff')
                         \       , a:absPathL
                         \       , a:absPathR
                         \   ),
+                        \   'jobEnv' : {
+                        \     'ZFDIRDIFF_IGNORE_SPACE' : get(t:, 'ZFDirDiff_ignoreSpace', get(g:, 'ZFDirDiff_ignoreSpace', 0)),
+                        \   },
                         \ }
         endfunction
     endif

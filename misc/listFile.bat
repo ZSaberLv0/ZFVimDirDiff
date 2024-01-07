@@ -1,5 +1,7 @@
 @echo off
 
-dir /b /a-d "%~1%" 2>nul
+for %%i in (%1) do set file0=%%~fi
+
+dir /b /a-d "%file0%" 2>nul
 exit /b 0
 
