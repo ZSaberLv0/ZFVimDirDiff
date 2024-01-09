@@ -193,9 +193,10 @@ for experienced user, here's some configs you may interest
 ```
 highlight default link ZFDirDiffHL_Header Title
 highlight default link ZFDirDiffHL_Tail Title
-highlight default link ZFDirDiffHL_Checking SpecialKey
+highlight default link ZFDirDiffHL_DirChecking SpecialKey
 highlight default link ZFDirDiffHL_DirSame Folded
 highlight default link ZFDirDiffHL_DirDiff DiffAdd
+highlight default link ZFDirDiffHL_FileChecking SpecialKey
 highlight default link ZFDirDiffHL_FileSame Folded
 highlight default link ZFDirDiffHL_FileDiff DiffText
 highlight default link ZFDirDiffHL_DirOnlyHere DiffAdd

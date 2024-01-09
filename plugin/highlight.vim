@@ -1,9 +1,10 @@
 
 highlight default link ZFDirDiffHL_Header Title
 highlight default link ZFDirDiffHL_Tail Title
-highlight default link ZFDirDiffHL_Checking SpecialKey
+highlight default link ZFDirDiffHL_DirChecking SpecialKey
 highlight default link ZFDirDiffHL_DirSame Folded
 highlight default link ZFDirDiffHL_DirDiff DiffChange
+highlight default link ZFDirDiffHL_FileChecking SpecialKey
 highlight default link ZFDirDiffHL_FileSame Folded
 highlight default link ZFDirDiffHL_FileDiff DiffText
 highlight default link ZFDirDiffHL_DirOnlyHere DiffAdd
@@ -260,18 +261,22 @@ function! s:redrawBuf(taskData, tabpagenr, bufnr, bufnrL, bufnrR)
             let hlGroup = 'ZFDirDiffHL_MarkToSync'
         elseif markToDiff
             let hlGroup = 'ZFDirDiffHL_MarkToDiff'
-        elseif child['diff'] == -1
-            let hlGroup = 'ZFDirDiffHL_Checking'
         elseif child['type'] == g:ZFDirDiff_T_DIR
-            if child['diff'] == 1
+            if child['diff'] == -1
+                let hlGroup = 'ZFDirDiffHL_DirChecking'
+            elseif child['diff'] == 1
                 let hlGroup = 'ZFDirDiffHL_DirDiff'
             else
                 let hlGroup = 'ZFDirDiffHL_DirSame'
             endif
-        elseif child['type'] == g:ZFDirDiff_T_SAME
-            let hlGroup = 'ZFDirDiffHL_FileSame'
-        elseif child['type'] == g:ZFDirDiff_T_DIFF
-            let hlGroup = 'ZFDirDiffHL_FileDiff'
+        elseif child['type'] == g:ZFDirDiff_T_FILE
+            if child['diff'] == -1
+                let hlGroup = 'ZFDirDiffHL_FileChecking'
+            elseif child['diff'] == 1
+                let hlGroup = 'ZFDirDiffHL_FileDiff'
+            else
+                let hlGroup = 'ZFDirDiffHL_FileSame'
+            endif
         elseif child['type'] == g:ZFDirDiff_T_DIR_LEFT
             if a:bufnr == a:bufnrL
                 let hlGroup = 'ZFDirDiffHL_DirOnlyHere'

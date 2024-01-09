@@ -306,7 +306,7 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
                     \ }
         if side == 0
             let childNeedDiff = 1
-            let diffNode['type'] = g:ZFDirDiff_T_SAME
+            let diffNode['type'] = g:ZFDirDiff_T_FILE
             let diffNode['diff'] = -1
         elseif side == -1
             let childHasDiff = 1
@@ -390,10 +390,8 @@ function! ZFDirDiffAPIImpl_job_diffChild_child_onExit(diffNode, jobStatus, exitC
     endif
 
     if a:exitCode == 0
-        let a:diffNode['type'] = g:ZFDirDiff_T_SAME
         let a:diffNode['diff'] = 0
     else
-        let a:diffNode['type'] = g:ZFDirDiff_T_DIFF
         let a:diffNode['diff'] = 1
     endif
 endfunction
@@ -410,12 +408,11 @@ function! ZFDirDiffAPIImpl_job_diffChild_onExit(taskData, parentDiffNode, jobSta
 endfunction
 
 function! s:checkRemoveEmptyDir(taskData, parentDiffNode)
-    let type = get(a:parentDiffNode, 'type', g:ZFDirDiff_T_DIFF)
+    let type = get(a:parentDiffNode, 'type', g:ZFDirDiff_T_FILE)
     if type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT
         let hasChildDiff = 0
         for child in a:parentDiffNode['child']
-            if child['diff'] == -1
-                        \ || child['type'] == g:ZFDirDiff_T_DIFF
+            if child['diff'] != 0
                         \ || child['type'] == g:ZFDirDiff_T_FILE_LEFT
                         \ || child['type'] == g:ZFDirDiff_T_FILE_RIGHT
                 let hasChildDiff = 1

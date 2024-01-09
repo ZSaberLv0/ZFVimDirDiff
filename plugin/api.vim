@@ -28,7 +28,9 @@ if !exists('*ZFDirDiff_excludeCheck')
 endif
 
 " ============================================================
-let s:scriptPath = expand('<sfile>:p:h:h') . '/misc'
+if !exists('g:ZFDirDiffCmd_scriptPath')
+    let g:ZFDirDiffCmd_scriptPath = expand('<sfile>:p:h:h') . '/misc'
+endif
 
 " return a jobOption that print a plain list of name or path of dir
 if !exists('*ZFDirDiffCmd_listDir')
@@ -36,7 +38,7 @@ if !exists('*ZFDirDiffCmd_listDir')
         function! ZFDirDiffCmd_listDir(absPath)
             return {
                         \   'jobCmd' : printf('"%s/listDir.bat" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPath
                         \   ),
                         \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
@@ -46,7 +48,7 @@ if !exists('*ZFDirDiffCmd_listDir')
         function! ZFDirDiffCmd_listDir(absPath)
             return {
                         \   'jobCmd' : printf('sh "%s/listDir.sh" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPath
                         \   ),
                         \ }
@@ -60,7 +62,7 @@ if !exists('*ZFDirDiffCmd_listFile')
         function! ZFDirDiffCmd_listFile(absPath)
             return {
                         \   'jobCmd' : printf('"%s/listFile.bat" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPath
                         \   ),
                         \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
@@ -70,7 +72,7 @@ if !exists('*ZFDirDiffCmd_listFile')
         function! ZFDirDiffCmd_listFile(absPath)
             return {
                         \   'jobCmd' : printf('sh "%s/listFile.sh" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPath
                         \   ),
                         \ }
@@ -84,7 +86,7 @@ if !exists('*ZFDirDiffCmd_diff')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
             return {
                         \   'jobCmd' : printf('"%s/diff.bat" "%s" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPathL
                         \       , a:absPathR
                         \   ),
@@ -98,7 +100,7 @@ if !exists('*ZFDirDiffCmd_diff')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
             return {
                         \   'jobCmd' : printf('sh "%s/diff.sh" "%s" "%s"'
-                        \       , CygpathFix_absPath(s:scriptPath)
+                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
                         \       , a:absPathL
                         \       , a:absPathR
                         \   ),
@@ -113,8 +115,7 @@ endif
 " ============================================================
 " T_DIR,T_SAME,T_DIFF,T_DIR_LEFT,T_DIR_RIGHT,T_FILE_LEFT,T_FILE_RIGHT,T_CONFLICT_DIR_LEFT,T_CONFLICT_DIR_RIGHT
 let g:ZFDirDiff_T_DIR = 'DD' " both dir
-let g:ZFDirDiff_T_SAME = 'FF' " both file, and contents are same
-let g:ZFDirDiff_T_DIFF = 'xx' " both file, and contents are diff
+let g:ZFDirDiff_T_FILE = 'FF' " both file
 let g:ZFDirDiff_T_DIR_LEFT = 'D-' " left is dir, right not exist
 let g:ZFDirDiff_T_DIR_RIGHT = '-D' " right is dir, left not exist
 let g:ZFDirDiff_T_FILE_LEFT = 'F-' " left is file, right not exist
@@ -123,28 +124,38 @@ let g:ZFDirDiff_T_CONFLICT_DIR_LEFT = 'DF' " left is dir, right is file
 let g:ZFDirDiff_T_CONFLICT_DIR_RIGHT = 'FD' " left is file, right is dir
 
 if !exists('*ZFDirDiffAPI_typeHint')
-    function! ZFDirDiffAPI_typeHint(type)
+    function! ZFDirDiffAPI_typeHint(diffNode)
         if 0
-        elseif a:type == g:ZFDirDiff_T_DIR
-            return 'DD'
-        elseif a:type == g:ZFDirDiff_T_SAME
-            return 'FF'
-        elseif a:type == g:ZFDirDiff_T_DIFF
-            return 'xx'
-        elseif a:type == g:ZFDirDiff_T_DIR_LEFT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR
+            if a:diffNode['diff'] == -1
+                return 'DU'
+            elseif a:diffNode['diff'] == 1
+                return 'dd'
+            else
+                return 'DD'
+            endif
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE
+            if a:diffNode['diff'] == -1
+                return 'FU'
+            elseif a:diffNode['diff'] == 1
+                return 'ff'
+            else
+                return 'FF'
+            endif
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR_LEFT
             return 'D-'
-        elseif a:type == g:ZFDirDiff_T_DIR_RIGHT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR_RIGHT
             return '-D'
-        elseif a:type == g:ZFDirDiff_T_FILE_LEFT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE_LEFT
             return 'F-'
-        elseif a:type == g:ZFDirDiff_T_FILE_RIGHT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE_RIGHT
             return '-F'
-        elseif a:type == g:ZFDirDiff_T_CONFLICT_DIR_LEFT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_CONFLICT_DIR_LEFT
             return 'DF'
-        elseif a:type == g:ZFDirDiff_T_CONFLICT_DIR_RIGHT
+        elseif a:diffNode['type'] == g:ZFDirDiff_T_CONFLICT_DIR_RIGHT
             return 'FD'
         else
-            return printf('<%s>', a:type)
+            return printf('<%s>', a:diffNode['type'])
         endif
     endfunction
 endif
@@ -513,16 +524,12 @@ function! s:dataChanged_linesAdd(taskData, diffNode, depth)
             call add(a:taskData['linesR'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 0, 1))
             call s:dataChanged_linesAddChild(a:taskData, a:diffNode, a:depth)
         endif
-    elseif a:diffNode['type'] == g:ZFDirDiff_T_SAME
-        if g:ZFDirDiffUI_showSameFile
+    elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE
+        if g:ZFDirDiffUI_showSameFile || a:diffNode['diff']
             call add(a:taskData['childVisible'], a:diffNode)
             call add(a:taskData['linesL'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 1, 0))
             call add(a:taskData['linesR'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 0, 0))
         endif
-    elseif a:diffNode['type'] == g:ZFDirDiff_T_DIFF
-        call add(a:taskData['childVisible'], a:diffNode)
-        call add(a:taskData['linesL'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 1, 0))
-        call add(a:taskData['linesR'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 0, 0))
     elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR_LEFT
         call add(a:taskData['childVisible'], a:diffNode)
         call add(a:taskData['linesL'], Fn_cbDiffLine(a:taskData, a:diffNode, a:depth, 1, 1))
@@ -574,8 +581,7 @@ function! ZFDirDiffAPI_diffUpdate(diffNode, ...)
                 let diff = 1
             endif
         endfor
-    elseif a:diffNode['type'] == g:ZFDirDiff_T_SAME
-                \ || a:diffNode['type'] == g:ZFDirDiff_T_DIFF
+    elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE
         let diff = a:diffNode['diff']
     else
         let diff = 1
@@ -625,13 +631,12 @@ let s:typeList_canOpen = [
             \   g:ZFDirDiff_T_DIR_RIGHT,
             \ ]
 let s:typeList_canDiff = [
-            \   g:ZFDirDiff_T_SAME,
-            \   g:ZFDirDiff_T_DIFF,
+            \   g:ZFDirDiff_T_FILE,
             \   g:ZFDirDiff_T_FILE_LEFT,
             \   g:ZFDirDiff_T_FILE_RIGHT,
             \ ]
 function! ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-    return index(s:typeList_canOpen, get(a:diffNode, 'type', g:ZFDirDiff_T_DIFF)) >= 0
+    return index(s:typeList_canOpen, get(a:diffNode, 'type', g:ZFDirDiff_T_FILE)) >= 0
 endfunction
 function! ZFDirDiffAPI_diffNodeCanDiff(diffNode)
     return index(s:typeList_canDiff, get(a:diffNode, 'type', g:ZFDirDiff_T_CONFLICT_DIR_LEFT)) >= 0
@@ -676,10 +681,7 @@ function! s:diffNodeInfo(diffNode, prefix)
                     \     ? (a:diffNode['open'] ? '~ ' : '+ ')
                     \     : '  '
                     \ )
-                    \ . (a:diffNode['diff'] == -1
-                    \     ? '??'
-                    \     : ZFDirDiffAPI_typeHint(a:diffNode['type'])
-                    \ )
+                    \ . ZFDirDiffAPI_typeHint(a:diffNode)
                     \ . ' ' . ZFDirDiffAPI_parentPath(a:diffNode) . a:diffNode['name']
                     \ . (ZFDirDiffAPI_diffNodeCanOpen(a:diffNode) ? '/' : '')
     endif

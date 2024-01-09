@@ -31,8 +31,7 @@ function! s:ZFDirDiffOp(taskData, parentPath, diffNode, op, option)
     if 0
     elseif a:op == 'dl' || a:op == 'dr' | return s:opDelete(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR | return s:op_T_DIR(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
-    elseif a:diffNode['type'] == g:ZFDirDiff_T_SAME | return s:op_T_SAME(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
-    elseif a:diffNode['type'] == g:ZFDirDiff_T_DIFF | return s:op_T_DIFF(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
+    elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE | return s:op_T_FILE(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR_LEFT | return s:op_T_DIR_LEFT(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     elseif a:diffNode['type'] == g:ZFDirDiff_T_DIR_RIGHT | return s:op_T_DIR_RIGHT(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     elseif a:diffNode['type'] == g:ZFDirDiff_T_FILE_LEFT | return s:op_T_FILE_LEFT(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
@@ -247,25 +246,25 @@ function! s:op_T_DIR(taskData, parentPath, diffNode, op, option)
     return s:opCopyDir(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
 endfunction
 
-function! s:op_T_SAME(taskData, parentPath, diffNode, op, option)
-    if !get(g:, 'ZFDirDiffUI_syncSameFile', 0)
-        return a:option['confirm']
+function! s:op_T_FILE(taskData, parentPath, diffNode, op, option)
+    if a:diffNode['diff'] == 0
+        if !get(g:, 'ZFDirDiffUI_syncSameFile', 0)
+            return a:option['confirm']
+        endif
+        if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
+            let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(1) . '(file) => '. ZFDirDiffUI_bufLabel(0) . '(file)' : ZFDirDiffUI_bufLabel(1) . '(file) <= [RIGHT(file)]')
+            let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
+            if choice == 'n' || choice == 'q' | return choice | endif
+        endif
+        return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
+    else
+        if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
+            let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(1) . '(file) => ' . ZFDirDiffUI_bufLabel(0) . '(file)' : ZFDirDiffUI_bufLabel(1) . '(file) <= ' . ZFDirDiffUI_bufLabel(0) . '(file)')
+            let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
+            if choice == 'n' || choice == 'q' | return choice | endif
+        endif
+        return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
     endif
-    if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
-        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(1) . '(file) => '. ZFDirDiffUI_bufLabel(0) . '(file)' : ZFDirDiffUI_bufLabel(1) . '(file) <= [RIGHT(file)]')
-        let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
-        if choice == 'n' || choice == 'q' | return choice | endif
-    endif
-    return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
-endfunction
-
-function! s:op_T_DIFF(taskData, parentPath, diffNode, op, option)
-    if a:option['confirm'] != 'a' && get(g:, 'ZFDirDiffUI_confirmSyncFile', 1)
-        let hint = 'confirm sync?  ' . (a:op == 'l2r' ? ZFDirDiffUI_bufLabel(1) . '(file) => ' . ZFDirDiffUI_bufLabel(0) . '(file)' : ZFDirDiffUI_bufLabel(1) . '(file) <= ' . ZFDirDiffUI_bufLabel(0) . '(file)')
-        let choice = s:opConfirm(hint, a:taskData, a:parentPath, a:diffNode, a:op, a:option)
-        if choice == 'n' || choice == 'q' | return choice | endif
-    endif
-    return s:opCopyFile(a:taskData, a:parentPath, a:diffNode, a:op, a:option)
 endfunction
 
 function! s:op_T_DIR_LEFT(taskData, parentPath, diffNode, op, option)

@@ -1,11 +1,15 @@
 
-" ============================================================
-function! ZFDirDiff_excludeCheck_fallback(taskData, diffNode)
-    for pattern in get(g:, 'ZFDirDiff_excludeCheck_fallback_patterns', [
+if !exists('g:ZFDirDiff_excludeFallback')
+    let g:ZFDirDiff_excludeFallback = [
                 \   '^\..*$',
                 \   '^\~.*$',
                 \   '^.*\~$',
-                \ ])
+                \ ]
+endif
+
+" ============================================================
+function! ZFDirDiff_excludeCheck_fallback(taskData, diffNode)
+    for pattern in ZFDirDiff_excludeFallback
         if match(a:diffNode['name'], pattern) >= 0
             return 1
         endif
@@ -23,26 +27,26 @@ augroup ZFDirDiff_excludeCheck_ZFIgnore_augroup
 augroup END
 
 function! s:ZFIgnoreAction_dir(taskData, diffNode)
-    for pattern in keys(get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'dir_patterns', {}))
+    for pattern in get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'dir_patterns', [])
         if match(a:diffNode['name'], pattern) >= 0
             return 1
         endif
     endfor
 endfunction
 function! s:ZFIgnoreAction_file(taskData, diffNode)
-    for pattern in keys(get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'file_patterns', {}))
+    for pattern in get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'file_patterns', [])
         if match(a:diffNode['name'], pattern) >= 0
             return 1
         endif
     endfor
 endfunction
 function! s:ZFIgnoreAction_both(taskData, diffNode)
-    for pattern in keys(get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'dir_patterns', {}))
+    for pattern in get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'dir_patterns', [])
         if match(a:diffNode['name'], pattern) >= 0
             return 1
         endif
     endfor
-    for pattern in keys(get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'file_patterns', {}))
+    for pattern in get(get(a:taskData, 'ZFIgnore_excludeState', {}), 'file_patterns', [])
         if match(a:diffNode['name'], pattern) >= 0
             return 1
         endif
@@ -51,8 +55,7 @@ endfunction
 
 let s:ZFIgnoreTypeMap = {
             \   g:ZFDirDiff_T_DIR : function('s:ZFIgnoreAction_dir'),
-            \   g:ZFDirDiff_T_SAME : function('s:ZFIgnoreAction_file'),
-            \   g:ZFDirDiff_T_DIFF : function('s:ZFIgnoreAction_file'),
+            \   g:ZFDirDiff_T_FILE : function('s:ZFIgnoreAction_file'),
             \   g:ZFDirDiff_T_DIR_LEFT : function('s:ZFIgnoreAction_dir'),
             \   g:ZFDirDiff_T_DIR_RIGHT : function('s:ZFIgnoreAction_dir'),
             \   g:ZFDirDiff_T_FILE_LEFT : function('s:ZFIgnoreAction_file'),
@@ -68,8 +71,8 @@ endfunction
 " state in taskData: {
 "   'ZFIgnore_excludeState' : {
 "     'stateId' : N,
-"     'dir_patterns' : {},
-"     'file_patterns' : {},
+"     'dir_patterns' : [],
+"     'file_patterns' : [],
 "   },
 " }
 function! s:ZFIgnoreUpdate(taskData)
@@ -77,6 +80,20 @@ function! s:ZFIgnoreUpdate(taskData)
                 \ && a:taskData['ZFIgnore_excludeState']['stateId'] == s:ZFIgnoreStateId
         return
     endif
+    let excludePatterns = ZFDirDiff_excludePattern(a:taskData['pathL'], a:taskData['pathR'])
+    let a:taskData['ZFIgnore_excludeState'] = {
+                \   'stateId' : s:ZFIgnoreStateId,
+                \   'dir_patterns' : excludePatterns['dir_patterns'],
+                \   'file_patterns' : excludePatterns['file_patterns'],
+                \ }
+endfunction
+
+" return ignore patterns respect to fileL/fileR's gitignore
+" return: {
+"   'dir_patterns' : ['some_pattern'],
+"   'file_patterns' : ['some_pattern'],
+" }
+function! ZFDirDiff_excludePattern(pathL, pathR)
     let dir_patterns = {}
     let file_patterns = {}
 
@@ -106,9 +123,9 @@ function! s:ZFIgnoreUpdate(taskData)
                 \ }
     let pathList = []
     let option = copy(get(g:, 'ZFIgnore_ignore_gitignore_detectOption', {}))
-    let option['path'] = t:ZFDirDiff_taskData['pathL']
+    let option['path'] = a:pathL
     call extend(pathList, ZFIgnoreDetectGitignore(option))
-    let option['path'] = t:ZFDirDiff_taskData['pathR']
+    let option['path'] = a:pathR
     call extend(pathList, ZFIgnoreDetectGitignore(option))
     for path in pathList
         call ZFIgnoreParseGitignore(gitignoreItems, path)
@@ -134,10 +151,9 @@ function! s:ZFIgnoreUpdate(taskData)
         endif
     endfor
 
-    let a:taskData['ZFIgnore_excludeState'] = {
-                \   'stateId' : s:ZFIgnoreStateId,
-                \   'dir_patterns' : dir_patterns,
-                \   'file_patterns' : file_patterns,
+    return {
+                \   'dir_patterns' : keys(dir_patterns),
+                \   'file_patterns' : keys(file_patterns),
                 \ }
 endfunction
 
