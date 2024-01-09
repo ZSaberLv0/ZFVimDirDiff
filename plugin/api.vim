@@ -239,7 +239,7 @@ function! ZFDirDiffAPI_init(fileL, fileR, option)
                 \   'openState' : {},
                 \   'cursorState' : '',
                 \ }
-    return ZFDirDiffAPIImpl_job_init(taskData)
+    return ZFDirDiffAPIImpl_init(taskData)
 endfunction
 function! s:pathNormalize(path)
     let path = a:path
@@ -257,7 +257,7 @@ function! ZFDirDiffAPI_cleanup(taskData)
         echomsg '[ZFDirDiff] invalid taskData'
         return
     endif
-    call ZFDirDiffAPIImpl_job_cleanup(a:taskData)
+    call ZFDirDiffAPIImpl_cleanup(a:taskData)
     unlet a:taskData['fileL']
     if get(a:taskData, '_updateDelayId', -1) != -1
         call ZFJobTimerStop(a:taskData['_updateDelayId'])
@@ -285,14 +285,14 @@ function! ZFDirDiffAPI_update(taskData, ...)
 endfunction
 function! ZFDirDiffAPI_updateDelayCallback(taskData, diffNode, ...)
     let a:taskData['_updateDelayId'] = -1
-    call ZFDirDiffAPIImpl_job_update(a:taskData, a:diffNode)
+    call ZFDirDiffAPIImpl_update(a:taskData, a:diffNode)
 endfunction
 function! ZFDirDiffAPI_updateImmediately(taskData, ...)
     if get(a:taskData, '_updateDelayId', -1) != -1
         call ZFJobTimerStop(a:taskData['_updateDelayId'])
         let a:taskData['_updateDelayId'] = -1
     endif
-    call ZFDirDiffAPIImpl_job_update(a:taskData, a:diffNode)
+    call ZFDirDiffAPIImpl_update(a:taskData, a:diffNode)
 endfunction
 
 " save state which would automatically restored during ZFDirDiffAPI_dataChanged

@@ -3,7 +3,7 @@
 " use short form to save some memory
 let s:KEY_jobIdMap = 'Ijm'
 
-" taskData: {
+" extra state stored in taskData: {
 "   ...
 "
 "   'child' : [
@@ -360,7 +360,7 @@ function! s:diffChild(taskData, parentDiffNode)
                     \       a:taskData['pathL'] . parentPath . child['name'],
                     \       a:taskData['pathR'] . parentPath . child['name']
                     \   ), {
-                    \     'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_diffChild_child_onExit'), [child]),
+                    \     'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_diffChild_child_onExit'), [child]),
                     \   }
                     \ ))
     endfor
@@ -370,7 +370,7 @@ function! s:diffChild(taskData, parentDiffNode)
 
     let jobId = ZFGroupJobStart({
                 \   'jobList' : jobList,
-                \   'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_diffChild_onExit'), [a:taskData, a:parentDiffNode]),
+                \   'onExit' : ZFJobFunc(function('ZFDirDiffAPIImpl_job_diffChild_onExit'), [a:taskData, a:parentDiffNode]),
                 \   'groupJobStopOnChildError' : 0,
                 \ })
     if jobId > 0
@@ -384,7 +384,7 @@ function! s:diffChild(taskData, parentDiffNode)
     endif
 endfunction
 
-function! ZFDirDiffAPIImpl_diffChild_child_onExit(diffNode, jobStatus, exitCode)
+function! ZFDirDiffAPIImpl_job_diffChild_child_onExit(diffNode, jobStatus, exitCode)
     if a:exitCode == g:ZFJOBSTOP
         return
     endif
@@ -398,7 +398,7 @@ function! ZFDirDiffAPIImpl_diffChild_child_onExit(diffNode, jobStatus, exitCode)
     endif
 endfunction
 
-function! ZFDirDiffAPIImpl_diffChild_onExit(taskData, parentDiffNode, jobStatus, exitCode)
+function! ZFDirDiffAPIImpl_job_diffChild_onExit(taskData, parentDiffNode, jobStatus, exitCode)
     if exists("a:parentDiffNode[s:KEY_jobIdMap][a:jobStatus['jobId']]")
         unlet a:parentDiffNode[s:KEY_jobIdMap][a:jobStatus['jobId']]
     endif
