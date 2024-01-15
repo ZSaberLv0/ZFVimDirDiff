@@ -131,7 +131,7 @@ for experienced user, here's some configs you may interest
 
 * `let g:ZFDirDiff_autoBackup = 1` : whether perform auto backup, see https://github.com/ZSaberLv0/ZFVimBackup
 * `let g:ZFDirDiff_ignoreEmptyDir = 1` : whether ignore empty dir
-* `let g:ZFDirDiff_ignoreSpace = 0` : whether ignore empty lines and spaces
+* `let g:ZFDirDiff_ignoreSpace = 0` : whether ignore empty lines and spaces (not supported for python backend)
 * `let g:ZFIgnoreOption_ZFDirDiff = {...}` : ignore options, see https://github.com/ZSaberLv0/ZFVimIgnore
 
     ```
