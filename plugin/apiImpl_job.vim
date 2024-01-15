@@ -134,13 +134,11 @@ function! s:listChild(taskData, parentDiffNode)
         return 0
     endif
 
-    if !ZFDirDiffAPI_isTaskData(a:parentDiffNode)
-        let parentTmp = a:parentDiffNode
-        while !empty(parentTmp)
-            let parentTmp['diff'] = -1
-            let parentTmp = parentTmp['parent']
-        endwhile
-    endif
+    let parentTmp = a:parentDiffNode
+    while !empty(parentTmp)
+        let parentTmp['diff'] = -1
+        let parentTmp = parentTmp['parent']
+    endwhile
 
     let jobId = ZFGroupJobStart({
                 \   'jobList' : jobList,
@@ -224,12 +222,6 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
         return
     endif
 
-    if !ZFDirDiffAPI_isTaskData(a:parentDiffNode)
-        let parent = a:parentDiffNode
-    else
-        let parent = {}
-    endif
-
     let childHasDiff = 0
     let childNeedDiff = 0
 
@@ -237,7 +229,7 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
     for name in sort(keys(a:listChildData['dir']), 1)
         let side = a:listChildData['dir'][name]
         let diffNode = {
-                    \   'parent' : parent,
+                    \   'parent' : a:parentDiffNode,
                     \   'name' : name,
                     \   'open' : 0,
                     \   'child' : [],
@@ -269,7 +261,7 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
     for name in sort(keys(a:listChildData['conflict']), 1)
         let side = a:listChildData['conflict'][name]
         let diffNode = {
-                    \   'parent' : parent,
+                    \   'parent' : a:parentDiffNode,
                     \   'name' : name,
                     \   'open' : 0,
                     \   'child' : [],
@@ -299,7 +291,7 @@ function! ZFDirDiffAPIImpl_job_listChild_onExit(taskData, parentDiffNode, listCh
     for name in sort(keys(a:listChildData['file']), 1)
         let side = a:listChildData['file'][name]
         let diffNode = {
-                    \   'parent' : parent,
+                    \   'parent' : a:parentDiffNode,
                     \   'name' : name,
                     \   'open' : 0,
                     \   'child' : [],
@@ -408,43 +400,30 @@ function! ZFDirDiffAPIImpl_job_diffChild_onExit(taskData, parentDiffNode, jobSta
 endfunction
 
 function! s:checkRemoveEmptyDir(taskData, parentDiffNode)
-    let type = get(a:parentDiffNode, 'type', g:ZFDirDiff_T_FILE)
-    if type == g:ZFDirDiff_T_DIR_LEFT || type == g:ZFDirDiff_T_DIR_RIGHT
-        let hasChildDiff = 0
-        for child in a:parentDiffNode['child']
-            if child['diff'] != 0
-                        \ || child['type'] == g:ZFDirDiff_T_FILE_LEFT
-                        \ || child['type'] == g:ZFDirDiff_T_FILE_RIGHT
-                let hasChildDiff = 1
-                break
-            endif
-        endfor
-        if !hasChildDiff
-            let parent = get(a:parentDiffNode, 'parent', {})
-            if empty(parent)
-                let parent = a:taskData
-            endif
-            let index = index(parent['child'], a:parentDiffNode)
-            if index >= 0
-                call remove(parent['child'], index)
-                if !ZFDirDiffAPI_isTaskData(parent)
-                    let parent['diff'] = -1
-                    if !s:checkRemoveEmptyDir(a:taskData, parent)
-                        call ZFDirDiffAPI_diffUpdate(parent)
-                    endif
-                endif
-            endif
+    if ZFDirDiffAPI_isTaskData(a:parentDiffNode)
+        return 0
+    endif
+    if empty(a:parentDiffNode['child'])
+        let parent = get(a:parentDiffNode, 'parent', {})
+        if empty(parent)
+            let parent = a:taskData
+        endif
+        let index = index(parent['child'], a:parentDiffNode)
+        if index >= 0
+            call remove(parent['child'], index)
+            call s:checkRemoveEmptyDir(a:taskData, parent)
+            call ZFDirDiffAPI_diffUpdate(parent)
             return 1
         endif
     endif
     return 0
 endfunction
 function! s:parentDiffNodeTaskOnFinish(taskData, parentDiffNode)
-    call ZFDirDiffAPI_diffUpdate(a:parentDiffNode)
     call s:listChildRecursive(a:taskData, a:parentDiffNode)
 
     if g:ZFDirDiff_ignoreEmptyDir
         call s:checkRemoveEmptyDir(a:taskData, a:parentDiffNode)
     endif
+    call ZFDirDiffAPI_diffUpdate(a:parentDiffNode)
 endfunction
 

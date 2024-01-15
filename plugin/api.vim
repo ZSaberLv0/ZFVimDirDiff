@@ -28,91 +28,6 @@ if !exists('*ZFDirDiff_excludeCheck')
 endif
 
 " ============================================================
-if !exists('g:ZFDirDiffCmd_scriptPath')
-    let g:ZFDirDiffCmd_scriptPath = expand('<sfile>:p:h:h') . '/misc'
-endif
-
-" return a jobOption that print a plain list of name or path of dir
-if !exists('*ZFDirDiffCmd_listDir')
-    if (has('win32') || has('win64')) && !has('unix')
-        function! ZFDirDiffCmd_listDir(absPath)
-            return {
-                        \   'jobCmd' : printf('"%s/listDir.bat" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPath
-                        \   ),
-                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
-                        \ }
-        endfunction
-    else
-        function! ZFDirDiffCmd_listDir(absPath)
-            return {
-                        \   'jobCmd' : printf('sh "%s/listDir.sh" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPath
-                        \   ),
-                        \ }
-        endfunction
-    endif
-endif
-
-" return a jobOption that print a plain list of name or path of file
-if !exists('*ZFDirDiffCmd_listFile')
-    if (has('win32') || has('win64')) && !has('unix')
-        function! ZFDirDiffCmd_listFile(absPath)
-            return {
-                        \   'jobCmd' : printf('"%s/listFile.bat" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPath
-                        \   ),
-                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
-                        \ }
-        endfunction
-    else
-        function! ZFDirDiffCmd_listFile(absPath)
-            return {
-                        \   'jobCmd' : printf('sh "%s/listFile.sh" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPath
-                        \   ),
-                        \ }
-        endfunction
-    endif
-endif
-
-" return a jobOption that diff two files and return proper exit code: 0: no diff, 1: has diff, 2: error
-if !exists('*ZFDirDiffCmd_diff')
-    if (has('win32') || has('win64')) && !has('unix')
-        function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return {
-                        \   'jobCmd' : printf('"%s/diff.bat" "%s" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPathL
-                        \       , a:absPathR
-                        \   ),
-                        \   'jobEncoding' : ZFJobImplGetWindowsEncoding(),
-                        \   'jobEnv' : {
-                        \     'ZFDIRDIFF_IGNORE_SPACE' : get(t:, 'ZFDirDiff_ignoreSpace', get(g:, 'ZFDirDiff_ignoreSpace', 0)),
-                        \   },
-                        \ }
-        endfunction
-    else
-        function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            return {
-                        \   'jobCmd' : printf('sh "%s/diff.sh" "%s" "%s"'
-                        \       , CygpathFix_absPath(g:ZFDirDiffCmd_scriptPath)
-                        \       , a:absPathL
-                        \       , a:absPathR
-                        \   ),
-                        \   'jobEnv' : {
-                        \     'ZFDIRDIFF_IGNORE_SPACE' : get(t:, 'ZFDirDiff_ignoreSpace', get(g:, 'ZFDirDiff_ignoreSpace', 0)),
-                        \   },
-                        \ }
-        endfunction
-    endif
-endif
-
-" ============================================================
 " T_DIR,T_SAME,T_DIFF,T_DIR_LEFT,T_DIR_RIGHT,T_FILE_LEFT,T_FILE_RIGHT,T_CONFLICT_DIR_LEFT,T_CONFLICT_DIR_RIGHT
 let g:ZFDirDiff_T_DIR = 'DD' " both dir
 let g:ZFDirDiff_T_FILE = 'FF' " both file
@@ -166,9 +81,11 @@ endif
 "   'pathL' : 'abs path of fileL',
 "   'pathR' : 'abs path of fileR',
 "
+"   'diff' : -1/0/1,
+"   'parent' : {}, // ensured empty for taskData
 "   'child' : [ // each diffNode of child
 "     {
-"       'parent' : {...}, // parent node, empty for top level item
+"       'parent' : {...}, // parent node, link to taskData for top level item
 "       'name' : 'file name of the node',
 "
 "       'type' : 'type of the node, see g:ZFDirDiff_T_DIR series',
@@ -212,6 +129,11 @@ endif
 "                       // format: '/xxx/xxx'
 "                       // typically saved by ZFDirDiffAPI_cursorStateSave
 "                       // cursor should be restored by UI accorrding to taskData['cursorLine']
+"
+"   'DEBUG' : {
+"     'updateStartTime' : localtime(), // last update start time
+"     'updateCostTime' : localtime() - updateStartTime, // -1 if still updating
+"   },
 " }
 "
 " option: {
@@ -239,6 +161,8 @@ function! ZFDirDiffAPI_init(fileL, fileR, option)
                 \   'fileR' : fileR,
                 \   'pathL' : ZFDirDiffAPI_pathFormat(fileL),
                 \   'pathR' : ZFDirDiffAPI_pathFormat(fileR),
+                \   'diff' : -1,
+                \   'parent' : {},
                 \   'child' : [],
                 \   'headerLen' : 0,
                 \   'tailLen' : 0,
@@ -249,6 +173,10 @@ function! ZFDirDiffAPI_init(fileL, fileR, option)
                 \   'option' : a:option,
                 \   'openState' : {},
                 \   'cursorState' : '',
+                \   'DEBUG' : {
+                \     'updateStartTime' : localtime(),
+                \     'updateCostTime' : -1,
+                \   },
                 \ }
     return ZFDirDiffAPIImpl_init(taskData)
 endfunction
@@ -439,6 +367,10 @@ function! ZFDirDiffAPI_dataChangedImmediately(taskData)
     let Fn_cbDataChanged = a:taskData['option']['cbDataChanged']
     call Fn_cbDataChanged()
     redraw!
+
+    if a:taskData['diff'] != -1 && a:taskData['DEBUG']['updateCostTime'] == -1
+        let a:taskData['DEBUG']['updateCostTime'] = localtime() - a:taskData['DEBUG']['updateStartTime']
+    endif
 endfunction
 
 function! s:dataChanged_openStateRestore(taskData)
@@ -568,10 +500,7 @@ endfunction
 
 " ZFDirDiffAPI_diffUpdate(diffNode[, recursive])
 function! ZFDirDiffAPI_diffUpdate(diffNode, ...)
-    if ZFDirDiffAPI_isTaskData(a:diffNode)
-        return
-    endif
-    if a:diffNode['type'] == g:ZFDirDiff_T_DIR
+    if ZFDirDiffAPI_isTaskData(a:diffNode) || a:diffNode['type'] == g:ZFDirDiff_T_DIR
         let diff = 0
         for child in a:diffNode['child']
             if child['diff'] == -1
@@ -616,13 +545,15 @@ function! ZFDirDiffAPI_diffNodeIndexUnsafe(childList, diffNode)
 endfunction
 
 function! ZFDirDiffAPI_diffNodeIsSame(diffNode0, diffNode1)
-    return (empty(a:diffNode0) == empty(a:diffNode1)) && (
-                \   empty(a:diffNode0) || (
-                \      a:diffNode0['type'] == a:diffNode1['type']
-                \   && a:diffNode0['name'] == a:diffNode1['name']
-                \   && ZFDirDiffAPI_diffNodeIsSame(a:diffNode0['parent'], a:diffNode1['parent'])
-                \   )
-                \ )
+    if ZFDirDiffAPI_isTaskData(a:diffNode0)
+        return ZFDirDiffAPI_isTaskData(a:diffNode0)
+    else
+        return !ZFDirDiffAPI_isTaskData(a:diffNode0) && (
+                    \      a:diffNode0['type'] == a:diffNode1['type']
+                    \   && a:diffNode0['name'] == a:diffNode1['name']
+                    \   && ZFDirDiffAPI_diffNodeIsSame(a:diffNode0['parent'], a:diffNode1['parent'])
+                    \   )
+    endif
 endfunction
 
 let s:typeList_canOpen = [
@@ -717,10 +648,10 @@ endfunction
 " specially, when passed taskData as diffNode, '/' would be returned
 function! ZFDirDiffAPI_parentPath(diffNode)
     let parentPath = '/'
-    let diffNode = a:diffNode
-    while !empty(get(diffNode, 'parent', {}))
-        let diffNode = diffNode['parent']
+    let diffNode = a:diffNode['parent']
+    while !empty(diffNode) && !ZFDirDiffAPI_isTaskData(diffNode)
         let parentPath = '/' . diffNode['name'] . parentPath
+        let diffNode = diffNode['parent']
     endwhile
     return parentPath
 endfunction
@@ -729,7 +660,7 @@ endfunction
 function! ZFDirDiffAPI_depth(diffNode)
     let depth = 0
     let diffNode = a:diffNode
-    while !empty(diffNode['parent'])
+    while !ZFDirDiffAPI_isTaskData(diffNode['parent'])
         let diffNode = diffNode['parent']
         let depth += 1
     endwhile

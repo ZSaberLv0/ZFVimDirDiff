@@ -612,11 +612,7 @@ function! s:diffUI_diffJumpFilePrev(cursorNode)
             " search and add prev sibling
             let sibling = check
             while !empty(sibling)
-                if empty(sibling['parent'])
-                    let childList = t:ZFDirDiff_taskData['child']
-                else
-                    let childList = sibling['parent']['child']
-                endif
+                let childList = sibling['parent']['child']
                 let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
                 if index > 0
                     call add(toCheck, childList[index - 1])
@@ -668,11 +664,7 @@ function! s:diffUI_diffJumpFileNext(cursorNode)
             " search and add next sibling
             let sibling = check
             while !empty(sibling)
-                if empty(sibling['parent'])
-                    let childList = t:ZFDirDiff_taskData['child']
-                else
-                    let childList = sibling['parent']['child']
-                endif
+                let childList = sibling['parent']['child']
                 let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
                 if index >= 0 && index < len(childList) - 1
                     call insert(toCheck, childList[index + 1], 0)
@@ -793,11 +785,7 @@ function! ZFDirDiffUIAction_foldOpenAll()
     if empty(diffNode)
         let diffNode = t:ZFDirDiff_taskData
     elseif !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-        if empty(diffNode['parent'])
-            let diffNode = t:ZFDirDiff_taskData
-        else
-            let diffNode = diffNode['parent']
-        endif
+        let diffNode = diffNode['parent']
     endif
 
     let queue = [diffNode]
@@ -821,11 +809,7 @@ function! ZFDirDiffUIAction_foldOpenAllDiff()
     if empty(diffNode)
         let diffNode = t:ZFDirDiff_taskData
     elseif !ZFDirDiffAPI_diffNodeCanOpen(diffNode)
-        if empty(diffNode['parent'])
-            let diffNode = t:ZFDirDiff_taskData
-        else
-            let diffNode = diffNode['parent']
-        endif
+        let diffNode = diffNode['parent']
     endif
 
     let queue = [diffNode]
@@ -847,7 +831,7 @@ function! ZFDirDiffUIAction_foldClose()
         return
     endif
 
-    if !empty(diffNode['parent'])
+    if !ZFDirDiffAPI_isTaskData(diffNode['parent'])
         let diffNode['parent']['open'] = 0
         let path = ZFDirDiffAPI_parentPath(diffNode['parent']) . diffNode['parent']['name']
         if exists("t:ZFDirDiff_taskData['openState'][path]")
@@ -871,7 +855,7 @@ function! ZFDirDiffUIAction_foldCloseAll()
 
     let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
     if !empty(diffNode)
-        while !empty(diffNode['parent'])
+        while !ZFDirDiffAPI_isTaskData(diffNode['parent'])
             let diffNode = diffNode['parent']
         endwhile
         let t:ZFDirDiff_taskData['cursorState'] = ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
