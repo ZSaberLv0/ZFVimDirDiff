@@ -611,7 +611,7 @@ function! s:diffUI_diffJumpFilePrev(cursorNode)
         else
             " search and add prev sibling
             let sibling = check
-            while !empty(sibling)
+            while !empty(sibling['parent'])
                 let childList = sibling['parent']['child']
                 let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
                 if index > 0
@@ -663,7 +663,7 @@ function! s:diffUI_diffJumpFileNext(cursorNode)
         else
             " search and add next sibling
             let sibling = check
-            while !empty(sibling)
+            while !empty(sibling['parent'])
                 let childList = sibling['parent']['child']
                 let index = ZFDirDiffAPI_diffNodeIndexUnsafe(childList, sibling)
                 if index >= 0 && index < len(childList) - 1
