@@ -23,7 +23,7 @@ endif
 if !exists('*ZFDirDiffCmd_listDir')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listDir(absPath)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_listDir_python(a:absPath)
             endif
             return {
@@ -36,7 +36,7 @@ if !exists('*ZFDirDiffCmd_listDir')
         endfunction
     else
         function! ZFDirDiffCmd_listDir(absPath)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_listDir_python(a:absPath)
             endif
             return {
@@ -53,7 +53,7 @@ endif
 if !exists('*ZFDirDiffCmd_listFile')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_listFile(absPath)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_listFile_python(a:absPath)
             endif
             return {
@@ -66,7 +66,7 @@ if !exists('*ZFDirDiffCmd_listFile')
         endfunction
     else
         function! ZFDirDiffCmd_listFile(absPath)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_listFile_python(a:absPath)
             endif
             return {
@@ -83,7 +83,7 @@ endif
 if !exists('*ZFDirDiffCmd_diff')
     if (has('win32') || has('win64')) && !has('unix')
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_diff_python(a:absPathL, a:absPathR)
             endif
             return {
@@ -100,7 +100,7 @@ if !exists('*ZFDirDiffCmd_diff')
         endfunction
     else
         function! ZFDirDiffCmd_diff(absPathL, absPathR)
-            if !empty(g:ZFDirDiff_python)
+            if ZFDirDiff_python_available()
                 return ZFDirDiffCmd_diff_python(a:absPathL, a:absPathR)
             endif
             return {

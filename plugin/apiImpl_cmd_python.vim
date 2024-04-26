@@ -5,6 +5,11 @@
 " reduce call to ZFJobStart
 " (generally, job_start cost a lot of time to start new process)
 
+function! ZFDirDiff_python_available()
+    return !empty(g:ZFDirDiff_python)
+                \ && exists('*ZFJobAvailable') && ZFJobAvailable()
+endfunction
+
 function! ZFDirDiffCmd_listDir_python(absPath)
     return {
                 \   'jobCmd' : ZFJobFunc(function('ZFDirDiff_python_listDirJob'), [a:absPath]),
