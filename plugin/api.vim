@@ -546,9 +546,9 @@ endfunction
 
 function! ZFDirDiffAPI_diffNodeIsSame(diffNode0, diffNode1)
     if ZFDirDiffAPI_isTaskData(a:diffNode0)
-        return ZFDirDiffAPI_isTaskData(a:diffNode0)
+        return ZFDirDiffAPI_isTaskData(a:diffNode1)
     else
-        return !ZFDirDiffAPI_isTaskData(a:diffNode0) && (
+        return !ZFDirDiffAPI_isTaskData(a:diffNode1) && (
                     \      a:diffNode0['type'] == a:diffNode1['type']
                     \   && a:diffNode0['name'] == a:diffNode1['name']
                     \   && ZFDirDiffAPI_diffNodeIsSame(a:diffNode0['parent'], a:diffNode1['parent'])
