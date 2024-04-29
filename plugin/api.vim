@@ -420,7 +420,8 @@ function! s:dataChanged_cursorStateRestore(taskData)
     while !empty(toCheck)
         let diffNode = remove(toCheck, 0)
         let path = ZFDirDiffAPI_parentPath(diffNode) . diffNode['name']
-        let index = match(cursorState, '\V^' . path)
+        let index = match(cursorState, '\V\^' . path)
+        call extend(toCheck, diffNode['child'])
         if index < 0
             continue
         endif
@@ -429,7 +430,6 @@ function! s:dataChanged_cursorStateRestore(taskData)
             let a:taskData['cursorState'] = ''
             break
         endif
-        call extend(toCheck, diffNode['child'])
     endwhile
     if empty(target)
         return {}
