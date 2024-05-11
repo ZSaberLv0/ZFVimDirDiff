@@ -216,3 +216,7 @@ highlight default link ZFDirDiffHL_MarkToSync Cursor
         mainly because of `matchadd()` must inside proper window,
         causing frequent window switching
 
+* Q: use as `git difftool --dir-diff`
+
+    A: [see here](https://github.com/ZSaberLv0/ZFVimDirDiff/issues/45)
+
