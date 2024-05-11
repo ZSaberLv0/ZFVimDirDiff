@@ -218,5 +218,5 @@ highlight default link ZFDirDiffHL_MarkToSync Cursor
 
 * Q: use as `git difftool --dir-diff`
 
-    A: [see here](https://github.com/ZSaberLv0/ZFVimDirDiff/issues/45)
+    A: https://github.com/ZSaberLv0/ZFVimDirDiff/issues/45
 

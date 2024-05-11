@@ -207,5 +207,9 @@ FAQ                                                             *zfdirdiff-FAQ*
         mainly because of `matchadd()` must inside proper window,
         causing frequent window switching
 
+* Q: use as `git difftool --dir-diff`
+
+    A: https://github.com/ZSaberLv0/ZFVimDirDiff/issues/45
+
 ==============================================================================
  vim:tw=78:ts=4:et:ft=help:norl:
