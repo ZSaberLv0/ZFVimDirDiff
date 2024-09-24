@@ -695,7 +695,7 @@ endfunction
 
 " ============================================================
 function! s:diffUI_makeKeymap()
-    call s:makeKeymap('ZFDirDiffUIAction_update', 'ZFDirDiffKeymap_update', ['DU'])
+    call s:makeKeymap('ZFDirDiffUIAction_update', 'ZFDirDiffKeymap_update', [])
     call s:makeKeymap('ZFDirDiffUIAction_updateParent', 'ZFDirDiffKeymap_updateParent', ['DD'])
     call s:makeKeymap('ZFDirDiffUIAction_open', 'ZFDirDiffKeymap_open', ['<cr>', 'o'])
     call s:makeKeymap('ZFDirDiffUIAction_foldOpenAll', 'ZFDirDiffKeymap_foldOpenAll', [])

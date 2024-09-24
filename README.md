@@ -145,7 +145,7 @@ for experienced user, here's some configs you may interest
 
 ## Keymap (inside diff window)
 
-* `let g:ZFDirDiffKeymap_update = ['DU']` : update entire diff window
+* `let g:ZFDirDiffKeymap_update = []` : update entire diff window
 * `let g:ZFDirDiffKeymap_updateParent = ['DD']` : update diff under cursor
 * `let g:ZFDirDiffKeymap_open = ['<cr>', 'o']` : toggle dir open or open file diff
 * `let g:ZFDirDiffKeymap_foldOpenAll = []` : open all node under cursor, including same files
