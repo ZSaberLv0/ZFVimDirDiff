@@ -85,12 +85,8 @@ function! ZFDirDiff_python_pyJob_onOutput(pyJob, textList, type)
             endif
         endfor
         call ZFJobFallback_notifyOutput(ownerJob, textListNew, a:type)
-        if finished >= 0
-            let ownerJob = a:pyJob['jobImplData']['ZFDirDiff_python_ownerJob']
-            let a:pyJob['jobImplData']['ZFDirDiff_python_ownerJob'] = {}
-            let a:pyJob['jobImplData']['ZFDirDiff_python_cmd'] = ''
-            let ownerJob['jobImplData']['ZFDirDiff_python_pyJob'] = {}
-            call ZFJobFallback_notifyExit(ownerJob, '0')
+        if finished
+            call ZFJobFallback_notifyExit(a:pyJob['jobImplData']['ZFDirDiff_python_ownerJob'], '0')
         endif
     else
         for text in a:textList
