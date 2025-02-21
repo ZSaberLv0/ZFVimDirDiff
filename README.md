@@ -40,54 +40,56 @@ or [buy me a coffee](https://github.com/ZSaberLv0/ZSaberLv0)
     Plug 'ZSaberLv0/ZFVimBackup' " optional, but recommended for auto backup
     ```
 
-1. use `:ZFDirDiff` command to start diff
+1. start diff by one of these methods
 
-    ```
-    :ZFDirDiff pathA pathB
-    ```
+    * use `:ZFDirDiff` command to start diff
 
-    if path contains spaces:
+        ```
+        :ZFDirDiff pathA pathB
+        ```
 
-    ```
-    :ZFDirDiff path\ A path\ B
-    :call ZFDirDiff("path A", "path B")
-    ```
+        if path contains spaces:
 
-1. use `:ZFDirDiffMark` to mark two directories to start diff
+        ```
+        :ZFDirDiff path\ A path\ B
+        :call ZFDirDiff("path A", "path B")
+        ```
 
-    Open a file and `:ZFDirDiffMark` and the containing directory will be stored as
-    a diff candidate. Then repeat with another file and you'll be asked to
-    diff the two.
+    * use `:ZFDirDiffMark` to mark two directories to start diff
 
-    ```
-    :edit pathA/file.vim
-    :ZFDirDiffMark
-    :edit pathB/file.vim
-    :ZFDirDiffMark
-    ```
+        Open a file and `:ZFDirDiffMark` and the containing directory will be stored as
+        a diff candidate. Then repeat with another file and you'll be asked to
+        diff the two.
 
-    Or integrate with your file manager. For vim-dirvish, add
-    ~/.vim/ftplugin/dirvish.vim:
+        ```
+        :edit pathA/file.vim
+        :ZFDirDiffMark
+        :edit pathB/file.vim
+        :ZFDirDiffMark
+        ```
 
-        nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r><C-l><CR>
+        Or integrate with your file manager. For vim-dirvish, add
+        ~/.vim/ftplugin/dirvish.vim:
 
-    Or for netrw, add ~/.vim/ftplugin/netrw.vim:
+            nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r><C-l><CR>
 
-        nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r>=b:netrw_curdir<CR>/<C-r><C-l><CR>
+        Or for netrw, add ~/.vim/ftplugin/netrw.vim:
 
-    Then X on two directories.
+            nnoremap <buffer> X :<C-u>ZFDirDiffMark <C-r>=b:netrw_curdir<CR>/<C-r><C-l><CR>
 
-1. you can also start diff from [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree):
-    inside nerdtree window, press `m` to popup menu,
-    press `z` to choose `mark to diff`,
-    and mark another node again to start diff
+        Then X on two directories.
 
-1. you may also use it as command line diff tool
+    * you can also start diff from [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree):
+        inside nerdtree window, press `m` to popup menu,
+        press `z` to choose `mark to diff`,
+        and mark another node again to start diff
 
-    ```
-    vim -c 'call ZFDirDiff("path A", "path B")'
-    sh ZFDirDiff.sh "path A" "path B"
-    ```
+    * you may also use it as command line diff tool
+
+        ```
+        vim -c 'call ZFDirDiff("path A", "path B")'
+        sh ZFDirDiff.sh "path A" "path B"
+        ```
 
 1. within the diff window:
 
