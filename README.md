@@ -222,3 +222,12 @@ highlight default link ZFDirDiffHL_MarkToSync Cursor
 
     A: https://github.com/ZSaberLv0/ZFVimDirDiff/issues/45
 
+    add these to your `.gitconfig`
+
+    ```
+    [alias]
+    dirdiff = difftool --ignore-submodules --dir-diff --symlinks --tool=vimdirdiff
+    [difftool "vimdirdiff"]
+    cmd = vim -f '+next' '+execute "ZFDirDiff" argv(0) argv(1)' $LOCAL $REMOTE
+    ```
+
