@@ -1338,13 +1338,18 @@ function! s:fileDiffUI_start(ownerDiffTab, ownerDiffNode, pathL, pathR)
     wincmd =
 endfunction
 
-function! s:fileDiffUI_askWrite()
+function! s:fileDiffUI_askWrite(isLeft)
     if !&modified
         return 0
     endif
-    let input = confirm("[ZFDirDiff] File " . expand("%:p") . " modified, save?", "&Yes\n&No", 1)
+    redraw
+    let hint = printf("%s\n    %s\n\nfile modified, save?"
+                \ , ZFDirDiffUI_bufLabel(a:isLeft)
+                \ , expand("%:p")
+                \ )
+    let input = confirm(hint, "&Yes\n&No", 1)
     if input == 1
-        w!
+        silent w!
         return 1
     else
         return 0
@@ -1364,13 +1369,13 @@ function! ZFDirDiffUIAction_quitFileDiff()
 
     call ZFDirDiffUI_jumpWin(t:ZFDirDiff_fileDiff_bufnrL, 1)
     execute 'b' . t:ZFDirDiff_fileDiff_bufnrL
-    if s:fileDiffUI_askWrite()
+    if s:fileDiffUI_askWrite(1)
         let modified = 1
     endif
 
     call ZFDirDiffUI_jumpWin(t:ZFDirDiff_fileDiff_bufnrR, 0)
     execute 'b' . t:ZFDirDiff_fileDiff_bufnrR
-    if s:fileDiffUI_askWrite()
+    if s:fileDiffUI_askWrite(0)
         let modified = 1
     endif
 
