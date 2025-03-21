@@ -1269,14 +1269,13 @@ function! ZFDirDiffUIAction_rename()
         return
     endif
 
-    let nameNew = input(isdirectory(path) ? 'rename dir: ' : 'rename file: ', fnamemodify(path, ':t'), 'file')
+    let pathNew = input(isdirectory(path) ? 'rename dir: ' : 'rename file: ', path, 'file')
     " ^[ \t]+|[ \t]+$
-    let nameNew = substitute(nameNew, '^[ \t]\+\|[ \t]\+$', '', '')
-    if empty(nameNew)
+    let pathNew = substitute(pathNew, '^[ \t]\+\|[ \t]\+$', '', '')
+    if empty(pathNew)
         return
     endif
 
-    let pathNew = fnamemodify(path, ':h') . '/' . nameNew
     if isdirectory(pathNew) || filereadable(pathNew)
         let hint = "target already exists:"
         let relPath = fnamemodify(pathNew, ':.')
