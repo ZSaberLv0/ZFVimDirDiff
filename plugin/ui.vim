@@ -1279,9 +1279,9 @@ function! ZFDirDiffUIAction_rename()
     if isdirectory(pathNew) || filereadable(pathNew)
         let hint = "target already exists:"
         let relPath = fnamemodify(pathNew, ':.')
-        let hint .= "\n    " . pathNew
+        let hint .= "\n    " . relPath
         if relPath != pathNew
-            let hint .= "\n    (" . pathNew . ")"
+            let hint .= "\n        " . pathNew
         endif
         let hint .= "\nconfirm override?"
         let hint .= "\n"
