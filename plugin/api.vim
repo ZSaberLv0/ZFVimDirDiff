@@ -698,9 +698,9 @@ if !exists('*ZFDirDiffAPI_mkdir')
             if exists("*mkdir")
                 call mkdir(a:path, 'p')
             elseif (has('win32') || has('win64')) && !has('unix')
-                silent execute '!mkdir "' . substitute(a:path, '/', '\', 'g') . '"'
+                silent execute printf('!mkdir "%s"', substitute(a:path, '/', '\', 'g'))
             else
-                silent execute '!mkdir -p "' . a:path . '"'
+                silent execute printf('!mkdir -p "%s"', a:path)
             endif
         endif
     endfunction
@@ -710,9 +710,9 @@ if !exists('*ZFDirDiffAPI_cpfile')
     function! ZFDirDiffAPI_cpfile(from, to)
         call ZFDirDiffAPI_mkdir(fnamemodify(a:to, ":h"))
         if (has('win32') || has('win64')) && !has('unix')
-            silent execute '!copy "' . substitute(a:from, '/', '\', 'g') . '" "' . substitute(a:to, '/', '\', 'g') . '"'
+            silent execute printf('!copy "%s" "%s"', substitute(a:from, '/', '\', 'g'), substitute(a:to, '/', '\', 'g'))
         else
-            silent execute '!cp -rf "' . a:from . '" "' . a:to . '"'
+            silent execute printf('!cp -rf "%s" "%s"', a:from, a:to)
         endif
     endfunction
 endif
@@ -720,9 +720,9 @@ endif
 if !exists('*ZFDirDiffAPI_rmdir')
     function! ZFDirDiffAPI_rmdir(path)
         if (has('win32') || has('win64')) && !has('unix')
-            silent execute '!rmdir /s/q "' . substitute(a:path, '/', '\', 'g') . '"'
+            silent execute printf('!rmdir /s/q "%s"', substitute(a:path, '/', '\', 'g'))
         else
-            silent execute '!rm -rf "' . a:path . '"'
+            silent execute printf('!rm -rf "%s"', a:path)
         endif
     endfunction
 endif
@@ -730,9 +730,29 @@ endif
 if !exists('*ZFDirDiffAPI_rmfile')
     function! ZFDirDiffAPI_rmfile(path)
         if (has('win32') || has('win64')) && !has('unix')
-            silent execute '!del /f/q "' . substitute(a:path, '/', '\', 'g') . '"'
+            silent execute printf('!del /f/q "%s"', substitute(a:path, '/', '\', 'g'))
         else
-            silent execute '!rm -f "' . a:path . '"'
+            silent execute printf('!rm -f "%s"', a:path)
+        endif
+    endfunction
+endif
+
+if !exists('*ZFDirDiffAPI_mvdir')
+    function! ZFDirDiffAPI_mvdir(from, to)
+        if (has('win32') || has('win64')) && !has('unix')
+            silent execute printf('!move "%s" "%s"', a:from, a:to)
+        else
+            silent execute printf('!mv "%s" "%s"', a:from, a:to)
+        endif
+    endfunction
+endif
+
+if !exists('*ZFDirDiffAPI_mvfile')
+    function! ZFDirDiffAPI_mvfile(from, to)
+        if (has('win32') || has('win64')) && !has('unix')
+            silent execute printf('!move "%s" "%s"', a:from, a:to)
+        else
+            silent execute printf('!mv "%s" "%s"', a:from, a:to)
         endif
     endfunction
 endif

@@ -716,6 +716,7 @@ function! s:diffUI_makeKeymap()
     call s:makeKeymap('ZFDirDiffUIAction_syncToThere', 'ZFDirDiffKeymap_syncToThere', ['dp', 'DL'], 1)
     call s:makeKeymap('ZFDirDiffUIAction_add', 'ZFDirDiffKeymap_add', ['a'])
     call s:makeKeymap('ZFDirDiffUIAction_delete', 'ZFDirDiffKeymap_delete', ['dd'], 1)
+    call s:makeKeymap('ZFDirDiffUIAction_rename', 'ZFDirDiffKeymap_rename', ['cc'])
     call s:makeKeymap('ZFDirDiffUIAction_getPath', 'ZFDirDiffKeymap_getPath', ['p'])
     call s:makeKeymap('ZFDirDiffUIAction_getFullPath', 'ZFDirDiffKeymap_getFullPath', ['P'])
 endfunction
@@ -1254,6 +1255,70 @@ function! ZFDirDiffUIAction_delete() range
     endif
 
     call s:diffUI_op(t:ZFDirDiff_taskData, diffNodes, op)
+endfunction
+
+function! ZFDirDiffUIAction_rename()
+    if !exists('t:ZFDirDiff_taskData')
+        echomsg '[ZFDirDiff] no previous diff task'
+        return
+    endif
+    silent let path = s:ZFDirDiffUIAction_getPathOrFullPath(1)
+    let diffNode = ZFDirDiffUI_diffNodeUnderCursor()
+    if empty(path) || empty(diffNode)
+        echo '[ZFDirDiff] no file or dir under cursor'
+        return
+    endif
+
+    let nameNew = input(isdirectory(path) ? 'rename dir: ' : 'rename file: ', fnamemodify(path, ':t'), 'file')
+    " ^[ \t]+|[ \t]+$
+    let nameNew = substitute(nameNew, '^[ \t]\+\|[ \t]\+$', '', '')
+    if empty(nameNew)
+        return
+    endif
+
+    let pathNew = fnamemodify(path, ':h') . '/' . nameNew
+    if isdirectory(pathNew) || filereadable(pathNew)
+        let hint = "target already exists:"
+        let relPath = fnamemodify(pathNew, ':.')
+        let hint .= "\n    " . pathNew
+        if relPath != pathNew
+            let hint .= "\n    (" . pathNew . ")"
+        endif
+        let hint .= "\nconfirm override?"
+        let hint .= "\n"
+        let hint .= "\n(y)es / (n)o: "
+        redraw
+        echo hint
+        let confirm = nr2char(getchar())
+        redraw
+        if confirm != 'y'
+            echo 'canceled'
+            return
+        endif
+
+        if isdirectory(pathNew)
+            call ZFDirDiffAPI_rmdir(pathNew)
+        elseif filereadable(pathNew)
+            call ZFDirDiffAPI_rmfile(pathNew)
+        endif
+    endif
+
+    call ZFDirDiffAPI_mkdir(fnamemodify(pathNew, ':h'))
+
+    if isdirectory(path)
+        call ZFDirDiffAPI_mvdir(path, pathNew)
+        let hint = printf('dir renamed: %s => %s', fnamemodify(path, ':.'), fnamemodify(pathNew, ':.'))
+    elseif filereadable(path)
+        call ZFDirDiffAPI_mvfile(path, pathNew)
+        let hint = printf('file renamed: %s => %s', fnamemodify(path, ':.'), fnamemodify(pathNew, ':.'))
+    else
+        echo 'failed to move: ' . path
+        return
+    endif
+
+    call ZFDirDiffAPI_update(t:ZFDirDiff_taskData, diffNode['parent'])
+    redraw
+    echo hint
 endfunction
 
 function! s:ZFDirDiffUIAction_getPathOrFullPath(isFullPath)

@@ -168,6 +168,7 @@ for experienced user, here's some configs you may interest
 * `let g:ZFDirDiffKeymap_syncToThere = ['dp', 'DL']` : sync nodes from here to there
 * `let g:ZFDirDiffKeymap_add = ['a']` : add new node, end with `/` to add dir
 * `let g:ZFDirDiffKeymap_delete = ['dd']` : delete selected nodes
+* `let g:ZFDirDiffKeymap_rename = ['cc']` : rename selected node
 * `let g:ZFDirDiffKeymap_getPath = ['p']` : get relative path of node under cursor
 * `let g:ZFDirDiffKeymap_getFullPath = ['P']` : get absolute path of node under cursor
 
