@@ -942,7 +942,7 @@ function! ZFDirDiffUIAction_markToDiff()
                     \ }
         call ZFDirDiffHLImpl_dataChanged(t:ZFDirDiff_taskData, bufnr)
         echo '[ZFDirDiff] mark again to diff with: '
-                    \ . ZFDirDiffUI_bufLabel(a:isLeft)
+                    \ . ZFDirDiffUI_bufLabel(isLeft)
                     \ . parentPath . diffNode['name']
         return
     endif
